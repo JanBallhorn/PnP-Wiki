@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Article
+class Article extends Model
 {
     private int $id;
     private int $published;
@@ -15,6 +15,7 @@ class Article
     private string $figcaption;
     private int $private;
     private int $editable;
+    private int $called;
 
     /**
      * @param int $createdBy
@@ -26,8 +27,9 @@ class Article
      * @param string $figcaption
      * @param int $private
      * @param int $editable
+     * @param int $called
      */
-    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, string $headline, int $project, string $img, string $figcaption, int $private, int $editable)
+    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, string $headline, int $project, string $img, string $figcaption, int $private, int $editable, int $called)
     {
         $this->createdBy = $createdBy;
         $this->lastEdit = $lastEdit;
@@ -38,6 +40,7 @@ class Article
         $this->figcaption = $figcaption;
         $this->private = $private;
         $this->editable = $editable;
+        $this->called = $called;
     }
 
     /**
@@ -214,5 +217,31 @@ class Article
     public function setEditable(int $editable): void
     {
         $this->editable = $editable;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCalled(): int
+    {
+        return $this->called;
+    }
+
+    /**
+     * @param int $called
+     */
+    public function setCalled(int $called): void
+    {
+        $this->called = $called;
+    }
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `articles` (`created_by`, `last_edit`, `last_edit_by`, `headline`, `project`, `img`, `figcaption`, `private`, `editable`, `called`)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $values = array_values(get_object_vars($this));
+        $result = $conn->execute_query($stmt, $values);
+        $this->closeConnection($conn);
     }
 }

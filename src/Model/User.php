@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class User
+class User extends Model
 {
     private int $id;
     private string $firstname;
@@ -12,26 +12,6 @@ class User
     private string $password;
     private int $verified;
     private int $darkmode;
-
-    /**
-     * @param string $firstname
-     * @param string $lastname
-     * @param string $email
-     * @param string $username
-     * @param string $password
-     * @param int $verified
-     * @param int $darkmode
-     */
-    public function __construct(string $firstname, string $lastname, string $email, string $username, string $password, int $verified, int $darkmode)
-    {
-        $this->firstname = $firstname;
-        $this->lastname = $lastname;
-        $this->email = $email;
-        $this->username = $username;
-        $this->password = $password;
-        $this->verified = $verified;
-        $this->darkmode = $darkmode;
-    }
 
     /**
      * @return int

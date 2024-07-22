@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Calendars
+class Calendars extends Model
 {
     private int $id;
     private int $published;
@@ -13,26 +13,6 @@ class Calendars
     private int $year0BF;
     private int $private;
     private int $editable;
-
-    /**
-     * @param int $createdBy
-     * @param int $lastEdit
-     * @param int $lastEditBy
-     * @param string $name
-     * @param int $year0BF
-     * @param int $private
-     * @param int $editable
-     */
-    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, string $name, int $year0BF, int $private, int $editable)
-    {
-        $this->createdBy = $createdBy;
-        $this->lastEdit = $lastEdit;
-        $this->lastEditBy = $lastEditBy;
-        $this->name = $name;
-        $this->year0BF = $year0BF;
-        $this->private = $private;
-        $this->editable = $editable;
-    }
 
     /**
      * @return int

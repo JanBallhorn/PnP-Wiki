@@ -2,18 +2,10 @@
 
 namespace App\Model;
 
-class Source
+class Source extends Model
 {
     private int $id;
     private string $name;
-
-    /**
-     * @param string $name
-     */
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-    }
 
     /**
      * @return int

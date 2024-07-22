@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Category
+class Category extends Model
 {
     private int $id;
     private string $name;
@@ -11,22 +11,6 @@ class Category
     private int $lastEdit;
     private int $lastEditBy;
     private string $icon;
-
-    /**
-     * @param string $name
-     * @param string $icon
-     * @param int $lastEditBy
-     * @param int $lastEdit
-     * @param int $createdBy
-     */
-    public function __construct(string $name, string $icon, int $lastEditBy, int $lastEdit, int $createdBy)
-    {
-        $this->name = $name;
-        $this->icon = $icon;
-        $this->lastEditBy = $lastEditBy;
-        $this->lastEdit = $lastEdit;
-        $this->createdBy = $createdBy;
-    }
 
     /**
      * @return int

@@ -2,27 +2,13 @@
 
 namespace App\Model;
 
-class ParagraphGallery
+class ParagraphGallery extends Model
 {
     private int $id;
     private int $paragraphContentId;
     private string $img;
     private string $figcaption;
     private int $order;
-
-    /**
-     * @param int $paragraphContentId
-     * @param string $img
-     * @param string $figcaption
-     * @param int $order
-     */
-    public function __construct(int $paragraphContentId, string $img, string $figcaption, int $order)
-    {
-        $this->paragraphContentId = $paragraphContentId;
-        $this->img = $img;
-        $this->figcaption = $figcaption;
-        $this->order = $order;
-    }
 
     /**
      * @return int

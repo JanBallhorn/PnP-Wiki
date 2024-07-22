@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Project
+class Project extends Model
 {
     private int $id;
     private string $name;
@@ -12,24 +12,6 @@ class Project
     private int $lastEditBy;
     private int $parentProject;
     private int $private;
-
-    /**
-     * @param string $name
-     * @param int $parentProject
-     * @param int $lastEditBy
-     * @param int $lastEdit
-     * @param int $createdBy
-     * @param int $private
-     */
-    public function __construct(string $name, int $parentProject, int $lastEditBy, int $lastEdit, int $createdBy, int $private)
-    {
-        $this->name = $name;
-        $this->parentProject = $parentProject;
-        $this->lastEditBy = $lastEditBy;
-        $this->lastEdit = $lastEdit;
-        $this->createdBy = $createdBy;
-        $this->private = $private;
-    }
 
     /**
      * @return int

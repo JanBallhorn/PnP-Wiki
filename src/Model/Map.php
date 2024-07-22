@@ -2,27 +2,13 @@
 
 namespace App\Model;
 
-class Map
+class Map extends Model
 {
     private int $id;
     private int $published;
     private int $createdBy;
     private string $name;
     private int $project;
-
-    /**
-     * @param int $createdBy
-     * @param string $name
-     * @param int $project
-     * @param string $img
-     */
-    public function __construct(int $createdBy, string $name, int $project, string $img)
-    {
-        $this->createdBy = $createdBy;
-        $this->name = $name;
-        $this->project = $project;
-        $this->img = $img;
-    }
 
     /**
      * @return int

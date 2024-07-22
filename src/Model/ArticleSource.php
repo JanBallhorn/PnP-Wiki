@@ -2,27 +2,13 @@
 
 namespace App\Model;
 
-class ArticleSource
+class ArticleSource extends Model
 {
     private int $id;
     private int $article;
     private int $source;
     private int $page;
     private string $link;
-
-    /**
-     * @param int $article
-     * @param int $source
-     * @param int $page
-     * @param string $link
-     */
-    public function __construct(int $article, int $source, int $page, string $link)
-    {
-        $this->article = $article;
-        $this->source = $source;
-        $this->page = $page;
-        $this->link = $link;
-    }
 
     /**
      * @return int

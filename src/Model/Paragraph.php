@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Paragraph
+class Paragraph extends Model
 {
     private int $id;
     private int $published;
@@ -12,24 +12,6 @@ class Paragraph
     private int $article;
     private string $headline;
     private int $order;
-
-    /**
-     * @param int $createdBy
-     * @param int $lastEdit
-     * @param int $lastEditBy
-     * @param int $article
-     * @param string $headline
-     * @param int $order
-     */
-    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, int $article, string $headline, int $order)
-    {
-        $this->createdBy = $createdBy;
-        $this->lastEdit = $lastEdit;
-        $this->lastEditBy = $lastEditBy;
-        $this->article = $article;
-        $this->headline = $headline;
-        $this->order = $order;
-    }
 
     /**
      * @return int

@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class ParagraphContent
+class ParagraphContent extends Model
 {
     private int $id;
     private int $paragraphId;
@@ -11,24 +11,6 @@ class ParagraphContent
     private string $figcaption;
     private int $gallery;
     private int $order;
-
-    /**
-     * @param int $paragraphId
-     * @param string $text
-     * @param string $img
-     * @param string $figcaption
-     * @param int $gallery
-     * @param int $order
-     */
-    public function __construct(int $paragraphId, string $text, string $img, string $figcaption, int $gallery, int $order)
-    {
-        $this->paragraphId = $paragraphId;
-        $this->text = $text;
-        $this->img = $img;
-        $this->figcaption = $figcaption;
-        $this->gallery = $gallery;
-        $this->order = $order;
-    }
 
     /**
      * @return int

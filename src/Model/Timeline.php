@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Timeline
+class Timeline extends Model
 {
     private int $id;
     private int $published;
@@ -10,18 +10,6 @@ class Timeline
     private int $projectId;
     private int $private;
     private int $editable;
-
-    /**
-     * @param int $projectId
-     * @param int $private
-     * @param int $editable
-     */
-    public function __construct(int $projectId, int $private, int $editable)
-    {
-        $this->projectId = $projectId;
-        $this->private = $private;
-        $this->editable = $editable;
-    }
 
     /**
      * @return int
@@ -53,6 +41,22 @@ class Timeline
     public function setPublished(int $published): void
     {
         $this->published = $published;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCreatedBy(): int
+    {
+        return $this->createdBy;
+    }
+
+    /**
+     * @param int $createdBy
+     */
+    public function setCreatedBy(int $createdBy): void
+    {
+        $this->createdBy = $createdBy;
     }
 
     /**
