@@ -1,0 +1,28 @@
+{% extends "base.twig" %}
+
+{% block title %}Registrieren - {% endblock %}
+
+{% block main_content %}
+    <h1>Registrierung</h1>
+    <p>Bitte registriere dich, um einen Account anzulegen und öffentliche Artikel bearbeiten zu können.</p>
+    <form method="post" id="register" action="">
+        <fieldset>
+            <label>Vorname
+                <input name="firstname">
+            </label>
+            <label>Nachname
+                <input name="lastname">
+            </label>
+            <label>E-Mail-Adresse
+                <input name="email">
+            </label>
+        </fieldset>
+        <label>Benutzername
+            <input name="username">
+        </label>
+        <label>Passwort
+            <input name="password">
+        </label>
+        <input class="button" type="submit" name="submit" value="Registrieren">
+    </form>
+{% endblock %}

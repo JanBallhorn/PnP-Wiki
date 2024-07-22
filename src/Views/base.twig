@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    {% block head %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}{% endblock %} DSA-Wiki</title>
+        <link rel="stylesheet" href="../../assets/css/all.min.css">
+        <link rel="stylesheet" href="../../assets/css/fonts.css">
+        <link rel="stylesheet" href="../../assets/css/styles.css">
+        <script src="../../assets/js/jquery.js" type="text/javascript"></script>
+        <script src="../../assets/js/darkmode.js" type="text/javascript"></script>
+    {% endblock %}
+</head>
+<body>
+    <header>
+        {% block header %}
+            <div>
+                <div class="logo">
+                    <a href="/">
+                        <i class="fa-solid fa-dice-d20"></i>
+                        <h3>Pen and Paper Wiki</h3>
+                    </a>
+                </div>
+                <form id="search" method="post" action="">
+                    <label>
+                        <input type="search" name="search" placeholder="{% block search_placeholder %}Wiki durchsuchen{% endblock %}">
+                    </label>
+                    <label>
+                        <input type="submit" name="submit">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </label>
+                </form>
+            </div>
+            <div>
+                <div class="darkmode-switch">
+                    <i class="fa-solid fa-moon"></i>
+                    <label class="switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="login">
+                    {% if loggedIn == true %}
+                    {% else %}
+                        <a class="button" href="/login">Einloggen</a>
+                        <a class="button" href="/registrieren">Registrieren</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endblock %}
+    </header>
+    <main>
+        <aside id="left">
+            {% block aside_left %}
+                <nav>
+                    <ul class="level1">
+                        <li><a href="/">Willkommen!</a></li>
+                        <li class="submenu"><a href="/projekte">Projekte<i class="fa-solid fa-arrow-right"></i></a>
+                            <ul class="level2">
+                                {% for project in projects %}
+                                    <li><a href="/projekt/{{ project }}">{{ project }}</a></li>
+                                {% endfor %}
+                                <li><a href="/projekte">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
+                            </ul>
+                        </li>
+                        <li class="submenu"><a href="/kategorien">Kategorien<i class="fa-solid fa-arrow-right"></i></a>
+                            <ul class="level2">
+                                {% for category in categories %}
+                                    <li><a href="/kategorie/{{ caregory }}">{{ caregory }}</a></li>
+                                {% endfor %}
+                                <li><a href="/kategorien">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
+                            </ul>
+                        </li>
+                        <li><a href="/suche">Suche</a></li>
+                        <li class="submenu"><a href="/artikel?filter=beliebt">Beliebte Artikel<i class="fa-solid fa-arrow-right"></i></a>
+                            <ul class="level2">
+                                {% for article in popular_articles %}
+                                    <li><a href="/artikel/{{ article }}">{{ article }}</a></li>
+                                {% endfor %}
+                                <li><a href="/artikel?filter=beliebt">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
+                            </ul>
+                        </li>
+                        <li><a href="/erstellen">Artikel erstellen</a></li>
+                        <li><a href="/random">Zufälliger Artikel</a></li>
+                    </ul>
+                </nav>
+            {% endblock %}
+        </aside>
+        <div class="content">
+            {% block main_content %}
+            {% endblock %}
+        </div>
+        <aside id="right">
+            {% block aside_right %}
+                <!--<h5>Veröffentlichung</h5>
+                <ul>
+                    <li>Veröffentlicht: {{ published }}</li>
+                    <li>Ersteller: {{ creator }}</li>
+                    <li>Letzte Änderung: {{ lastEdit }}</li>
+                    <li>Letzte Änderung von: {{ editor }}</li>
+                </ul>
+                <h5>Projekte</h5>
+                <ul>
+                    {% for project in article_project %}
+                        <li><a href="/projekt/{{ project }}">{{ project }}</a></li>
+                    {% endfor %}
+                </ul>
+                <h5>Kategorien</h5>
+                <ul>
+                    {% for category in article_categories %}
+                        <li><a href="/kategorie/{{ category }}">{{ category }}</a></li>
+                    {% endfor %}
+                </ul>-->
+            {% endblock %}
+        </aside>
+    </main>
+    <footer>
+        {% block footer %}
+        {% endblock %}
+    </footer>
+</body>
+</html>
