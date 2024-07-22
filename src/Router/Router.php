@@ -10,17 +10,19 @@ class Router{
         $this->uri = $uri;
     }
 
-    public function getRoute(): string
+    public function getRoute(): void
     {
-        $file = __DIR__ . "/../Views" . $this->uri . ".twig";
+        $file = __DIR__ . "/../Controller/" . ucfirst(substr($this->uri,1)) . "Controller.php";
         if(file_exists($file)){
-            return $this->uri . ".twig";
-        }
-        else if($this->uri === '/'){
-            return 'home.twig';
+            if($this->uri === '/'){
+                require_once __DIR__ . "/../Controller/HomeController.php";
+            }
+            else{
+                require_once $file;
+            }
         }
         else{
-            return "404 Not Found";
+            require_once __DIR__ . "/../Controller/404Controller.php";
         }
     }
 
