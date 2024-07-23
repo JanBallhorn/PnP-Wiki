@@ -14,6 +14,24 @@ class Project extends Model
     private int $private;
 
     /**
+     * @param string $name
+     * @param int $createdBy
+     * @param int $lastEdit
+     * @param int $lastEditBy
+     * @param int $parentProject
+     * @param int $private
+     */
+    public function __construct(string $name, int $createdBy, int $lastEdit, int $lastEditBy, int $parentProject, int $private)
+    {
+        $this->name = $name;
+        $this->createdBy = $createdBy;
+        $this->lastEdit = $lastEdit;
+        $this->lastEditBy = $lastEditBy;
+        $this->parentProject = $parentProject;
+        $this->private = $private;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -139,5 +157,12 @@ class Project extends Model
     public function setPrivate(int $private): void
     {
         $this->private = $private;
+    }
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `projects` (`name`, `createdBy`, `lastEditBy`, `parentProject`, `private`) VALUES (?, ?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->name, $this->createdBy, $this->createdBy, $this->parentProject, $this->private]);
+        $this->closeConnection($conn);
     }
 }

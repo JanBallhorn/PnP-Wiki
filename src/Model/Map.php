@@ -9,6 +9,21 @@ class Map extends Model
     private int $createdBy;
     private string $name;
     private int $project;
+    private string $img;
+
+    /**
+     * @param int $createdBy
+     * @param string $name
+     * @param int $project
+     * @param string $img
+     */
+    public function __construct(int $createdBy, string $name, int $project, string $img)
+    {
+        $this->createdBy = $createdBy;
+        $this->name = $name;
+        $this->project = $project;
+        $this->img = $img;
+    }
 
     /**
      * @return int
@@ -105,5 +120,12 @@ class Map extends Model
     {
         $this->img = $img;
     }
-    private string $img;
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `maps` (`createdBy`, `name`, `project`, `img`) VALUES (?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->createdBy, $this->name, $this->project, $this->img]);
+        $this->closeConnection($conn);
+    }
 }

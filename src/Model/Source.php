@@ -8,6 +8,14 @@ class Source extends Model
     private string $name;
 
     /**
+     * @param string $name
+     */
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int 
@@ -37,5 +45,12 @@ class Source extends Model
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `sources` (`name`) VALUES (?)");
+        $conn->execute_query($stmt, [$this->name]);
+        $this->closeConnection($conn);
     }
 }

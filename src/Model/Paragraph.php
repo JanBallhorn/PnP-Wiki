@@ -14,6 +14,24 @@ class Paragraph extends Model
     private int $order;
 
     /**
+     * @param int $createdBy
+     * @param int $lastEdit
+     * @param int $lastEditBy
+     * @param int $article
+     * @param string $headline
+     * @param int $order
+     */
+    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, int $article, string $headline, int $order)
+    {
+        $this->createdBy = $createdBy;
+        $this->lastEdit = $lastEdit;
+        $this->lastEditBy = $lastEditBy;
+        $this->article = $article;
+        $this->headline = $headline;
+        $this->order = $order;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -139,5 +157,12 @@ class Paragraph extends Model
     public function setOrder(int $order): void
     {
         $this->order = $order;
+    }
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `paragraphs` (`created_by`, `last_edit_by`, `article`, `headline`, `order`) VALUES (?, ?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->article, $this->headline, $this->order]);
+        $this->closeConnection($conn);
     }
 }

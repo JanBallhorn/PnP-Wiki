@@ -16,6 +16,28 @@ class CalendarMonths extends Model
     private int $gapYearInterval;
 
     /**
+     * @param int $calendar
+     * @param int $monthNumber
+     * @param string $monthName
+     * @param int $monthDurationInDays
+     * @param int $gapMonth
+     * @param int $gapMonthAfter
+     * @param int $gapYearDays
+     * @param int $gapYearInterval
+     */
+    public function __construct(int $calendar, int $monthNumber, string $monthName, int $monthDurationInDays, int $gapMonth, int $gapMonthAfter, int $gapYearDays, int $gapYearInterval)
+    {
+        $this->calendar = $calendar;
+        $this->monthNumber = $monthNumber;
+        $this->monthName = $monthName;
+        $this->monthDurationInDays = $monthDurationInDays;
+        $this->gapMonth = $gapMonth;
+        $this->gapMonthAfter = $gapMonthAfter;
+        $this->gapYearDays = $gapYearDays;
+        $this->gapYearInterval = $gapYearInterval;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -173,5 +195,14 @@ class CalendarMonths extends Model
     public function setGapYearInterval(int $gapYearInterval): void
     {
         $this->gapYearInterval = $gapYearInterval;
+    }
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `calendar_months` (`calendar`, `month_number`, `month_name`, `month_duration_in_days`, `gap_month`, `gap_month_after`, `gap_year_days`, `gap_year_interval`)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->calendar, $this->monthNumber, $this->monthName, $this->monthDurationInDays, $this->gapMonth, $this->gapMonthAfter, $this->gapYearDays, $this->gapYearInterval]);
+        $this->closeConnection($conn);
     }
 }

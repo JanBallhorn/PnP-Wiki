@@ -15,6 +15,26 @@ class Calendars extends Model
     private int $editable;
 
     /**
+     * @param int $createdBy
+     * @param int $lastEdit
+     * @param int $lastEditBy
+     * @param string $name
+     * @param int $year0BF
+     * @param int $private
+     * @param int $editable
+     */
+    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, string $name, int $year0BF, int $private, int $editable)
+    {
+        $this->createdBy = $createdBy;
+        $this->lastEdit = $lastEdit;
+        $this->lastEditBy = $lastEditBy;
+        $this->name = $name;
+        $this->year0BF = $year0BF;
+        $this->private = $private;
+        $this->editable = $editable;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -156,5 +176,13 @@ class Calendars extends Model
     public function setEditable(int $editable): void
     {
         $this->editable = $editable;
+    }
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `calendars` (`created_by`, `last_edit_by`, `name`, `year_0BF`, `private`, `editable`) VALUES (?, ?, ?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->name, $this->year0BF, $this->private, $this->editable]);
+        $this->closeConnection($conn);
     }
 }

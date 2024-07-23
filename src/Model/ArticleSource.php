@@ -11,6 +11,20 @@ class ArticleSource extends Model
     private string $link;
 
     /**
+     * @param int $article
+     * @param int $source
+     * @param int $page
+     * @param string $link
+     */
+    public function __construct(int $article, int $source, int $page, string $link)
+    {
+        $this->article = $article;
+        $this->source = $source;
+        $this->page = $page;
+        $this->link = $link;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -88,5 +102,14 @@ class ArticleSource extends Model
     public function setLink(string $link): void
     {
         $this->link = $link;
+    }
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `article_sources` (`article`, `source`, `page`, `link`)
+        VALUES (?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->article, $this->source, $this->page, $this->link]);
+        $this->closeConnection($conn);
     }
 }

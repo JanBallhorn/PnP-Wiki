@@ -123,4 +123,12 @@ class Category extends Model
     {
         $this->icon = $icon;
     }
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `categories` (`name`, `created_by`, `last_edit_by`, `icon`) VALUES (?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->name, $this->createdBy, $this->createdBy, $this->icon]);
+        $this->closeConnection($conn);
+    }
 }

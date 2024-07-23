@@ -14,6 +14,31 @@ class CalendarYears extends Model
     private int $monthsPerYear;
     private int $daysPerMonth;
     private int $daysPerWeek;
+    private int $hoursPerDay;
+
+    /**
+     * @param int $calendar
+     * @param string $yearDefinition
+     * @param string $yearDefinitionAbbreviation
+     * @param int $daysPerYear
+     * @param int $gapYear
+     * @param int $monthsPerYear
+     * @param int $daysPerMonth
+     * @param int $daysPerWeek
+     * @param int $hoursPerDay
+     */
+    public function __construct(int $calendar, string $yearDefinition, string $yearDefinitionAbbreviation, int $daysPerYear, int $gapYear, int $monthsPerYear, int $daysPerMonth, int $daysPerWeek, int $hoursPerDay)
+    {
+        $this->calendar = $calendar;
+        $this->yearDefinition = $yearDefinition;
+        $this->yearDefinitionAbbreviation = $yearDefinitionAbbreviation;
+        $this->daysPerYear = $daysPerYear;
+        $this->gapYear = $gapYear;
+        $this->monthsPerYear = $monthsPerYear;
+        $this->daysPerMonth = $daysPerMonth;
+        $this->daysPerWeek = $daysPerWeek;
+        $this->hoursPerDay = $hoursPerDay;
+    }
 
     /**
      * @return int
@@ -190,5 +215,13 @@ class CalendarYears extends Model
     {
         $this->hoursPerDay = $hoursPerDay;
     }
-    private int $hoursPerDay;
+
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `calendar_years` (`calendar`, `year_definition`, `year_definition_abbrevation`, `days_per_year`, `gap_years`, `month_per_year`, `days_per_month`, `days_per_week`, `hours_per_day`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->calendar, $this->yearDefinition, $this->yearDefinitionAbbreviation, $this->daysPerYear, $this->gapYear, $this->monthsPerYear, $this->daysPerMonth, $this->daysPerWeek, $this->hoursPerDay]);
+        $this->closeConnection($conn);
+    }
 }

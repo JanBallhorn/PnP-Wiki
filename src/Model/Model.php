@@ -57,6 +57,31 @@ abstract class Model
         $this->closeConnection($conn);
         return $result;
     }
+    public function update(array $columns, array &$values, string $table, int $id): void
+    {
+        $conn = $this->dbConnect();
+        $set = "";
+        $i = 1;
+        foreach ($columns as $column) {
+            if($i === count($columns)) {
+                $set .= "`$column` = ?";
+            }
+            else{
+                $set .= "`$column` = ?, ";
+            }
+            $i++;
+        }
+        $stmt = $conn->prepare("UPDATE `$table` SET $set WHERE `id` = ?");
+        $conn->execute_query($stmt, $values[] = $id);
+        $this->closeConnection($conn);
+    }
+    public function delete(string $table, int $id): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("DELETE FROM `$table` WHERE `id` = ?");
+        $conn->execute_query($stmt, [$id]);
+        $this->closeConnection($conn);
+    }
     public function defineTypes(array $values): string{
         $types = "";
         foreach($values as $value){

@@ -14,6 +14,26 @@ class User extends Model
     private int $darkmode;
 
     /**
+     * @param string $firstname
+     * @param string $lastname
+     * @param string $email
+     * @param string $username
+     * @param string $password
+     * @param int $verified
+     * @param int $darkmode
+     */
+    public function __construct(string $firstname, string $lastname, string $email, string $username, string $password, int $verified, int $darkmode)
+    {
+        $this->firstname = $firstname;
+        $this->lastname = $lastname;
+        $this->email = $email;
+        $this->username = $username;
+        $this->password = $password;
+        $this->verified = $verified;
+        $this->darkmode = $darkmode;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -139,5 +159,13 @@ class User extends Model
     public function setDarkmode(int $darkmode): void
     {
         $this->darkmode = $darkmode;
+    }
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `users` (`firstname`, `lastname`, `email`, `username`, `password`, `verified`, `darkmode`) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->firstname, $this->lastname, $this->email, $this->username, $this->password, $this->verified, $this->darkmode]);
+        $this->closeConnection($conn);
     }
 }

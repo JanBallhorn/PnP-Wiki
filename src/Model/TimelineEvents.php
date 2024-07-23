@@ -18,6 +18,32 @@ class TimelineEvents extends Model
     private int $year;
 
     /**
+     * @param int $createdBy
+     * @param int $lastEdit
+     * @param int $lastEditBy
+     * @param int $timelineId
+     * @param string $headline
+     * @param string $text
+     * @param int $calendarId
+     * @param int $day
+     * @param int $month
+     * @param int $year
+     */
+    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, int $timelineId, string $headline, string $text, int $calendarId, int $day, int $month, int $year)
+    {
+        $this->createdBy = $createdBy;
+        $this->lastEdit = $lastEdit;
+        $this->lastEditBy = $lastEditBy;
+        $this->timelineId = $timelineId;
+        $this->headline = $headline;
+        $this->text = $text;
+        $this->calendarId = $calendarId;
+        $this->day = $day;
+        $this->month = $month;
+        $this->year = $year;
+    }
+
+    /**
      * @return int
      */
     public function getId(): int
@@ -207,5 +233,13 @@ class TimelineEvents extends Model
     public function setYear(int $year): void
     {
         $this->year = $year;
+    }
+
+    public function create(): void
+    {
+        $conn = $this->dbConnect();
+        $stmt = $conn->prepare("INSERT INTO `timeline_events` (`createdBy`, `last_edit_by`, `timeline`, `headline`, `text`, `calendar`, `day`, `month`, `year`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->timelineId, $this->headline, $this->text, $this->calendarId, $this->day, $this->month, $this->year]);
+        $this->closeConnection($conn);
     }
 }
