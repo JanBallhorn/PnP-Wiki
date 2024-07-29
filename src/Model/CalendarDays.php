@@ -73,7 +73,7 @@ class CalendarDays extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `calendar_days` (`calendar`, `day_number`, `day_name`) VALUES (?, ?, ?)");
+        $stmt = "INSERT INTO `calendar_days` (`calendar`, `day_number`, `day_name`) VALUES (?, ?, ?)";
         $conn->execute_query($stmt, [$this->calendar, $this->day_number, $this->day_name]);
         $this->closeConnection($conn);
     }

@@ -161,7 +161,7 @@ class Project extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `projects` (`name`, `createdBy`, `lastEditBy`, `parentProject`, `private`) VALUES (?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `projects` (`name`, `createdBy`, `lastEditBy`, `parentProject`, `private`) VALUES (?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->name, $this->createdBy, $this->createdBy, $this->parentProject, $this->private]);
         $this->closeConnection($conn);
     }

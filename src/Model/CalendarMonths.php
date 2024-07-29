@@ -200,8 +200,8 @@ class CalendarMonths extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `calendar_months` (`calendar`, `month_number`, `month_name`, `month_duration_in_days`, `gap_month`, `gap_month_after`, `gap_year_days`, `gap_year_interval`)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `calendar_months` (`calendar`, `month_number`, `month_name`, `month_duration_in_days`, `gap_month`, `gap_month_after`, `gap_year_days`, `gap_year_interval`)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->calendar, $this->monthNumber, $this->monthName, $this->monthDurationInDays, $this->gapMonth, $this->gapMonthAfter, $this->gapYearDays, $this->gapYearInterval]);
         $this->closeConnection($conn);
     }

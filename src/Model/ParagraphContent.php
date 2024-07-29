@@ -145,7 +145,7 @@ class ParagraphContent extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `paragraph_contents` (`paragraph`, `text`, `img`, `figcaption`, `gallery`, `order`) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `paragraph_contents` (`paragraph`, `text`, `img`, `figcaption`, `gallery`, `order`) VALUES (?, ?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->paragraphId, $this->text, $this->img, $this->figcaption, $this->gallery, $this->order]);
         $this->closeConnection($conn);
     }

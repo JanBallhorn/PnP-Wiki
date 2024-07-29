@@ -220,7 +220,7 @@ class CalendarYears extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `calendar_years` (`calendar`, `year_definition`, `year_definition_abbrevation`, `days_per_year`, `gap_years`, `month_per_year`, `days_per_month`, `days_per_week`, `hours_per_day`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `calendar_years` (`calendar`, `year_definition`, `year_definition_abbrevation`, `days_per_year`, `gap_years`, `month_per_year`, `days_per_month`, `days_per_week`, `hours_per_day`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->calendar, $this->yearDefinition, $this->yearDefinitionAbbreviation, $this->daysPerYear, $this->gapYear, $this->monthsPerYear, $this->daysPerMonth, $this->daysPerWeek, $this->hoursPerDay]);
         $this->closeConnection($conn);
     }

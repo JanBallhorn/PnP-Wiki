@@ -238,7 +238,7 @@ class TimelineEvents extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `timeline_events` (`createdBy`, `last_edit_by`, `timeline`, `headline`, `text`, `calendar`, `day`, `month`, `year`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `timeline_events` (`createdBy`, `last_edit_by`, `timeline`, `headline`, `text`, `calendar`, `day`, `month`, `year`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->timelineId, $this->headline, $this->text, $this->calendarId, $this->day, $this->month, $this->year]);
         $this->closeConnection($conn);
     }

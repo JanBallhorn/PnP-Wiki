@@ -107,8 +107,7 @@ class ArticleSource extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `article_sources` (`article`, `source`, `page`, `link`)
-        VALUES (?, ?, ?, ?)");
+        $stmt = "INSERT INTO `article_sources` (`article`, `source`, `page`, `link`) VALUES (?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->article, $this->source, $this->page, $this->link]);
         $this->closeConnection($conn);
     }

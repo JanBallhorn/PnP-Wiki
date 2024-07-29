@@ -181,7 +181,7 @@ class Calendars extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `calendars` (`created_by`, `last_edit_by`, `name`, `year_0BF`, `private`, `editable`) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `calendars` (`created_by`, `last_edit_by`, `name`, `year_0BF`, `private`, `editable`) VALUES (?, ?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->name, $this->year0BF, $this->private, $this->editable]);
         $this->closeConnection($conn);
     }

@@ -49,7 +49,7 @@ class Source extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `sources` (`name`) VALUES (?)");
+        $stmt = "INSERT INTO `sources` (`name`) VALUES (?)";
         $conn->execute_query($stmt, [$this->name]);
         $this->closeConnection($conn);
     }

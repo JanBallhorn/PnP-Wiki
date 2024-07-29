@@ -124,7 +124,7 @@ class Map extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `maps` (`createdBy`, `name`, `project`, `img`) VALUES (?, ?, ?, ?)");
+        $stmt = "INSERT INTO `maps` (`createdBy`, `name`, `project`, `img`) VALUES (?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->createdBy, $this->name, $this->project, $this->img]);
         $this->closeConnection($conn);
     }

@@ -11,7 +11,6 @@ class User extends Model
     private string $username;
     private string $password;
     private int $verified;
-    private int $darkmode;
 
     /**
      * @param string $firstname
@@ -20,9 +19,8 @@ class User extends Model
      * @param string $username
      * @param string $password
      * @param int $verified
-     * @param int $darkmode
      */
-    public function __construct(string $firstname, string $lastname, string $email, string $username, string $password, int $verified, int $darkmode)
+    public function __construct(string $firstname, string $lastname, string $email, string $username, string $password, int $verified)
     {
         $this->firstname = $firstname;
         $this->lastname = $lastname;
@@ -30,7 +28,6 @@ class User extends Model
         $this->username = $username;
         $this->password = $password;
         $this->verified = $verified;
-        $this->darkmode = $darkmode;
     }
 
     /**
@@ -145,27 +142,11 @@ class User extends Model
         $this->verified = $verified;
     }
 
-    /**
-     * @return int
-     */
-    public function getDarkmode(): int
-    {
-        return $this->darkmode;
-    }
-
-    /**
-     * @param int $darkmode
-     */
-    public function setDarkmode(int $darkmode): void
-    {
-        $this->darkmode = $darkmode;
-    }
-
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `users` (`firstname`, `lastname`, `email`, `username`, `password`, `verified`, `darkmode`) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $conn->execute_query($stmt, [$this->firstname, $this->lastname, $this->email, $this->username, $this->password, $this->verified, $this->darkmode]);
+        $stmt = "INSERT INTO `users` (`firstname`, `lastname`, `email`, `username`, `password`, `verified`) VALUES (?, ?, ?, ?, ?, ?)";
+        $conn->execute_query($stmt, [$this->firstname, $this->lastname, $this->email, $this->username, $this->password, $this->verified]);
         $this->closeConnection($conn);
     }
 }

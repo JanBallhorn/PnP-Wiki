@@ -238,8 +238,8 @@ class Article extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `articles` (`created_by`, `last_edit_by`, `headline`, `project`, `img`, `figcaption`, `private`, `editable`)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `articles` (`created_by`, `last_edit_by`, `headline`, `project`, `img`, `figcaption`, `private`, `editable`)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->headline, $this->project, $this->img, $this->figcaption, $this->private, $this->editable]);
         $this->closeConnection($conn);
     }

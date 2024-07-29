@@ -51,8 +51,7 @@ class ArticleCategory extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `article_categories` (`article`, `category`)
-        VALUES (?, ?)");
+        $stmt = "INSERT INTO `article_categories` (`article`, `category`) VALUES (?, ?)";
         $conn->execute_query($stmt, [$this->articleId, $this->categoryId]);
         $this->closeConnection($conn);
     }

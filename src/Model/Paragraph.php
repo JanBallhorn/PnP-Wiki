@@ -161,7 +161,7 @@ class Paragraph extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `paragraphs` (`created_by`, `last_edit_by`, `article`, `headline`, `order`) VALUES (?, ?, ?, ?, ?)");
+        $stmt = "INSERT INTO `paragraphs` (`created_by`, `last_edit_by`, `article`, `headline`, `order`) VALUES (?, ?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->article, $this->headline, $this->order]);
         $this->closeConnection($conn);
     }

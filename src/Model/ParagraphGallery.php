@@ -107,7 +107,7 @@ class ParagraphGallery extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `paragraph_gallery` (`paragraph_content`, `img`, `figcaption`, `order`) VALUES (?, ?, ?, ?)");
+        $stmt = "INSERT INTO `paragraph_gallery` (`paragraph_content`, `img`, `figcaption`, `order`) VALUES (?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->paragraphContentId, $this->img, $this->figcaption, $this->order]);
         $this->closeConnection($conn);
     }

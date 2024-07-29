@@ -123,7 +123,7 @@ class Timeline extends Model
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("INSERT INTO `timelines` (`createdBy`, `project`, `private`, `editable`) VALUES (?, ?, ?, ?)");
+        $stmt = "INSERT INTO `timelines` (`createdBy`, `project`, `private`, `editable`) VALUES (?, ?, ?, ?)";
         $conn->execute_query($stmt, [$this->createdBy, $this->projectId, $this->private, $this->editable]);
         $this->closeConnection($conn);
     }
