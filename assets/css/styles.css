@@ -8,7 +8,14 @@ COLOR VARIABLES
     --box-bg: #ccc;
     --link: #4242ff
 }
-.darkmode{
+:root.light{
+    --txt: #222;
+    --body-bg: #f4f4f4;
+    --main-bg: #fff;
+    --box-bg: #ccc;
+    --link: #4242ff
+}
+:root.dark{
     --txt: #fff;
     --body-bg: #222;
     --main-bg: #000;
@@ -40,15 +47,16 @@ h1{
     font-size: 2rem;
     font-weight: 700;
     border-bottom: 2px solid var(--txt);
-    padding-bottom: 0.2em;
-    margin-bottom: 1em;
+    padding-bottom: 0.2rem;
+    margin-bottom: 1.5rem;
 }
 h2{
     font-size: 1.75rem;
     font-weight: 600;
     border-bottom: 2px solid var(--txt);
-    padding-bottom: 0.2em;
-    margin-bottom: 0.5em;
+    padding-bottom: 0.2rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 h3{
     font-size: 1.5rem;
@@ -76,14 +84,29 @@ p{
     border: 1px solid var(--txt);
     background-color: var(--box-bg);
     display: block;
-    transition: 0.3s;
     border-radius: 0.3em;
     cursor: pointer;
 }
 .button:hover{
     color: var(--box-bg);
     background-color: var(--txt);
+    transition: 0.3s;
 }
+.flex-50, .flex-33, .flex-25{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+.flex-50 > *{
+    width: calc(50% - 1em);
+}
+.flex-33 > *{
+    width: calc(100% / 3 - 4em / 3);
+}
+.flex-25 > *{
+    width: calc(25% - 6em / 4);
+}
+
 
 /******************************************
 FORMS
@@ -116,6 +139,10 @@ main form label{
     flex-flow: column;
     width: calc(50% - 1em);
     margin-bottom: 0.5em;
+}
+main label > span{
+    font-size: 0.75em;
+    margin-top: 0.2em;
 }
 
 /******************************************
@@ -184,13 +211,11 @@ header #search input[type="submit"] + i{
     width: 3em;
     height: 1.5em;
 }
-/* Hide default HTML checkbox */
 .switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
-/* The slider */
 .slider {
     position: absolute;
     cursor: pointer;
@@ -199,11 +224,9 @@ header #search input[type="submit"] + i{
     right: 0;
     bottom: 0;
     background-color: var(--box-bg);
-    -webkit-transition: .4s;
-    transition: .4s;
     border-radius: 2em;
 }
-.slider:before {
+.slider .slide-before {
     position: absolute;
     content: "";
     height: 1em;
@@ -211,17 +234,7 @@ header #search input[type="submit"] + i{
     left: 0.25em;
     bottom: 0.25em;
     background-color: var(--txt);
-    -webkit-transition: .4s;
-    transition: .4s;
     border-radius: 50%;
-}
-/*input:checked + .slider {
-    background-color: #2196F3;
-}*/
-input:checked + .slider:before {
-    -webkit-transform: translateX(1.5em);
-    -ms-transform: translateX(1.5em);
-    transform: translateX(1.5em);
 }
 .login{
     display: flex;
@@ -242,7 +255,7 @@ main{
 }
 #right, main .content{
     background-color: var(--main-bg);
-    padding: 0.6em 1.25em;
+    padding: 1em 1.25em;
 }
 main > aside{
     width: 11em;
@@ -282,7 +295,6 @@ nav a{
     line-height: 1.8em;
     background-color: var(--box-bg);
     color: var(--txt);
-    transition: 0.3s;
     position: relative;
 }
 nav li:not(:last-child) > a{
@@ -291,9 +303,9 @@ nav li:not(:last-child) > a{
 nav a:hover{
     background-color: var(--txt);
     color: var(--box-bg);
+    transition: 0.3s;
 }
 nav a i{
-    transition: 0.3s;
     position: absolute;
     right: 0.5em;
     top: 50%;
@@ -301,6 +313,7 @@ nav a i{
 }
 nav a:hover i{
     color: var(--box-bg);
+    transition: 0.3s;
 }
 nav ul.level1 > li > a:hover + ul.level2, ul.level2:hover{
     display: block;
