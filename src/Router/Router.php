@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Router;
+use App\Controller\HomeController;
+
 class Router{
 
     private $uri;
@@ -10,19 +12,41 @@ class Router{
         $this->uri = $uri;
     }
 
-    public function getRoute(): void
+    public function execRoute(): void
     {
-        $file = __DIR__ . "/../Controller/" . ucfirst(substr($this->uri,1)) . "Controller.php";
+        if(stripos($this->uri, '?')){
+            $uri = explode('/', substr($this->uri, 1, stripos($this->uri, '?') - 1));
+        }
+        else{
+            $uri = explode('/', substr($this->uri, 1));
+        }
+        $file = __DIR__ . "/../Controller/" . ucfirst($uri[0]) . "Controller.php";
         if(file_exists($file)){
             if($this->uri === '/'){
-                require_once __DIR__ . "/../Controller/HomeController.php";
+                new HomeController();
             }
             else{
-                require_once $file;
+                $controller = "App\Controller\\" . ucfirst($uri[0]) . "Controller";
+                $controller = new $controller();
+                if(!empty($uri[1])){
+                    $method = $uri[1];
+                    if(!empty($_POST)){
+                        $controller->$method($_POST);
+                    }
+                    elseif(!empty($_GET)){
+                        $controller->$method($_GET);
+                    }
+                    else{
+                        $controller->$method();
+                    }
+                }
+                else{
+                    $controller->render($controller->getTemplate());
+                }
             }
         }
         else{
-            require_once __DIR__ . "/../Controller/404Controller.php";
+            new Error404Controller();
         }
     }
 
