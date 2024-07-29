@@ -4,6 +4,7 @@
     {% block head %}
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="color-scheme" content="dark light">
         <title>{% block title %}{% endblock %} DSA-Wiki</title>
         <link rel="stylesheet" href="../../assets/css/all.min.css">
         <link rel="stylesheet" href="../../assets/css/fonts.css">
@@ -36,15 +37,15 @@
                 <div class="darkmode-switch">
                     <i class="fa-solid fa-moon"></i>
                     <label class="switch">
-                        <input type="checkbox">
-                        <span class="slider"></span>
+                        <input id="darkmode" type="checkbox">
+                        <span class="slider"><span class="slide-before"></span></span>
                     </label>
                 </div>
                 <div class="login">
                     {% if loggedIn == true %}
                     {% else %}
                         <a class="button" href="/login">Einloggen</a>
-                        <a class="button" href="/registrieren">Registrieren</a>
+                        <a class="button" href="/register">Registrieren</a>
                     {% endif %}
                 </div>
             </div>
@@ -56,32 +57,32 @@
                 <nav>
                     <ul class="level1">
                         <li><a href="/">Willkommen!</a></li>
-                        <li class="submenu"><a href="/projekte">Projekte<i class="fa-solid fa-arrow-right"></i></a>
+                        <li class="submenu"><a href="/project">Projekte<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for project in projects %}
-                                    <li><a href="/projekt/{{ project }}">{{ project }}</a></li>
+                                    <li><a href="/project/{{ project }}">{{ project }}</a></li>
                                 {% endfor %}
-                                <li><a href="/projekte">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
+                                <li><a href="/project">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
                         </li>
-                        <li class="submenu"><a href="/kategorien">Kategorien<i class="fa-solid fa-arrow-right"></i></a>
+                        <li class="submenu"><a href="/category">Kategorien<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for category in categories %}
-                                    <li><a href="/kategorie/{{ caregory }}">{{ caregory }}</a></li>
+                                    <li><a href="/category/{{ caregory }}">{{ caregory }}</a></li>
                                 {% endfor %}
-                                <li><a href="/kategorien">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
+                                <li><a href="/category">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
                         </li>
-                        <li><a href="/suche">Suche</a></li>
-                        <li class="submenu"><a href="/artikel?filter=beliebt">Beliebte Artikel<i class="fa-solid fa-arrow-right"></i></a>
+                        <li><a href="/search">Suche</a></li>
+                        <li class="submenu"><a href="/article?filter=popular">Beliebte Artikel<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for article in popular_articles %}
-                                    <li><a href="/artikel/{{ article }}">{{ article }}</a></li>
+                                    <li><a href="/article/{{ article }}">{{ article }}</a></li>
                                 {% endfor %}
-                                <li><a href="/artikel?filter=beliebt">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
+                                <li><a href="/article?filter=popular">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
                         </li>
-                        <li><a href="/erstellen">Artikel erstellen</a></li>
+                        <li><a href="/create">Artikel erstellen</a></li>
                         <li><a href="/random">Zufälliger Artikel</a></li>
                     </ul>
                 </nav>

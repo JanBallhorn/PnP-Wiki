@@ -2279,7 +2279,7 @@ interface DOMUtils {
     serializeStyle: (stylesArg: StyleMap, name?: string) => string;
     addStyle: (cssText: string) => void;
     loadCSS: (url: string) => void;
-    hasClass: (elm: string | Element, cls: string) => boolean;
+    hasClass: (elm: string | Element) => boolean;
     addClass: (elm: RunArguments<Element>, cls: string) => void;
     removeClass: (elm: RunArguments<Element>, cls: string) => void;
     toggleClass: (elm: RunArguments<Element>, cls: string, state?: boolean) => void;

@@ -5,23 +5,24 @@
 {% block main_content %}
     <h1>Registrierung</h1>
     <p>Bitte registriere dich, um einen Account anzulegen und öffentliche Artikel bearbeiten zu können.</p>
-    <form method="post" id="register" action="">
+    <form method="post" id="register" action="/register/register">
         <fieldset>
             <label>Vorname
                 <input name="firstname">
             </label>
             <label>Nachname
                 <input name="lastname">
+                <span>*Nicht öffentlich sichtbar.</span>
             </label>
             <label>E-Mail-Adresse
-                <input name="email">
+                <input type="email" name="email">
             </label>
         </fieldset>
         <label>Benutzername
             <input name="username">
         </label>
         <label>Passwort
-            <input name="password">
+            <input type="password" name="password">
         </label>
         <input class="button" type="submit" name="submit" value="Registrieren">
     </form>
