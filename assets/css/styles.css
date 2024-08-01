@@ -121,7 +121,7 @@ main .button{
 /******************************************
 FORMS
 ******************************************/
-input, textarea{
+input:not([type='checkbox'], [type='radio']), textarea{
     background-color: var(--main-bg);
     border: 1px solid var(--txt);
     font-size: 1em;
@@ -129,6 +129,11 @@ input, textarea{
 }
 input:focus, textarea:focus{
     outline: none;
+}
+input:is(:-webkit-autofill, :autofill){
+    filter: none;
+    box-shadow: 0 0 0 40px var(--main-bg) inset !important;
+    -webkit-text-fill-color: var(--txt);
 }
 input[type="submit"]{
     font-size: 1em;
@@ -144,13 +149,51 @@ main form fieldset{
     width: 100%;
     border: none;
 }
-main form label{
+main form label:has(input:not([type='checkbox'], [type='radio']), textarea){
     display: flex;
     flex-flow: column;
     width: calc(50% - 1em);
     margin-bottom: 0.5em;
     padding-bottom: 1.2em;
     position: relative;
+}
+main form label:has(input[type='checkbox']){
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.5em;
+    padding-bottom: 1.2em;
+    position: relative;
+}
+input[type='checkbox']{
+    font-size: 1rem;
+    width: 1.25em;
+    height: 1.25em;
+    margin-right: 0.5em;
+}
+main form label:has(input[type='checkbox']):before{
+    content: '';
+    width: 1.25em;
+    height: 1.25em;
+    background-color: var(--main-bg);
+    border: 1px solid var(--txt);
+    position: absolute;
+    left: 0;
+}
+main form label:has(input[type='checkbox']):after{
+    display: none;
+    content: '';
+    position: absolute;
+    left: 0.45em;
+    top: 0.1em;
+    border-bottom: 3px solid var(--txt);
+    border-right: 3px solid var(--txt);
+    width: 0.3em;
+    height: 0.75em;
+    transform: rotate(45deg);
+}
+main form label:has(input[type='checkbox']:checked):after{
+    display: block;
 }
 main label > span{
     font-size: 0.9em;

@@ -1,0 +1,23 @@
+{% extends "base.twig" %}
+
+{% block title %}Anmeldung - {% endblock %}
+
+{% block main_content %}
+    <h1>Anmeldung</h1>
+    {% if login_error == true %}
+    <h4 class="error">Keine Übereinstimmung mit einem Account mit diesen Anmeldedaten.</h4>
+    {% endif %}
+    <form method="post" id="login" action="/login/login">
+        <label>Benutzername oder E-Mail*
+            <input name="user" value="{{ user }}">
+        </label>
+        <label>Passwort*
+            <input name="password" type="password">
+        </label>
+        <label>
+            <input type="checkbox" name="remember">
+        Angemeldet bleiben</label>
+        <input class="button" type="submit" name="submit" value="Anmelden">
+    </form>
+    <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
+{% endblock %}
