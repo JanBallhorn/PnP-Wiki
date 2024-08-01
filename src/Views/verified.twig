@@ -1,0 +1,15 @@
+{% extends "base.twig" %}
+
+{% block title %}Verifiziert - {% endblock %}
+
+{% block main_content %}
+    <h1>Verifizierung</h1>
+    {% if verified == true %}
+        <p>Sie haben sich erfolgreich verifiziert! Sie können sich nun anmelden.</p>
+        <a class="button" href="/login">Zum Login</a>
+    {% else %}
+        <p>Bei Ihrer Verifizierung ist ein Fehler aufgetreten. Versuchen Sie es erneut oder registrieren Sie sich nochmal.</p>
+        <a class="button" href="/register">Zur Registrierung</a>
+        <a class="button" href="/">Zur Startseite</a>
+    {% endif %}
+{% endblock %}

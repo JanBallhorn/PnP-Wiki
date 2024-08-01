@@ -10,6 +10,7 @@ use Twig\Loader\FilesystemLoader;
 
 abstract class Controller
 {
+    protected string $url = "https://wiki.verplant-durch-aventurien.de";
     /**
      * @throws RuntimeError
      * @throws SyntaxError

@@ -6,14 +6,16 @@ COLOR VARIABLES
     --body-bg: #f4f4f4;
     --main-bg: #fff;
     --box-bg: #ccc;
-    --link: #4242ff
+    --link: #4242ff;
+    --error: #d90000
 }
 :root.light{
     --txt: #222;
     --body-bg: #f4f4f4;
     --main-bg: #fff;
     --box-bg: #ccc;
-    --link: #4242ff
+    --link: #4242ff;
+    --error: #d90000;
 }
 :root.dark{
     --txt: #fff;
@@ -21,6 +23,7 @@ COLOR VARIABLES
     --main-bg: #000;
     --box-bg: #555;
     --link: #9d9dff;
+    --error: #f66;
 }
 
 /******************************************
@@ -87,6 +90,10 @@ p{
     border-radius: 0.3em;
     cursor: pointer;
 }
+main .button{
+    margin-top: 0.5em;
+    width: fit-content;
+}
 .button:hover{
     color: var(--box-bg);
     background-color: var(--txt);
@@ -105,6 +112,9 @@ p{
 }
 .flex-25 > *{
     width: calc(25% - 6em / 4);
+}
+.hide{
+    display: none;
 }
 
 
@@ -139,10 +149,17 @@ main form label{
     flex-flow: column;
     width: calc(50% - 1em);
     margin-bottom: 0.5em;
+    padding-bottom: 1.2em;
+    position: relative;
 }
 main label > span{
-    font-size: 0.75em;
-    margin-top: 0.2em;
+    font-size: 0.9em;
+    position: absolute;
+    bottom: 0;
+    font-weight: 500;
+}
+.error{
+    color: var(--error);
 }
 
 /******************************************

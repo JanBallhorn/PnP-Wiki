@@ -5,9 +5,9 @@
 {% block main_content %}
     <h1>Vielen Dank!</h1>
     {% if register == true %}
-    <p>Ihre Registrierung war erfolgreich. Sie sollten zeitnah eine E-Mail zur Authentifizierung Ihres Accounts erhalten.</p>
+    <p>Ihre Registrierung war erfolgreich. Sie sollten zeitnah eine E-Mail zur Authentifizierung Ihres Accounts erhalten. Schauen Sie bitte auch in Ihren Spam-Ordner.</p>
     {% elseif contact == true %}
     <p>Kontaktanfrage</p>
     {% endif %}
-    <a class="button">Zurück zur Startseite</a>
+    <a class="button" href="/">Zurück zur Startseite</a>
 {% endblock %}

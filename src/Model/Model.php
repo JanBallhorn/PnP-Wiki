@@ -25,7 +25,7 @@ abstract class Model
     public function findById(int $id, string $table): array|false
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("SELECT * FROM $table WHERE id = ?");
+        $stmt = $conn->prepare("SELECT * FROM $table WHERE `id` = ?");
         $stmt->bind_param("si", $table, $id);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
@@ -71,14 +71,15 @@ abstract class Model
             }
             $i++;
         }
-        $stmt = $conn->prepare("UPDATE `$table` SET $set WHERE `id` = ?");
-        $conn->execute_query($stmt, $values[] = $id);
+        $stmt = "UPDATE `$table` SET $set WHERE `id` = ?";
+        $values[] = $id;
+        $conn->execute_query($stmt, $values);
         $this->closeConnection($conn);
     }
     public function delete(string $table, int $id): void
     {
         $conn = $this->dbConnect();
-        $stmt = $conn->prepare("DELETE FROM `$table` WHERE `id` = ?");
+        $stmt = "DELETE FROM `$table` WHERE `id` = ?";
         $conn->execute_query($stmt, [$id]);
         $this->closeConnection($conn);
     }

@@ -11,6 +11,7 @@ class User extends Model
     private string $username;
     private string $password;
     private int $verified;
+    private string $token;
 
     /**
      * @param string $firstname
@@ -19,8 +20,9 @@ class User extends Model
      * @param string $username
      * @param string $password
      * @param int $verified
+     * @param string $token
      */
-    public function __construct(string $firstname, string $lastname, string $email, string $username, string $password, int $verified)
+    public function __construct(string $firstname = '', string $lastname = '', string $email = '', string $username = '', string $password = '', int $verified = 0, string $token = '')
     {
         $this->firstname = $firstname;
         $this->lastname = $lastname;
@@ -28,6 +30,7 @@ class User extends Model
         $this->username = $username;
         $this->password = $password;
         $this->verified = $verified;
+        $this->token = $token;
     }
 
     /**
@@ -142,11 +145,27 @@ class User extends Model
         $this->verified = $verified;
     }
 
+    /**
+     * @return string
+     */
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    /**
+     * @param string $token
+     */
+    public function setToken(string $token): void
+    {
+        $this->token = $token;
+    }
+
     public function create(): void
     {
         $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `users` (`firstname`, `lastname`, `email`, `username`, `password`, `verified`) VALUES (?, ?, ?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->firstname, $this->lastname, $this->email, $this->username, $this->password, $this->verified]);
+        $stmt = "INSERT INTO `users` (`firstname`, `lastname`, `email`, `username`, `password`, `verified`, `token`) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $conn->execute_query($stmt, [$this->firstname, $this->lastname, $this->email, $this->username, $this->password, $this->verified, $this->token]);
         $this->closeConnection($conn);
     }
 }
