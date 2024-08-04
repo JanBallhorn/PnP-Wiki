@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Router;
+use App\Controller\Error404Controller;
 use App\Controller\HomeController;
 use App\Repository\UserRepository;
 
