@@ -20,7 +20,16 @@ abstract class Controller
     {
         $loader = new FilesystemLoader(__DIR__ . '/../Views');
         $twig = new Environment($loader);
-
-        echo $twig->render($view, $params);
+        $twigParams = [];
+        session_name('login');
+        session_start();
+        //var_dump($_SESSION);
+        if(!empty($_SESSION)){
+            $twigParams["loggedIn"] = true;
+        }
+        foreach ($params as $key => $value) {
+            $twigParams[$key] = $value;
+        }
+        echo $twig->render($view, $twigParams);
     }
 }

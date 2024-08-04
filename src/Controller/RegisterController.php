@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Model\User;
+use App\Repository\UserRepository;
 use Random\RandomException;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -11,27 +12,37 @@ use Twig\Error\SyntaxError;
 class RegisterController extends Controller
 {
     private string $template = 'register.twig';
-    private string $table = 'users';
 
-    public function getTemplate(): string
+    public function __construct(private readonly UserRepository $userRepository = new UserRepository())
     {
-        return $this->template;
+
     }
     /**
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError
      */
+    public function index(): void
+    {
+        $this->render($this->template);
+    }
+
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError|RandomException
+     */
     public function register(array $userdata): void
     {
-        $user = new User($userdata['firstname'], $userdata['lastname'], $userdata['email'], $userdata['username'], $userdata['password'], 0, $this->generateToken());
+        $user = new User(0, $userdata['firstname'], $userdata['lastname'], $userdata['email'], $userdata['username'], $userdata['password'], 0, $this->generateToken());
         $user->setPassword(hash('sha256', $userdata['password']));
-        $sameEmail = $user->findBy('email', $userdata['email'], $this->table);
-        $sameUsername = $user->findBy('username', $userdata['username'], $this->table);
+        $sameEmail = $this->userRepository->findBy('email', $userdata['email']);
+        $sameUsername = $this->userRepository->findBy('username', $userdata['username']);
         $usernameLength = strlen($userdata['username']);
         $passwordLength = strlen($userdata['password']);
-        if(empty($sameEmail) && empty($sameUsername) && $usernameLength > 3 && $passwordLength > 5) {
-            $user->create();
+        if(empty($sameEmail->current()) && empty($sameUsername->current()) && $usernameLength > 3 && $passwordLength > 5) {
+            $this->userRepository->save($user);
+            $this->userRepository->closeDB();
             $this->sendMail($user);
             header('Location: ' . $this->url . '/register/thanks');
         }
@@ -60,12 +71,11 @@ class RegisterController extends Controller
     public function verify(array $token): void
     {
         $token = $token['token'];
-        $user = new User();
-        $userData = ($user->findBy('token', $token, $this->table));
-        if(!empty($userData)) {
-            $id = $userData[0]['id'];
-            $setVerified = [1];
-            $user->update(["verified"], $setVerified, $this->table, $id);
+        $user = $this->userRepository->findBy('token', $token);
+        $user = $user->current();
+        if(!empty($user)) {
+            $user->setVerified(1);
+            $this->userRepository->save($user);
             $this->render('verified.twig', ['verified' => true]);
         }
         else{

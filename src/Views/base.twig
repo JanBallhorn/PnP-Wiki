@@ -43,8 +43,10 @@
                 </div>
                 <div class="login">
                     {% if loggedIn == true %}
+                        <a class="button" href="/user?{{ user_id }}">Ihr Profil</a>
+                        <a class="button" href="/logout">Abmelden</a>
                     {% else %}
-                        <a class="button" href="/login">Einloggen</a>
+                        <a class="button" href="/login">Anmelden</a>
                         <a class="button" href="/register">Registrieren</a>
                     {% endif %}
                 </div>

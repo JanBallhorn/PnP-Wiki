@@ -121,7 +121,7 @@ main .button{
 /******************************************
 FORMS
 ******************************************/
-input:not([type='checkbox'], [type='radio']), textarea{
+input:not([type='checkbox'], [type='radio'], [type='submit']), textarea{
     background-color: var(--main-bg);
     border: 1px solid var(--txt);
     font-size: 1em;
@@ -164,6 +164,7 @@ main form label:has(input[type='checkbox']){
     margin-bottom: 0.5em;
     padding-bottom: 1.2em;
     position: relative;
+    cursor: pointer;
 }
 input[type='checkbox']{
     font-size: 1rem;

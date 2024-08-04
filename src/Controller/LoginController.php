@@ -2,40 +2,55 @@
 
 namespace App\Controller;
 
-use App\Model\User;
+use App\Repository\UserRepository;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 class LoginController extends Controller
 {
     private string $template = 'login.twig';
-    private string $table = 'users';
-    public function getTemplate(): string
+
+    public function __construct(private readonly UserRepository $userRepository = new UserRepository())
     {
-        return $this->template;
+
     }
+
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError
+     */
+    public function index(): void
+    {
+        $this->render($this->template);
+    }
+
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError
+     */
     public function login(array $logindata): void
     {
-        $user = new User();
-        $email = $user->findBy('email', $logindata['user'], $this->table);
-        $username = $user->findBy('username', $logindata['user'], $this->table);
+        $email = $this->userRepository->findBy('email', $logindata['user']);
+        $username = $this->userRepository->findBy('username', $logindata['user']);
+        $this->userRepository->closeDB();
         $password = hash('sha256', $logindata['password']);
-        if(!empty($email)){
-            $user = $email[0];
+        if(!empty($email->current())){
+            $user = $email->current();
         }
-        elseif (!empty($username)){
-            $user = $username[0];
+        elseif (!empty($username->current())){
+            $user = $username->current();
         }
         else{
             $this->render($this->template, ['login_error' => true, 'user' => $logindata['user']]);
         }
-        if($user['password'] === $password){
+        if(isset($user) && $user->getPassword() === $password){
             session_name('login');
-            if($logindata['remember'] === 'on'){
-                session_start(['cookie_lifetime' => 15768000]);
-            }
-            else{
-                session_start();
-            }
-            $_SESSION['id'] = $user['token'];
+            session_unset();
+            session_start();
+            $_SESSION['id'] = $user->getToken();
             header('Location: ' . $this->url . '/user');
         }
         else{
