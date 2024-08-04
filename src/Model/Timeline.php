@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Timeline extends Model
+class Timeline
 {
     private int $id;
     private int $published;
@@ -12,13 +12,17 @@ class Timeline extends Model
     private int $editable;
 
     /**
+     * @param int $id
+     * @param int $published
      * @param int $createdBy
      * @param int $projectId
      * @param int $private
      * @param int $editable
      */
-    public function __construct(int $createdBy, int $projectId, int $private, int $editable)
+    public function __construct(int $id, int $published, int $createdBy, int $projectId, int $private, int $editable)
     {
+        $this->id = $id;
+        $this->published = $published;
         $this->createdBy = $createdBy;
         $this->projectId = $projectId;
         $this->private = $private;
@@ -119,12 +123,5 @@ class Timeline extends Model
     public function setEditable(int $editable): void
     {
         $this->editable = $editable;
-    }
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `timelines` (`createdBy`, `project`, `private`, `editable`) VALUES (?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->createdBy, $this->projectId, $this->private, $this->editable]);
-        $this->closeConnection($conn);
     }
 }

@@ -2,16 +2,18 @@
 
 namespace App\Model;
 
-class Source extends Model
+class Source
 {
     private int $id;
     private string $name;
 
     /**
+     * @param int $id
      * @param string $name
      */
-    public function __construct(string $name)
+    public function __construct(int $id, string $name)
     {
+        $this->id = $id;
         $this->name = $name;
     }
 
@@ -45,12 +47,5 @@ class Source extends Model
     public function setName(string $name): void
     {
         $this->name = $name;
-    }
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `sources` (`name`) VALUES (?)";
-        $conn->execute_query($stmt, [$this->name]);
-        $this->closeConnection($conn);
     }
 }

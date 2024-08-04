@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Project extends Model
+class Project
 {
     private int $id;
     private string $name;
@@ -14,16 +14,20 @@ class Project extends Model
     private int $private;
 
     /**
+     * @param int $id
      * @param string $name
+     * @param int $published
      * @param int $createdBy
      * @param int $lastEdit
      * @param int $lastEditBy
      * @param int $parentProject
      * @param int $private
      */
-    public function __construct(string $name, int $createdBy, int $lastEdit, int $lastEditBy, int $parentProject, int $private)
+    public function __construct(int $id, string $name, int $published, int $createdBy, int $lastEdit, int $lastEditBy, int $parentProject, int $private)
     {
+        $this->id = $id;
         $this->name = $name;
+        $this->published = $published;
         $this->createdBy = $createdBy;
         $this->lastEdit = $lastEdit;
         $this->lastEditBy = $lastEditBy;
@@ -157,12 +161,5 @@ class Project extends Model
     public function setPrivate(int $private): void
     {
         $this->private = $private;
-    }
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `projects` (`name`, `createdBy`, `lastEditBy`, `parentProject`, `private`) VALUES (?, ?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->name, $this->createdBy, $this->createdBy, $this->parentProject, $this->private]);
-        $this->closeConnection($conn);
     }
 }

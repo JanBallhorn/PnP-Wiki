@@ -13,7 +13,8 @@ function dbConnect(){
     return $conn;
 }
 
-function checkDuplicate(string $field){
+function checkDuplicate(string $field)
+{
     $conn = dbConnect();
     $stmt = $conn->prepare("SELECT COUNT(`$field`) FROM `users` WHERE `$field` = ?");
     $stmt->bind_param("s", $_POST[$field]);

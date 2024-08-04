@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class ParagraphContent extends Model
+class ParagraphContent
 {
     private int $id;
     private int $paragraphId;
@@ -13,6 +13,7 @@ class ParagraphContent extends Model
     private int $order;
 
     /**
+     * @param int $id
      * @param int $paragraphId
      * @param string $text
      * @param string $img
@@ -20,8 +21,9 @@ class ParagraphContent extends Model
      * @param int $gallery
      * @param int $order
      */
-    public function __construct(int $paragraphId, string $text, string $img, string $figcaption, int $gallery, int $order)
+    public function __construct(int $id, int $paragraphId, string $text, string $img, string $figcaption, int $gallery, int $order)
     {
+        $this->id = $id;
         $this->paragraphId = $paragraphId;
         $this->text = $text;
         $this->img = $img;
@@ -140,13 +142,5 @@ class ParagraphContent extends Model
     public function setOrder(int $order): void
     {
         $this->order = $order;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `paragraph_contents` (`paragraph`, `text`, `img`, `figcaption`, `gallery`, `order`) VALUES (?, ?, ?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->paragraphId, $this->text, $this->img, $this->figcaption, $this->gallery, $this->order]);
-        $this->closeConnection($conn);
     }
 }

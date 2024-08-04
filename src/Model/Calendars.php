@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Calendars extends Model
+class Calendars
 {
     private int $id;
     private int $published;
@@ -15,6 +15,8 @@ class Calendars extends Model
     private int $editable;
 
     /**
+     * @param int $id
+     * @param int $published
      * @param int $createdBy
      * @param int $lastEdit
      * @param int $lastEditBy
@@ -23,8 +25,10 @@ class Calendars extends Model
      * @param int $private
      * @param int $editable
      */
-    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, string $name, int $year0BF, int $private, int $editable)
+    public function __construct(int $id, int $published, int $createdBy, int $lastEdit, int $lastEditBy, string $name, int $year0BF, int $private, int $editable)
     {
+        $this->id = $id;
+        $this->published = $published;
         $this->createdBy = $createdBy;
         $this->lastEdit = $lastEdit;
         $this->lastEditBy = $lastEditBy;
@@ -176,13 +180,5 @@ class Calendars extends Model
     public function setEditable(int $editable): void
     {
         $this->editable = $editable;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `calendars` (`created_by`, `last_edit_by`, `name`, `year_0BF`, `private`, `editable`) VALUES (?, ?, ?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->name, $this->year0BF, $this->private, $this->editable]);
-        $this->closeConnection($conn);
     }
 }

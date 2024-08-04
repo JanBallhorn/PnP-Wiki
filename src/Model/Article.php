@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Article extends Model
+class Article
 {
     private int $id;
     private int $published;
@@ -18,6 +18,8 @@ class Article extends Model
     private int $called;
 
     /**
+     * @param int $id
+     * @param int $published
      * @param int $createdBy
      * @param int $lastEdit
      * @param int $lastEditBy
@@ -29,8 +31,10 @@ class Article extends Model
      * @param int $editable
      * @param int $called
      */
-    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, string $headline, int $project, string $img, string $figcaption, int $private, int $editable, int $called)
+    public function __construct(int $id, int $published, int $createdBy, int $lastEdit, int $lastEditBy, string $headline, int $project, string $img, string $figcaption, int $private, int $editable, int $called)
     {
+        $this->id = $id;
+        $this->published = $published;
         $this->createdBy = $createdBy;
         $this->lastEdit = $lastEdit;
         $this->lastEditBy = $lastEditBy;
@@ -233,14 +237,5 @@ class Article extends Model
     public function setCalled(int $called): void
     {
         $this->called = $called;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `articles` (`created_by`, `last_edit_by`, `headline`, `project`, `img`, `figcaption`, `private`, `editable`)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->headline, $this->project, $this->img, $this->figcaption, $this->private, $this->editable]);
-        $this->closeConnection($conn);
     }
 }

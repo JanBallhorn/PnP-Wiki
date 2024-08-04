@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class User extends Model
+class User
 {
     private int $id;
     private string $firstname;
@@ -14,6 +14,7 @@ class User extends Model
     private string $token;
 
     /**
+     * @param int $id
      * @param string $firstname
      * @param string $lastname
      * @param string $email
@@ -22,8 +23,9 @@ class User extends Model
      * @param int $verified
      * @param string $token
      */
-    public function __construct(string $firstname = '', string $lastname = '', string $email = '', string $username = '', string $password = '', int $verified = 0, string $token = '')
+    public function __construct(int $id, string $firstname, string $lastname, string $email, string $username, string $password, int $verified, string $token)
     {
+        $this->id = $id;
         $this->firstname = $firstname;
         $this->lastname = $lastname;
         $this->email = $email;
@@ -159,13 +161,5 @@ class User extends Model
     public function setToken(string $token): void
     {
         $this->token = $token;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `users` (`firstname`, `lastname`, `email`, `username`, `password`, `verified`, `token`) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->firstname, $this->lastname, $this->email, $this->username, $this->password, $this->verified, $this->token]);
-        $this->closeConnection($conn);
     }
 }

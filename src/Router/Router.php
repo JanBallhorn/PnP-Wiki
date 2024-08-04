@@ -2,6 +2,7 @@
 
 namespace App\Router;
 use App\Controller\HomeController;
+use App\Repository\UserRepository;
 
 class Router{
 
@@ -33,7 +34,7 @@ class Router{
                     if(!empty($_POST)){
                         $controller->$method($_POST);
                     }
-                    elseif(!empty($_GET)){
+                    elseif(count($_GET) > 1){
                         $controller->$method($_GET);
                     }
                     else{
@@ -41,7 +42,7 @@ class Router{
                     }
                 }
                 else{
-                    $controller->render($controller->getTemplate());
+                    $controller->index();
                 }
             }
         }

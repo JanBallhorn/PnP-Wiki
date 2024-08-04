@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Category extends Model
+class Category
 {
     private int $id;
     private string $name;
@@ -11,6 +11,26 @@ class Category extends Model
     private int $lastEdit;
     private int $lastEditBy;
     private string $icon;
+
+    /**
+     * @param int $id
+     * @param string $name
+     * @param int $published
+     * @param int $createdBy
+     * @param int $lastEdit
+     * @param int $lastEditBy
+     * @param string $icon
+     */
+    public function __construct(int $id, string $name, int $published, int $createdBy, int $lastEdit, int $lastEditBy, string $icon)
+    {
+        $this->id = $id;
+        $this->name = $name;
+        $this->published = $published;
+        $this->createdBy = $createdBy;
+        $this->lastEdit = $lastEdit;
+        $this->lastEditBy = $lastEditBy;
+        $this->icon = $icon;
+    }
 
     /**
      * @return int
@@ -122,13 +142,5 @@ class Category extends Model
     public function setIcon(string $icon): void
     {
         $this->icon = $icon;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `categories` (`name`, `created_by`, `last_edit_by`, `icon`) VALUES (?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->name, $this->createdBy, $this->createdBy, $this->icon]);
-        $this->closeConnection($conn);
     }
 }

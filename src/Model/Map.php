@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Map extends Model
+class Map
 {
     private int $id;
     private int $published;
@@ -12,13 +12,17 @@ class Map extends Model
     private string $img;
 
     /**
+     * @param int $id
+     * @param int $published
      * @param int $createdBy
      * @param string $name
      * @param int $project
      * @param string $img
      */
-    public function __construct(int $createdBy, string $name, int $project, string $img)
+    public function __construct(int $id, int $published, int $createdBy, string $name, int $project, string $img)
     {
+        $this->id = $id;
+        $this->published = $published;
         $this->createdBy = $createdBy;
         $this->name = $name;
         $this->project = $project;
@@ -119,13 +123,5 @@ class Map extends Model
     public function setImg(string $img): void
     {
         $this->img = $img;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `maps` (`createdBy`, `name`, `project`, `img`) VALUES (?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->createdBy, $this->name, $this->project, $this->img]);
-        $this->closeConnection($conn);
     }
 }

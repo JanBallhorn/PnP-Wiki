@@ -2,18 +2,20 @@
 
 namespace App\Model;
 
-class ArticleCategory extends Model
+class ArticleCategory
 {
     private int $id;
     private int $articleId;
     private int $categoryId;
 
     /**
+     * @param int $id
      * @param int $articleId
      * @param int $categoryId
      */
-    public function __construct(int $articleId, int $categoryId)
+    public function __construct(int $id, int $articleId, int $categoryId)
     {
+        $this->id = $id;
         $this->articleId = $articleId;
         $this->categoryId = $categoryId;
     }
@@ -46,13 +48,5 @@ class ArticleCategory extends Model
     public function setCategoryId(int $categoryId): void
     {
         $this->categoryId = $categoryId;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `article_categories` (`article`, `category`) VALUES (?, ?)";
-        $conn->execute_query($stmt, [$this->articleId, $this->categoryId]);
-        $this->closeConnection($conn);
     }
 }

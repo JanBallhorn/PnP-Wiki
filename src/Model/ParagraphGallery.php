@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class ParagraphGallery extends Model
+class ParagraphGallery
 {
     private int $id;
     private int $paragraphContentId;
@@ -11,13 +11,15 @@ class ParagraphGallery extends Model
     private int $order;
 
     /**
+     * @param int $id
      * @param int $paragraphContentId
      * @param string $img
      * @param string $figcaption
      * @param int $order
      */
-    public function __construct(int $paragraphContentId, string $img, string $figcaption, int $order)
+    public function __construct(int $id, int $paragraphContentId, string $img, string $figcaption, int $order)
     {
+        $this->id = $id;
         $this->paragraphContentId = $paragraphContentId;
         $this->img = $img;
         $this->figcaption = $figcaption;
@@ -102,13 +104,5 @@ class ParagraphGallery extends Model
     public function setOrder(int $order): void
     {
         $this->order = $order;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `paragraph_gallery` (`paragraph_content`, `img`, `figcaption`, `order`) VALUES (?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->paragraphContentId, $this->img, $this->figcaption, $this->order]);
-        $this->closeConnection($conn);
     }
 }

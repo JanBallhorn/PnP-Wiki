@@ -28,6 +28,7 @@ $(function (){
     elUsername.blur(function (){
         var username = $(this).val();
         $.post(ajaxPath, {username: username}, function(data){
+            console.log(data);
             let result = JSON.parse(data);
             if(result.exists === true){
                 $("input[name='username'] ~ .error.exists").removeClass("hide");

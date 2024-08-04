@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class Paragraph extends Model
+class Paragraph
 {
     private int $id;
     private int $published;
@@ -14,6 +14,8 @@ class Paragraph extends Model
     private int $order;
 
     /**
+     * @param int $id
+     * @param int $published
      * @param int $createdBy
      * @param int $lastEdit
      * @param int $lastEditBy
@@ -21,8 +23,10 @@ class Paragraph extends Model
      * @param string $headline
      * @param int $order
      */
-    public function __construct(int $createdBy, int $lastEdit, int $lastEditBy, int $article, string $headline, int $order)
+    public function __construct(int $id, int $published, int $createdBy, int $lastEdit, int $lastEditBy, int $article, string $headline, int $order)
     {
+        $this->id = $id;
+        $this->published = $published;
         $this->createdBy = $createdBy;
         $this->lastEdit = $lastEdit;
         $this->lastEditBy = $lastEditBy;
@@ -157,12 +161,5 @@ class Paragraph extends Model
     public function setOrder(int $order): void
     {
         $this->order = $order;
-    }
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `paragraphs` (`created_by`, `last_edit_by`, `article`, `headline`, `order`) VALUES (?, ?, ?, ?, ?)";
-        $conn->execute_query($stmt, [$this->createdBy, $this->createdBy, $this->article, $this->headline, $this->order]);
-        $this->closeConnection($conn);
     }
 }

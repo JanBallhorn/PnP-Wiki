@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-class CalendarDays extends Model
+class CalendarDays
 {
     private int $id;
     private int $published;
@@ -11,15 +11,51 @@ class CalendarDays extends Model
     private string $day_name;
 
     /**
+     * @param int $id
+     * @param int $published
      * @param int $calendar
      * @param int $day_number
      * @param string $day_name
      */
-    public function __construct(int $calendar, int $day_number, string $day_name)
+    public function __construct(int $id, int $published, int $calendar, int $day_number, string $day_name)
     {
+        $this->id = $id;
+        $this->published = $published;
         $this->calendar = $calendar;
         $this->day_number = $day_number;
         $this->day_name = $day_name;
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPublished(): int
+    {
+        return $this->published;
+    }
+
+    /**
+     * @param int $published
+     */
+    public function setPublished(int $published): void
+    {
+        $this->published = $published;
     }
 
     /**
@@ -68,13 +104,5 @@ class CalendarDays extends Model
     public function setDayName(string $day_name): void
     {
         $this->day_name = $day_name;
-    }
-
-    public function create(): void
-    {
-        $conn = $this->dbConnect();
-        $stmt = "INSERT INTO `calendar_days` (`calendar`, `day_number`, `day_name`) VALUES (?, ?, ?)";
-        $conn->execute_query($stmt, [$this->calendar, $this->day_number, $this->day_name]);
-        $this->closeConnection($conn);
     }
 }
