@@ -12,7 +12,12 @@ trait CollectionTrait
 
     public function current(): mixed
     {
-        return $this->items[$this->position];
+        if(!empty($this->items)){
+            return $this->items[$this->position];
+        }
+        else{
+            return null;
+        }
     }
 
     public function next(): void
