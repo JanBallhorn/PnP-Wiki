@@ -2,6 +2,6 @@
     "require": {
         "twig/twig": "^3.0",
       "ext-mysqli": "*",
-      "ext-http": "*"
+        "lcobucci/jwt": "^5.3"
     }
 }

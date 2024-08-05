@@ -47,10 +47,14 @@ class LoginController extends Controller
             $this->render($this->template, ['login_error' => true, 'user' => $logindata['user']]);
         }
         if(isset($user) && $user->getPassword() === $password){
-            session_name('login');
-            session_unset();
-            session_start();
-            $_SESSION['id'] = $user->getToken();
+            if(isset($logindata['remember'])){
+                $remember = true;
+            }
+            else{
+                $remember = false;
+            }
+            $token = $this->buildToken($user->getUsername(), $user->getId(), $remember);
+            $this->createCookie($token, $remember);
             header('Location: ' . $this->url . '/user');
         }
         else{
