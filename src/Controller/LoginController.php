@@ -53,9 +53,11 @@ class LoginController extends Controller
             else{
                 $remember = false;
             }
-            $token = $this->buildToken($user->getUsername(), $user->getId(), $remember);
+            $userId = $user->getId();
+            $username = $user->getUsername();
+            $token = $this->buildToken($username, $userId, $remember);
             $this->createCookie($token, $remember);
-            header('Location: ' . $this->url . '/user');
+            header('Location: ' . $this->url . '/profile?' . http_build_query(['user'=>$username]));
         }
         else{
             $this->render($this->template, ['login_error' => true, 'user' => $logindata['user']]);

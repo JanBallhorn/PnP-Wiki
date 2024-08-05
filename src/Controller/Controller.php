@@ -8,7 +8,6 @@ use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\Builder;
 use Lcobucci\JWT\Token\Parser;
-use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 use Lcobucci\JWT\Validation\Constraint\RelatedTo;
 use Lcobucci\JWT\Validation\Validator;
 use Twig\Environment;
@@ -31,6 +30,9 @@ abstract class Controller
         $twig = new Environment($loader);
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
+        if($twigParams["loggedIn"] === true) {
+            $twigParams["user"] = http_build_query(['user' => $this->getUsernameFromToken($this->getCookie())]);
+        }
         foreach ($params as $key => $value) {
             $twigParams[$key] = $value;
         }
@@ -61,6 +63,7 @@ abstract class Controller
             ->identifiedBy($userId)
             ->issuedAt($now)
             ->expiresAt($expires)
+            ->withClaim('username', $username)
             ->getToken($algorithm, $signingKey);
         return $token->toString();
     }
@@ -75,6 +78,12 @@ abstract class Controller
         else{
             return false;
         }
+    }
+    function getUsernameFromToken(string $token): string
+    {
+        $parser = new Parser(new JoseEncoder());
+        $token = $parser->parse($token);
+        return $token->claims()->get('username');
     }
 
     function createCookie(string $token, bool $remember): void

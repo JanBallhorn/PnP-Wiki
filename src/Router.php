@@ -21,7 +21,7 @@ class Router{
         else{
             $uri = explode('/', substr($this->uri, 1));
         }
-        $file = __DIR__ . "/../Controller/" . ucfirst($uri[0]) . "Controller.php";
+        $file = __DIR__ . "/Controller/" . ucfirst($uri[0]) . "Controller.php";
         if(file_exists($file)){
             if($this->uri === '/'){
                 new HomeController();
