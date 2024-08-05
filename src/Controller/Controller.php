@@ -30,10 +30,18 @@ abstract class Controller
         $loader = new FilesystemLoader(__DIR__ . '/../Views');
         $twig = new Environment($loader);
         $twigParams = [];
+        $twigParams["loggedIn"] = $this->checkLogin();
         foreach ($params as $key => $value) {
             $twigParams[$key] = $value;
         }
         echo $twig->render($view, $twigParams);
+    }
+    function checkLogin(): bool
+    {
+        if(isset($_COOKIE['login'])){
+            return true;
+        }
+        return false;
     }
     function buildToken(string $username, int $userId, bool $remember): string
     {
@@ -79,12 +87,14 @@ abstract class Controller
         }
         setcookie("login", $token, time() + $extratime, "/", "wiki.verplant-durch-aventurien.de", true, true);
     }
-    function getCookie(): ?string{
+    function getCookie(): ?string
+    {
+        return $_COOKIE["login"] ?? null;
+    }
+    function destroyCookie(): void
+    {
         if(isset($_COOKIE["login"])){
-            return $_COOKIE["login"];
-        }
-        else{
-            return null;
+            setcookie("login", "", time() - 3600, "/", "wiki.verplant-durch-aventurien.de", true);
         }
     }
 }
