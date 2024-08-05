@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Router;
+namespace App;
 use App\Controller\Error404Controller;
 use App\Controller\HomeController;
-use App\Repository\UserRepository;
 
 class Router{
 

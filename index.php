@@ -1,6 +1,6 @@
 <?php
 
-use App\Router\Router;
+use App\Router;
 
 require_once __DIR__ . '/inc/autoload.php';
 require_once __DIR__ . '/vendor/autoload.php';
