@@ -71,8 +71,7 @@ class RegisterController extends Controller
     public function verify(array $token): void
     {
         $token = $token['token'];
-        $user = $this->userRepository->findBy('token', $token);
-        $user = $user->current();
+        $user = $this->userRepository->findOneBy('token', $token);
         if(!empty($user)) {
             $user->setVerified(1);
             $this->userRepository->save($user);
@@ -81,6 +80,7 @@ class RegisterController extends Controller
         else{
             $this->render('verified.twig', ['verified' => false]);
         }
+        $this->userRepository->closeDB();
     }
 
     /**

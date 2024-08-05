@@ -33,15 +33,15 @@ class LoginController extends Controller
      */
     public function login(array $logindata): void
     {
-        $email = $this->userRepository->findBy('email', $logindata['user']);
-        $username = $this->userRepository->findBy('username', $logindata['user']);
+        $email = $this->userRepository->findOneBy('email', $logindata['user']);
+        $username = $this->userRepository->findOneBy('username', $logindata['user']);
         $this->userRepository->closeDB();
         $password = hash('sha256', $logindata['password']);
-        if(!empty($email->current())){
-            $user = $email->current();
+        if(!empty($email)){
+            $user = $email;
         }
-        elseif (!empty($username->current())){
-            $user = $username->current();
+        elseif (!empty($username)){
+            $user = $username;
         }
         else{
             $this->render($this->template, ['login_error' => true, 'user' => $logindata['user']]);

@@ -63,6 +63,20 @@ class UserRepository implements RepositoryInterface
         }
         return $users;
     }
+    public function findOneBy(string $column, mixed $value): ?User
+    {
+        $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([$value]);
+        $result = $stmt->get_result();
+        $user = $result->fetch_object();
+        if(!empty($user)) {
+            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token);
+        }
+        else{
+            return null;
+        }
+    }
 
     public function save(object $entity): void
     {
