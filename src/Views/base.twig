@@ -20,7 +20,7 @@
                 <div class="logo">
                     <a href="/">
                         <i class="fa-solid fa-dice-d20"></i>
-                        <h3>Pen and Paper Wiki</h3>
+                        <h3>Das schwarze Auge Wiki</h3>
                     </a>
                 </div>
                 <form id="search" method="post" action="">
@@ -75,7 +75,6 @@
                                 <li><a href="/category">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
                         </li>
-                        <li><a href="/search">Suche</a></li>
                         <li class="submenu"><a href="/article?filter=popular">Beliebte Artikel<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for article in popular_articles %}
@@ -86,6 +85,7 @@
                         </li>
                         <li><a href="/create">Artikel erstellen</a></li>
                         <li><a href="/random">Zufälliger Artikel</a></li>
+                        <li><a href="/search">Suche</a></li>
                     </ul>
                 </nav>
             {% endblock %}

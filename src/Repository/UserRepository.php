@@ -29,7 +29,7 @@ class UserRepository implements RepositoryInterface
         $stmt->execute();
         $result = $stmt->get_result();
         while($user = $result->fetch_object()){
-            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token);
+            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
             $users[] = $user;
         }
         return $users;
@@ -42,7 +42,7 @@ class UserRepository implements RepositoryInterface
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_object();
-        return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstnamePublic, $user->lastnamePublic, $user->profiletext);
+        return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
     }
 
     public function findBy(string $column, mixed $value, string $order = ''): UserCollection
@@ -58,7 +58,7 @@ class UserRepository implements RepositoryInterface
         $stmt->execute([$value]);
         $result = $stmt->get_result();
         while($user = $result->fetch_object()){
-            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstnamePublic, $user->lastnamePublic, $user->profiletext);
+            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
             $users[] = $user;
         }
         return $users;
@@ -71,7 +71,7 @@ class UserRepository implements RepositoryInterface
         $result = $stmt->get_result();
         $user = $result->fetch_object();
         if(!empty($user)) {
-            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstnamePublic, $user->lastnamePublic, $user->profiletext);
+            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
         }
         else{
             return null;

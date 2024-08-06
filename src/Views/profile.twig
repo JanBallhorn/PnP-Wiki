@@ -1,0 +1,64 @@
+{% extends "base.twig" %}
+
+{% block title %}Profil - {% endblock %}
+
+{% block head %}
+    {{ parent() }}
+    <script src="../../assets/js/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="../../assets/js/tinymceInit.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block main_content %}
+    {% if ownProfile == true %}
+        <h1>Ihr Profil</h1>
+    {% else %}
+        <h1>Profil von {{ username }}</h1>
+    {% endif %}
+    {% if editmode == true and ownProfile == true %}
+        <form method="post" id="editProfile" action="/profile/save">
+            <input name="username" type="hidden" value="{{ username }}">
+            <fieldset class="checkbox">
+                <label>
+                    <input type="checkbox" name="firstnamePublic" {% if firstnamePublic == 1 %}checked{% endif %}>
+                Vornamen veröffentlichen?</label>
+                <label>
+                    <input type="checkbox" name="lastnamePublic" {% if lastnamePublic == 1 %}checked{% endif %}>
+                Nachnamen veröffentlichen?</label>
+            </fieldset>
+            <label>Profiltext
+                <textarea maxlength="2500" name="profiletext"></textarea>
+            </label>
+        </form>
+        <input form="editProfile" type="submit" class="button" name="submit" value="Profil speichern">
+    {% elseif editmode == true and ownProfile == false %}
+        <p class="error">Du kannst dieses Profil nicht bearbeiten!</p>
+    {% else %}
+        {% if firstnamePublic == 1 or lastnamePublic == 1 %}
+            <p><b>Name: </b>
+                {% if firstnamePublic == 1 %}
+                    {{ firstname }}
+                {% endif %}
+                {% if lastnamePublic == 1 %}
+                    {{ lastname }}
+                {% endif %}
+            </p>
+        {% endif %}
+        {% if profiletextExists == true %}
+            <div>
+                <b>Profilbeschreibung:</b>
+                <p>{{ profiletext }}</p>
+            </div>
+        {% endif %}
+        {% if ownProfile == true %}
+            <a class="button" href="/profile/edit?{{ user_query }}">Profil bearbeiten</a>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block aside_right %}
+    <h5>Statistiken:</h5>
+    <ul>
+        <li>Erstellte Artikel:<br> {{ createdArticles }}</li>
+        <li>Neuster Artikel:<br> {{ newestArticle }}</li>
+    </ul>
+{% endblock %}

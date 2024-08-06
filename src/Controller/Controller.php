@@ -40,10 +40,7 @@ abstract class Controller
     }
     function checkLogin(): bool
     {
-        if(isset($_COOKIE['login'])){
-            return true;
-        }
-        return false;
+        return isset($_COOKIE['login']);
     }
     function buildToken(string $username, int $userId, bool $remember): string
     {
@@ -72,12 +69,7 @@ abstract class Controller
         $parser = new Parser(new JoseEncoder());
         $token = $parser->parse($token);
         $validator = new Validator();
-        if($validator->validate($token, new RelatedTo($username))){
-            return true;
-        }
-        else{
-            return false;
-        }
+        return $validator->validate($token, new RelatedTo($username));
     }
     function getUsernameFromToken(string $token): string
     {

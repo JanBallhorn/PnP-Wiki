@@ -149,7 +149,7 @@ main form fieldset{
     width: 100%;
     border: none;
 }
-main form label:has(input:not([type='checkbox'], [type='radio']), textarea){
+main form label:has(input:not([type='checkbox'], [type='radio']), textarea:not(.tinymce)){
     display: flex;
     flex-flow: column;
     width: calc(50% - 1em);
@@ -157,14 +157,32 @@ main form label:has(input:not([type='checkbox'], [type='radio']), textarea){
     padding-bottom: 1.2em;
     position: relative;
 }
+#editProfile label:has(textarea){
+    width: 100%;
+}
+main form textarea{
+    max-width: 100%;
+    min-height: 200px;
+    min-width: 200px;
+}
 main form label:has(input[type='checkbox']){
     display: flex;
     align-items: center;
     width: 100%;
     margin-bottom: 0.5em;
-    padding-bottom: 1.2em;
     position: relative;
     cursor: pointer;
+}
+main form fieldset.checkbox{
+    margin-bottom: 1.2em;
+}
+main form label:has(.tox-tinymce){
+    display: flex;
+    flex-flow: column;
+    width: 100%;
+    margin-bottom: 0.5em;
+    padding-bottom: 1.2em;
+    position: relative;
 }
 input[type='checkbox']{
     font-size: 1rem;
@@ -231,7 +249,7 @@ header > div:last-child{
 }
 .logo{
     margin-right: 1em;
-    width: 16em;
+    width: 22em;
 }
 .logo a{
     display: flex;

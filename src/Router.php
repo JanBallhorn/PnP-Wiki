@@ -42,8 +42,17 @@ class Router{
                     }
                 }
                 else{
-                    $controller->index();
+                    if(!empty($_POST)){
+                        $controller->index($_POST);
+                    }
+                    elseif(count($_GET) > 1){
+                        $controller->index($_GET);
+                    }
+                    else{
+                        $controller->index();
+                    }
                 }
+
             }
         }
         else{
