@@ -34,7 +34,7 @@ class RegisterController extends Controller
      */
     public function register(array $userdata): void
     {
-        $user = new User(0, $userdata['firstname'], $userdata['lastname'], $userdata['email'], $userdata['username'], $userdata['password'], 0, $this->generateToken());
+        $user = new User(0, $userdata['firstname'], $userdata['lastname'], $userdata['email'], $userdata['username'], $userdata['password'], 0, $this->generateToken(), 0, 0, '');
         $user->setPassword(hash('sha256', $userdata['password']));
         $sameEmail = $this->userRepository->findBy('email', $userdata['email']);
         $sameUsername = $this->userRepository->findBy('username', $userdata['username']);

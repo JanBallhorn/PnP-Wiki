@@ -12,6 +12,9 @@ class User
     private string $password;
     private int $verified;
     private string $token;
+    private int $firstnamePublic;
+    private int $lastnamePublic;
+    private string $profiletext;
 
     /**
      * @param int $id
@@ -22,8 +25,11 @@ class User
      * @param string $password
      * @param int $verified
      * @param string $token
+     * @param int $firstnamePublic
+     * @param int $lastnamePublic
+     * @param string $profiletext
      */
-    public function __construct(int $id, string $firstname, string $lastname, string $email, string $username, string $password, int $verified, string $token)
+    public function __construct(int $id, string $firstname, string $lastname, string $email, string $username, string $password, int $verified, string $token, int $firstnamePublic, int $lastnamePublic, string $profiletext)
     {
         $this->id = $id;
         $this->firstname = $firstname;
@@ -33,6 +39,9 @@ class User
         $this->password = $password;
         $this->verified = $verified;
         $this->token = $token;
+        $this->firstnamePublic = $firstnamePublic;
+        $this->lastnamePublic = $lastnamePublic;
+        $this->profiletext = $profiletext;
     }
 
     /**
@@ -162,4 +171,53 @@ class User
     {
         $this->token = $token;
     }
+
+    /**
+     * @return int
+     */
+    public function getFirstnamePublic(): int
+    {
+        return $this->firstnamePublic;
+    }
+
+    /**
+     * @param int $firstnamePublic
+     */
+    public function setFirstnamePublic(int $firstnamePublic): void
+    {
+        $this->firstnamePublic = $firstnamePublic;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLastnamePublic(): int
+    {
+        return $this->lastnamePublic;
+    }
+
+    /**
+     * @param int $lastnamePublic
+     */
+    public function setLastnamePublic(int $lastnamePublic): void
+    {
+        $this->lastnamePublic = $lastnamePublic;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProfiletext(): string
+    {
+        return $this->profiletext;
+    }
+
+    /**
+     * @param string $profiletext
+     */
+    public function setProfiletext(string $profiletext): void
+    {
+        $this->profiletext = $profiletext;
+    }
+
 }

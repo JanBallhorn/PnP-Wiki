@@ -42,7 +42,7 @@ class UserRepository implements RepositoryInterface
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_object();
-        return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token);
+        return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstnamePublic, $user->lastnamePublic, $user->profiletext);
     }
 
     public function findBy(string $column, mixed $value, string $order = ''): UserCollection
@@ -58,7 +58,7 @@ class UserRepository implements RepositoryInterface
         $stmt->execute([$value]);
         $result = $stmt->get_result();
         while($user = $result->fetch_object()){
-            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token);
+            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstnamePublic, $user->lastnamePublic, $user->profiletext);
             $users[] = $user;
         }
         return $users;
@@ -71,7 +71,7 @@ class UserRepository implements RepositoryInterface
         $result = $stmt->get_result();
         $user = $result->fetch_object();
         if(!empty($user)) {
-            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token);
+            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstnamePublic, $user->lastnamePublic, $user->profiletext);
         }
         else{
             return null;
@@ -92,15 +92,18 @@ class UserRepository implements RepositoryInterface
             $password = $entity->getPassword();
             $verified = $entity->getVerified();
             $token = $entity->getToken();
+            $firstnamePublic = $entity->getFirstnamePublic();
+            $lastnamePublic = $entity->getLastnamePublic();
+            $profiletext = $entity->getProfiletext();
             if($id === 0){
                 $query = "INSERT INTO `$this->table` (firstname, lastname, email, username, password, verified, token) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $this->db->prepare($query);
                 $stmt->bind_param("sssssis", $firstname, $lastname, $email, $username, $password, $verified, $token);
             }
             else{
-                $query = "UPDATE `$this->table` SET `firstname` = ?, `lastname` = ?, `email` = ?, `username` = ?, `password` = ?, `verified` = ?, `token` = ? WHERE `id` = ?";
+                $query = "UPDATE `$this->table` SET `firstname` = ?, `lastname` = ?, `email` = ?, `username` = ?, `password` = ?, `verified` = ?, `token` = ?, `firstname_public` = ?, `lastname_public` = ?, `profiletext` = ? WHERE `id` = ?";
                 $stmt = $this->db->prepare($query);
-                $stmt->bind_param("sssssisi", $firstname, $lastname, $email, $username, $password, $verified, $token, $id);
+                $stmt->bind_param("sssssisiisi", $firstname, $lastname, $email, $username, $password, $verified, $token, $firstnamePublic, $lastnamePublic, $profiletext, $id);
             }
             $stmt->execute();
         }
