@@ -7,6 +7,8 @@ use App\Database;
 use App\Model\User;
 use http\Exception\InvalidArgumentException;
 use mysqli;
+use mysqli_result;
+use mysqli_stmt;
 
 class UserRepository implements RepositoryInterface
 {
@@ -16,9 +18,8 @@ class UserRepository implements RepositoryInterface
     public function __construct(){
         $this->db = Database::dbConnect();
     }
-    public function findAll(string $order = ''): UserCollection
+    public function findAll(string $order = ''): ?UserCollection
     {
-        $users = new UserCollection();
         if(!empty($order)){
             $query = "SELECT * FROM `$this->table` ORDER BY `$order` DESC";
         }
@@ -27,27 +28,20 @@ class UserRepository implements RepositoryInterface
         }
         $stmt = $this->db->prepare($query);
         $stmt->execute();
-        $result = $stmt->get_result();
-        while($user = $result->fetch_object()){
-            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
-            $users[] = $user;
-        }
-        return $users;
+        return $this->findCollection($stmt);
     }
 
-    public function findById(int $id): User
+    public function findById(int $id): ?User
     {
         $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `id` = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $result = $stmt->get_result();
-        $user = $result->fetch_object();
-        return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
+        return $this->findOne($result);
     }
 
-    public function findBy(string $column, mixed $value, string $order = ''): UserCollection
+    public function findBy(string $column, mixed $value, string $order = ''): ?UserCollection
     {
-        $users = new UserCollection();
         if(!empty($order)){
             $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order` DESC";
         }
@@ -56,26 +50,14 @@ class UserRepository implements RepositoryInterface
         }
         $stmt = $this->db->prepare($query);
         $stmt->execute([$value]);
-        $result = $stmt->get_result();
-        while($user = $result->fetch_object()){
-            $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
-            $users[] = $user;
-        }
-        return $users;
+        return $this->findCollection($stmt);
     }
     public function findOneBy(string $column, mixed $value): ?User
     {
-        $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
-        $stmt = $this->db->prepare($query);
+        $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `$column` = ?");
         $stmt->execute([$value]);
         $result = $stmt->get_result();
-        $user = $result->fetch_object();
-        if(!empty($user)) {
-            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified, $user->token, $user->firstname_public, $user->lastname_public, $user->profiletext);
-        }
-        else{
-            return null;
-        }
+        return $this->findOne($result);
     }
 
     public function save(object $entity): void
@@ -90,10 +72,10 @@ class UserRepository implements RepositoryInterface
             $email = $entity->getEmail();
             $username = $entity->getUsername();
             $password = $entity->getPassword();
-            $verified = $entity->getVerified();
+            $verified = $entity->getVerified() === true ? 1 : 0;
             $token = $entity->getToken();
-            $firstnamePublic = $entity->getFirstnamePublic();
-            $lastnamePublic = $entity->getLastnamePublic();
+            $firstnamePublic = $entity->getFirstnamePublic() === true ? 1 : 0;
+            $lastnamePublic = $entity->getLastnamePublic() === true ? 1 : 0;
             $profiletext = $entity->getProfiletext();
             if($id === 0){
                 $query = "INSERT INTO `$this->table` (firstname, lastname, email, username, password, verified, token) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -125,5 +107,38 @@ class UserRepository implements RepositoryInterface
     public function closeDB(): void
     {
         $this->db->close();
+    }
+
+    /**
+     * @param false|mysqli_result $result
+     * @return User|null
+     */
+    private function findOne(false|mysqli_result $result): ?User
+    {
+        $user = $result->fetch_object();
+        if (!empty($user)) {
+            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profiletext);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @param false|mysqli_stmt $stmt
+     * @return UserCollection|null
+     */
+    private function findCollection(false|mysqli_stmt $stmt): ?UserCollection
+    {
+        $users = new UserCollection();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            while ($user = $result->fetch_object()) {
+                $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profiletext);
+                $users[] = $user;
+            }
+            return $users;
+        } else {
+            return null;
+        }
     }
 }

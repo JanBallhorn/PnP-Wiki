@@ -10,10 +10,10 @@ class User
     private string $email;
     private string $username;
     private string $password;
-    private int $verified;
+    private bool $verified;
     private string $token;
-    private int $firstnamePublic;
-    private int $lastnamePublic;
+    private bool $firstnamePublic;
+    private bool $lastnamePublic;
     private string $profiletext;
 
     /**
@@ -23,13 +23,13 @@ class User
      * @param string $email
      * @param string $username
      * @param string $password
-     * @param int $verified
+     * @param bool $verified
      * @param string $token
-     * @param int $firstnamePublic
-     * @param int $lastnamePublic
+     * @param bool $firstnamePublic
+     * @param bool $lastnamePublic
      * @param string $profiletext
      */
-    public function __construct(int $id, string $firstname, string $lastname, string $email, string $username, string $password, int $verified, string $token, int $firstnamePublic, int $lastnamePublic, string $profiletext)
+    public function __construct(int $id, string $firstname, string $lastname, string $email, string $username, string $password, bool $verified, string $token, bool $firstnamePublic, bool $lastnamePublic, string $profiletext)
     {
         $this->id = $id;
         $this->firstname = $firstname;
@@ -141,17 +141,17 @@ class User
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function getVerified(): int
+    public function getVerified(): bool
     {
         return $this->verified;
     }
 
     /**
-     * @param int $verified
+     * @param bool $verified
      */
-    public function setVerified(int $verified): void
+    public function setVerified(bool $verified): void
     {
         $this->verified = $verified;
     }
@@ -173,33 +173,33 @@ class User
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function getFirstnamePublic(): int
+    public function getFirstnamePublic(): bool
     {
         return $this->firstnamePublic;
     }
 
     /**
-     * @param int $firstnamePublic
+     * @param bool $firstnamePublic
      */
-    public function setFirstnamePublic(int $firstnamePublic): void
+    public function setFirstnamePublic(bool $firstnamePublic): void
     {
         $this->firstnamePublic = $firstnamePublic;
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function getLastnamePublic(): int
+    public function getLastnamePublic(): bool
     {
         return $this->lastnamePublic;
     }
 
     /**
-     * @param int $lastnamePublic
+     * @param bool $lastnamePublic
      */
-    public function setLastnamePublic(int $lastnamePublic): void
+    public function setLastnamePublic(bool $lastnamePublic): void
     {
         $this->lastnamePublic = $lastnamePublic;
     }

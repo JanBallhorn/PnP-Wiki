@@ -34,13 +34,13 @@ class RegisterController extends Controller
      */
     public function register(array $userdata): void
     {
-        $user = new User(0, $userdata['firstname'], $userdata['lastname'], $userdata['email'], $userdata['username'], $userdata['password'], 0, $this->generateToken(), 0, 0, '');
+        $user = new User(0, $userdata['firstname'], $userdata['lastname'], $userdata['email'], $userdata['username'], $userdata['password'], false, $this->generateToken(), false, false, '');
         $user->setPassword(hash('sha256', $userdata['password']));
-        $sameEmail = $this->userRepository->findBy('email', $userdata['email']);
-        $sameUsername = $this->userRepository->findBy('username', $userdata['username']);
+        $sameEmail = $this->userRepository->findOneBy('email', $userdata['email']);
+        $sameUsername = $this->userRepository->findOneBy('username', $userdata['username']);
         $usernameLength = strlen($userdata['username']);
         $passwordLength = strlen($userdata['password']);
-        if(empty($sameEmail->current()) && empty($sameUsername->current()) && $usernameLength > 3 && $passwordLength > 5) {
+        if(empty($sameEmail) && empty($sameUsername) && $usernameLength > 3 && $passwordLength > 5) {
             $this->userRepository->save($user);
             $this->userRepository->closeDB();
             $this->sendMail($user);
@@ -82,7 +82,10 @@ class RegisterController extends Controller
         }
         $this->userRepository->closeDB();
     }
-
+    public function test(): void
+    {
+        $this->userRepository->findOneBy("username", 'gamerkater');
+    }
     /**
      * @throws RandomException
      */
