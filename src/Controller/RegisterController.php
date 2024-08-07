@@ -82,10 +82,6 @@ class RegisterController extends Controller
         }
         $this->userRepository->closeDB();
     }
-    public function test(): void
-    {
-        $this->userRepository->findOneBy("username", 'gamerkater');
-    }
     /**
      * @throws RandomException
      */
