@@ -70,6 +70,7 @@ class ProjectRepository implements RepositoryInterface
         else{
             $id = $entity->getId();
             $name = $entity->getName();
+            $description = $entity->getDescription();
             $published  = $entity->getPublished()->getTimestamp();
             $createdBy = $entity->getCreatedBy()->getId();
             $lastEdit  = $entity->getLastEdit()->getTimestamp();
@@ -78,9 +79,9 @@ class ProjectRepository implements RepositoryInterface
             $private = $entity->getPrivate() === true ? 1 : 0;
         }
         if($id === 0){
-            $query = "INSERT INTO `$this->table` (name, created_by, last_edit_by, parent_project, private) VALUES(?, ?, ?, ?, ?)";
+            $query = "INSERT INTO `$this->table` (name, description, created_by, last_edit_by, parent_project, private) VALUES(?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("siiii", $name, $createdBy, $lastEdit, $parentProject, $private);
+            $stmt->bind_param("siiii", $name, $description, $createdBy, $lastEdit, $parentProject, $private);
         }
         else{
             $query = "UPDATE `$this->table` SET `name` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `parent_project` = ?, `private` = ? WHERE `id` = ?";
@@ -118,7 +119,7 @@ class ProjectRepository implements RepositoryInterface
         $project = $result->fetch_object();
         if (!empty($project)) {
             $project = $this->convertDataTypes($project);
-            return new Project($project->id, $project->name, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private);
+            return new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private);
         } else {
             return null;
         }
@@ -135,7 +136,7 @@ class ProjectRepository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($project = $result->fetch_object()) {
                 $project = $this->convertDataTypes($project);
-                $project = new Project($project->id, $project->name, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private);
+                $project = new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private);
                 $projects[] = $project;
             }
             return $projects;

@@ -9,6 +9,7 @@ class Project
 {
     private int $id;
     private string $name;
+    private string $description;
     private DateTime $published;
     private User $createdBy;
     private DateTime $lastEdit;
@@ -19,6 +20,7 @@ class Project
     /**
      * @param int $id
      * @param string $name
+     * @param string $description
      * @param DateTime $published
      * @param User $createdBy
      * @param DateTime $lastEdit
@@ -26,10 +28,11 @@ class Project
      * @param Project $parentProject
      * @param bool $private
      */
-    public function __construct(int $id, string $name, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, Project $parentProject, bool $private)
+    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, Project $parentProject, bool $private)
     {
         $this->id = $id;
         $this->name = $name;
+        $this->description = $description;
         $this->published = $published;
         $this->createdBy = $createdBy;
         $this->lastEdit = $lastEdit;
@@ -68,6 +71,22 @@ class Project
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string $description
+     */
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
     }
 
     /**
