@@ -1,0 +1,48 @@
+{% macro recursiveProject(project) %}
+    {% import _self as self %}
+    <li>
+        <div class="project-link">
+            <a href="/project/detail?name={{ project.name }}">{{ project.name }}</a>
+            <i class="fa-solid fa-chevron-up"></i>
+        </div>
+        {% if project.children|length %}
+            {% set children = project.children.__serialize %}
+            <ul class="level{{ children|first.level }}">
+                {% for child in children %}
+                    {{ self.recursiveProject(child) }}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </li>
+{% endmacro %}
+
+{% from _self import recursiveProject %}
+
+{% extends "base.twig" %}
+
+{% block title %}Projekte - {% endblock %}
+
+{% block head %}
+    {{ parent() }}
+    <script src="../../assets/js/jquery-ui/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="../../assets/js/projectList.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block main_content %}
+    <h1>Projekte</h1>
+    <p>Hier findest du alle Projekte und Subprojekte, in denen du nach Artikeln suchen kannst.</p>
+    {% if loggedIn == true %}
+        <a class="button" href="/project/create">Neues Projekt anlegen</a>
+    {% endif %}
+    <ul class="level1">
+    {% for project in main_projects %}
+        {#<li><a href="/project/detail?name={{ project.name }}">{{ project.name }}</a></li>
+        {% if project.children != null %}
+  {% set children = project.children %}
+            {% set children = children.__serialize %}
+            {%  include 'projectMenu.twig' with children %}#}
+            {{ recursiveProject(project) }}
+{#  {% endif %}#}
+    {% endfor %}
+    </ul>
+{% endblock %}

@@ -29,7 +29,6 @@ class ProjectController extends Controller
     public function index(): void
     {
         $projects = $this->projectRepository->findBy('parent_project', null, 'name');
-        $projects->rewind();
         $this->render($this->template, ['main_projects' => $projects->__serialize()]);
     }
 
@@ -66,5 +65,14 @@ class ProjectController extends Controller
         $this->projectRepository->save($project);
         $this->projectRepository->closeDB();
         header("Location: /project");
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function detail(array $project): void
+    {
+        $project = $this->projectRepository->findOneBy('name', $project['name']);
+        var_dump($project);
     }
 }

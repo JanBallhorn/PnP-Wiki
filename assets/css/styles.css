@@ -2,9 +2,9 @@
 COLOR VARIABLES
 ******************************************/
 :root{
-    --txt: #222;
-    --body-bg: #f4f4f4;
-    --main-bg: #fff;
+    --txt: #272727;
+    --body-bg: #ececec;
+    --main-bg: #f4f4f4;
     --box-bg: #ccc;
     --link: #4242ff;
     --error: #d90000
@@ -18,9 +18,9 @@ COLOR VARIABLES
     --error: #d90000;
 }
 :root.dark{
-    --txt: #fff;
+    --txt: #f1f1f1;
     --body-bg: #222;
-    --main-bg: #000;
+    --main-bg: #191919;
     --box-bg: #555;
     --link: #9d9dff;
     --error: #f66;
@@ -139,10 +139,14 @@ input[type="submit"]{
     font-size: 1em;
 }
 main form, main form fieldset{
+    width: 100%;
     margin: 1em 0;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+}
+main form fieldset{
+    flex-flow: column;
 }
 main form fieldset{
     margin: 0;
@@ -168,13 +172,17 @@ main form textarea{
 main form label:has(input[type='checkbox']){
     display: flex;
     align-items: center;
-    width: 100%;
+    width: fit-content;
+    padding-bottom: 1.2em;
     margin-bottom: 0.5em;
     position: relative;
     cursor: pointer;
 }
 main form fieldset.checkbox{
     margin-bottom: 1.2em;
+}
+main form fieldset.checkbox label{
+    padding-bottom: 0;
 }
 main form label:has(.tox-tinymce){
     display: flex;
@@ -223,6 +231,62 @@ main label > span{
 .error{
     color: var(--error);
 }
+main form span.length{
+    right: 0;
+}
+label:has(input.searchselect){
+    position: relative;
+}
+input + datalist{
+    top: calc(100% - 1.2em);
+    position: absolute;
+    display: none;
+    width: 100%;
+    border: 1px solid;
+    z-index: 10;
+    background-color: var(--main-bg);
+}
+input:focus + datalist, input + datalist:hover{
+    display: block;
+}
+input + datalist option{
+    padding: 0.25em 0.5em;
+    cursor: pointer;
+}
+input + datalist option:hover{
+    background-color: var(--box-bg);
+}
+/*select + .selectize .selectize-input, select + .selectize .selectize-input.dropdown-active.input-active, select + .selectize .selectize-input{
+    font-size: 1em;
+    background-color: var(--main-bg);
+    color: var(--txt);
+    border-radius: 0;
+    padding: 0.25em 0.5em;
+    border: 1px solid var(--txt);
+    line-height: unset;
+    position: relative;
+}
+select + .selectize .selectize-dropdown{
+    background-color: var(--main-bg);
+    border: 1px solid var(--txt);
+}
+select + .selectize .selectize-dropdown option{
+    font-size: 0.9em;
+    line-height: unset;
+}
+select + .selectize .selectize-dropdown .option.selected, select + .selectize .selectize-dropdown .option.active{
+    background-color: var(--box-bg);
+    color: var(--txt);
+}
+select + .selectize.selectize-control.single .selectize-input:not(.no-arrow)::after{
+    content: "\f078";
+    font-family: "Font Awesome 6 Free", serif;
+    font-weight: 600;
+    right: 0.5em;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}*/
 
 /******************************************
 HEADER
@@ -367,6 +431,7 @@ nav ul.level2{
     border-left: 0.25em solid var(--txt);
     min-width: 7em;
     width: fit-content;
+    z-index: 100;
 }
 nav a{
     display: block;
@@ -399,4 +464,60 @@ nav ul.level1 > li > a:hover + ul.level2, ul.level2:hover{
 }
 nav ul.level2 li:last-child a, nav ul.level1 > li.submenu > a{
     padding-right: 1.5em;
+}
+
+/******************************************
+PROJECT LIST
+******************************************/
+.content ul{
+    list-style-type: none;
+}
+.content ul.level1{
+    margin-top: 1.5em;
+    font-size: 1.5em;
+}
+.content ul > li > ul{
+    margin-left: 2rem;
+    font-size: calc(1em - 0.1rem);
+}
+.content ul li a{
+    display: block;
+    padding: 0.5em;
+    transition: 0.3s;
+}
+.content ul li a:hover{
+    background-color: var(--box-bg);
+}
+.content ul li .project-link{
+    position: relative;
+    border: 1px solid var(--txt);
+}
+.content ul li i{
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 1.5rem;
+    height: 100%;
+    width: 3rem;
+    cursor: pointer;
+    border-left: 1px solid var(--txt);
+    background-color: var(--main-bg);
+    transition: 0.3s;
+}
+.content ul li i:hover{
+    background-color: var(--box-bg);
+}
+.content ul li i:before{
+    position: absolute;
+    right: 50%;
+    top: 50%;
+    transform: translate(50%, -50%);
+    transition: 0.3s;
+}
+.content ul li:has(> .hidden) i:before{
+    transform: translate(50%, -50%) rotate(180deg);
+}
+.content ul li:has(ul) > .project-link > i{
+    display: block;
 }
