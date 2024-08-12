@@ -61,16 +61,16 @@
                         <li><a href="/">Willkommen!</a></li>
                         <li class="submenu"><a href="/project">Projekte<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
-                                {% for project in projects %}
-                                    <li><a href="/project/{{ project.name }}">{{ project.name }}</a></li>
+                                {% for baseProject in baseProjects %}
+                                    <li><a href="/project/{{ baseProject.name }}">{{ baseProject.name }}</a></li>
                                 {% endfor %}
                                 <li><a href="/project">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
                         </li>
                         <li class="submenu"><a href="/category">Kategorien<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
-                                {% for category in categories %}
-                                    <li><a href="/category/{{ caregory }}">{{ caregory }}</a></li>
+                                {% for baseCategory in baseCategories %}
+                                    <li><a href="/category/{{ baseCaregory.name }}">{{ baseCaregory.name }}</a></li>
                                 {% endfor %}
                                 <li><a href="/category">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
