@@ -10,29 +10,32 @@
 
 {% block main_content %}
     <h1>Ein neues Projekt erstellen</h1>
+    {% if projectError == true %}
+        <h4 class="error">Bei der Erstellung des Projekts ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
+    {% endif %}
     <form method="post" action="/project/save" id="createProject">
         <label>Name des Projekts*
-            <input name="projectName" maxlength="200" required>
+            <input name="projectName" maxlength="200" required value="{{ name }}">
             <span class="error exists hide">Ein Projekt mit diesem Namen existiert bereits!</span>
             <span class="length">200</span>
         </label>
         <label>Übergeordnetes Projekt
-            <input class="searchselect" name="parentProject" list="projects">
+            <input class="searchselect" name="parentProject" list="projects" value="{{ parent }}">
                 <datalist>
                     <option value="">-</option>
                     {% for project in projects %}
-                        <option value="{{ project }}">{{ project }}</option>
+                        <option value="{{ project.name }}">{{ project.name }}</option>
                     {% endfor %}
                 </datalist>
             <span class="error notfound hide">Dieses Projekt existiert nicht!</span>
         </label>
         <label>Kurze Beschreibung
-            <textarea name="description" maxlength="1000"></textarea>
+            <textarea name="description" maxlength="1000">{{ desc }}</textarea>
             <span class="length">1000</span>
         </label>
         <fieldset>
             <label>
-                <input type="checkbox" name="private" value="private">
+                <input type="checkbox" name="private" value="private" {% if private %}checked{% endif %}>
                 Soll das Projekt privat sein? (Private Projekte und ihre Inhalte können nur von dir gesehen und bearbeitet werden.)
             </label>
         </fieldset>

@@ -153,13 +153,21 @@ main form fieldset{
     width: 100%;
     border: none;
 }
-main form label:has(input:not([type='checkbox'], [type='radio']), textarea:not(.tinymce)){
+main form label:has(input:not([type='checkbox'], [type='radio'], [type='submit']), textarea:not(.tinymce)){
     display: flex;
     flex-flow: column;
     width: calc(50% - 1em);
     margin-bottom: 0.5em;
     padding-bottom: 1.2em;
     position: relative;
+}
+main .search label:has(input[type="submit"]){
+    position: relative;
+}
+main form label:has(input[type="search"]){
+    width: 100%;
+    padding: 0;
+    margin: 0;
 }
 #editProfile label:has(textarea){
     width: 100%;
@@ -256,37 +264,6 @@ input + datalist option{
 input + datalist option:hover{
     background-color: var(--box-bg);
 }
-/*select + .selectize .selectize-input, select + .selectize .selectize-input.dropdown-active.input-active, select + .selectize .selectize-input{
-    font-size: 1em;
-    background-color: var(--main-bg);
-    color: var(--txt);
-    border-radius: 0;
-    padding: 0.25em 0.5em;
-    border: 1px solid var(--txt);
-    line-height: unset;
-    position: relative;
-}
-select + .selectize .selectize-dropdown{
-    background-color: var(--main-bg);
-    border: 1px solid var(--txt);
-}
-select + .selectize .selectize-dropdown option{
-    font-size: 0.9em;
-    line-height: unset;
-}
-select + .selectize .selectize-dropdown .option.selected, select + .selectize .selectize-dropdown .option.active{
-    background-color: var(--box-bg);
-    color: var(--txt);
-}
-select + .selectize.selectize-control.single .selectize-input:not(.no-arrow)::after{
-    content: "\f078";
-    font-family: "Font Awesome 6 Free", serif;
-    font-weight: 600;
-    right: 0.5em;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-}*/
 
 /******************************************
 HEADER
@@ -327,14 +304,14 @@ header form{
     width: calc(100% - 16em);
     position: relative;
 }
-header input[type='search']{
+input[type='search']{
     height: 2em;
     width: 100%;
 }
-header #search input[type="submit"]{
+.search input[type="submit"]{
     display: none;
 }
-header #search input[type="submit"] + i{
+.search input[type="submit"] + i{
     position: absolute;
     right: 0.5em;
     top: 50%;
@@ -408,6 +385,11 @@ main > aside#left{
 }
 main > .content{
     width: calc(100% - 25em);
+}
+main #right li{
+    display: flex;
+    flex-flow: column;
+    margin-bottom: 1em;
 }
 
 /******************************************

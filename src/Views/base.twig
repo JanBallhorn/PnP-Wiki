@@ -23,7 +23,7 @@
                         <h3>Das schwarze Auge Wiki</h3>
                     </a>
                 </div>
-                <form id="search" method="post" action="">
+                <form id="search" class="search" method="post" action="">
                     <label>
                         <input type="search" name="search" placeholder="{% block search_placeholder %}Wiki durchsuchen{% endblock %}">
                     </label>
@@ -62,7 +62,7 @@
                         <li class="submenu"><a href="/project">Projekte<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for project in projects %}
-                                    <li><a href="/project/{{ project }}">{{ project }}</a></li>
+                                    <li><a href="/project/{{ project.name }}">{{ project.name }}</a></li>
                                 {% endfor %}
                                 <li><a href="/project">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
@@ -96,7 +96,7 @@
         </div>
         <aside id="right">
             {% block aside_right %}
-                <!--<h5>Veröffentlichung</h5>
+                  {#<h5>Veröffentlichung</h5>
                 <ul>
                     <li>Veröffentlicht: {{ published }}</li>
                     <li>Ersteller: {{ creator }}</li>
@@ -114,7 +114,7 @@
                     {% for category in article_categories %}
                         <li><a href="/kategorie/{{ category }}">{{ category }}</a></li>
                     {% endfor %}
-                </ul>-->
+                </ul>#}
             {% endblock %}
         </aside>
     </main>

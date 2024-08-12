@@ -1,0 +1,44 @@
+{% extends "base.twig" %}
+
+{% block title %}{{ project.name }} bearbeiten - {% endblock %}
+
+{% block head %}
+    {{ parent() }}
+    <script src="../../assets/js/selectSearch.js" type="text/javascript"></script>
+    <script src="../../assets/js/projectForm.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block main_content %}
+    <h1>{{ project.name }} bearbeiten</h1>
+    {% if projectError == true %}
+        <h4 class="error">Bei der Bearbeitung des Projekts ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
+    {% endif %}
+    <form method="post" action="/project/update" id="editProject">
+        <input type="hidden" name="id" value="{{ project.id }}"></input>
+        <label>Name des Projekts*
+            <input name="projectName" maxlength="200" required value="{{ project.name }}">
+            <span class="length">200</span>
+        </label>
+        <label>Übergeordnetes Projekt
+            <input class="searchselect" name="parentProject" list="projects" value="{{ project.parentProject.name }}">
+            <datalist>
+                <option value="">-</option>
+                {% for childProject in projects %}
+                    <option value="{{ childProject.name }}">{{ childProject.name }}</option>
+                {% endfor %}
+            </datalist>
+            <span class="error notfound hide">Dieses Projekt existiert nicht!</span>
+        </label>
+        <label>Kurze Beschreibung
+            <textarea name="description" maxlength="1000">{{ project.description }}</textarea>
+            <span class="length">1000</span>
+        </label>
+        <fieldset>
+            <label>
+                <input type="checkbox" name="private" value="private" {% if project.private %}checked{% endif %}>
+                Soll das Projekt privat sein? (Private Projekte und ihre Inhalte können nur von dir gesehen und bearbeitet werden.)
+            </label>
+        </fieldset>
+    </form>
+    <input class="button" type="submit" value="Änderungen speichern" name="submit" form="editProject">
+{% endblock %}

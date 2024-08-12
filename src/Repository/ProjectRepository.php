@@ -107,9 +107,9 @@ class ProjectRepository implements RepositoryInterface
             $id = $entity->getId();
             $name = $entity->getName();
             $description = $entity->getDescription();
-            $published  = $entity->getPublished()->getTimestamp();
+            $published  = date("Y-m-d H:i:s", $entity->getPublished()->getTimestamp());
             $createdBy = $entity->getCreatedBy()->getId();
-            $lastEdit  = $entity->getLastEdit()->getTimestamp();
+            $lastEdit  = date("Y-m-d H:i:s");
             $lastEditBy = $entity->getLastEditBy()->getId();
             $parentProject = $entity->getParentProject()?->getId();
             $private = $entity->getPrivate() === true ? 1 : 0;
@@ -122,7 +122,7 @@ class ProjectRepository implements RepositoryInterface
         else{
             $query = "UPDATE `$this->table` SET `name` = ?, `description` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `parent_project` = ?, `private` = ? WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("ssiiiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $id);
+            $stmt->bind_param("sssisiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $id);
         }
         $stmt->execute();
     }

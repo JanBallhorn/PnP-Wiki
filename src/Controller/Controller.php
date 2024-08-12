@@ -14,6 +14,7 @@ use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
 
 abstract class Controller
@@ -27,7 +28,8 @@ abstract class Controller
     function render(string $view, array $params = []): void
     {
         $loader = new FilesystemLoader(__DIR__ . '/../Views');
-        $twig = new Environment($loader);
+        $twig = new Environment($loader, ['debug' => true]);
+        $twig->addExtension(new DebugExtension());
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
         if($twigParams["loggedIn"] === true) {
