@@ -6,6 +6,7 @@ use App\Collection\ProjectCollection;
 use App\Database;
 use App\Model\Project;
 use DateTime;
+use Exception;
 use http\Exception\InvalidArgumentException;
 use mysqli;
 use mysqli_result;
@@ -19,10 +20,14 @@ class ProjectRepository implements RepositoryInterface
     public function __construct(){
         $this->db = Database::dbConnect();
     }
-    public function findAll(string $order = ''): ProjectCollection
+
+    /**
+     * @throws Exception
+     */
+    public function findAll(string $order = ''): ?ProjectCollection
     {
         if(!empty($order)){
-            $query = "SELECT * FROM `$this->table` ORDER BY `$order` DESC";
+            $query = "SELECT * FROM `$this->table` ORDER BY `$order`";
         }
         else{
             $query = "SELECT * FROM `$this->table`";
@@ -32,6 +37,9 @@ class ProjectRepository implements RepositoryInterface
         return $this->findCollection($stmt);
     }
 
+    /**
+     * @throws Exception
+     */
     public function findById(int $id): ?Project
     {
         $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `id` = ?");
@@ -41,23 +49,51 @@ class ProjectRepository implements RepositoryInterface
         return $this->findOne($result);
     }
 
+    /**
+     * @throws Exception
+     */
     public function findBy(string $column, mixed $value, string $order = ''): ?ProjectCollection
     {
-        if(!empty($order)){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order` DESC";
+        if(!empty($order) && $value !== null){
+            $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order`";
+        }
+        elseif(!empty($order) && $value === null){
+            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null ORDER BY `$order`";
+        }
+        elseif(empty($order) && $value === null){
+            $query = "SELECT * FROM `$this->table` WHERE `$column` IS NULL";
         }
         else{
             $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
         }
         $stmt = $this->db->prepare($query);
-        $stmt->execute([$value]);
+        if($value === null){
+            $stmt->execute();
+        }
+        else{
+            $stmt->execute([$value]);
+        }
         return $this->findCollection($stmt);
     }
 
+    /**
+     * @throws Exception
+     */
     public function findOneBy(string $column, mixed $value): ?Project
     {
-        $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `$column` = ?");
-        $stmt->execute([$value]);
+        if($value === null){
+            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null";
+        }
+        else{
+            $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
+        }
+        $stmt = $this->db->prepare($query);
+        if($value === null){
+            $stmt->execute();
+        }
+        else{
+            $stmt->execute([$value]);
+        }
         $result = $stmt->get_result();
         return $this->findOne($result);
     }
@@ -75,18 +111,18 @@ class ProjectRepository implements RepositoryInterface
             $createdBy = $entity->getCreatedBy()->getId();
             $lastEdit  = $entity->getLastEdit()->getTimestamp();
             $lastEditBy = $entity->getLastEditBy()->getId();
-            $parentProject = $entity->getParentProject()->getId();
+            $parentProject = $entity->getParentProject()?->getId();
             $private = $entity->getPrivate() === true ? 1 : 0;
         }
         if($id === 0){
             $query = "INSERT INTO `$this->table` (name, description, created_by, last_edit_by, parent_project, private) VALUES(?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("siiii", $name, $description, $createdBy, $lastEdit, $parentProject, $private);
+            $stmt->bind_param("ssiiii", $name, $description, $createdBy, $lastEditBy, $parentProject, $private);
         }
         else{
-            $query = "UPDATE `$this->table` SET `name` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `parent_project` = ?, `private` = ? WHERE `id` = ?";
+            $query = "UPDATE `$this->table` SET `name` = ?, `description` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `parent_project` = ?, `private` = ? WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("siiiiii", $name, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $id);
+            $stmt->bind_param("ssiiiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $id);
         }
         $stmt->execute();
     }
@@ -113,6 +149,7 @@ class ProjectRepository implements RepositoryInterface
     /**
      * @param false|mysqli_result $result
      * @return Project|null
+     * @throws Exception
      */
     private function findOne(false|mysqli_result $result): ?Project
     {
@@ -128,6 +165,7 @@ class ProjectRepository implements RepositoryInterface
     /**
      * @param false|mysqli_stmt $stmt
      * @return ProjectCollection|null
+     * @throws Exception
      */
     private function findCollection(false|mysqli_stmt $stmt): ?ProjectCollection
     {
@@ -137,19 +175,29 @@ class ProjectRepository implements RepositoryInterface
             while ($project = $result->fetch_object()) {
                 $project = $this->convertDataTypes($project);
                 $project = new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private);
-                $projects[] = $project;
+                $projects->offsetSet($projects->key(), $project);
+                $projects->next();
             }
             return $projects;
         } else {
             return null;
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function convertDataTypes(object $project): object{
-        $project->published = (new DateTime())->setTimestamp($project->published);
+        $project->published = (new DateTime($project->published));
         $project->created_by = (new UserRepository())->findById($project->created_by);
-        $project->last_edit = (new DateTime())->setTimestamp($project->last_edit);
+        $project->last_edit = (new DateTime($project->last_edit));
         $project->last_edit_by = (new UserRepository())->findById($project->last_edit_by);
-        $project->parent_project = $this->findById($project->parent_project);
+        if($project->parent_project !== null){
+            $project->parent_project = $this->findById($project->parent_project);
+        }
+        else{
+            $project->parent_project = null;
+        }
         $project->private = $project->private === 1;
         return $project;
     }

@@ -13,10 +13,10 @@ function dbConnect(){
     return $conn;
 }
 
-function checkDuplicate(string $field)
+function checkDuplicate(string $field, string $table)
 {
     $conn = dbConnect();
-    $stmt = $conn->prepare("SELECT COUNT(`$field`) FROM `users` WHERE `$field` = ?");
+    $stmt = $conn->prepare("SELECT COUNT(`$field`) FROM `$table` WHERE `$field` = ?");
     $stmt->bind_param("s", $_POST[$field]);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_row();
@@ -27,7 +27,7 @@ function checkDuplicate(string $field)
 $key = array_keys($_POST)[0];
 $data = $_POST;
 if($key === 'email'){
-    $result = checkDuplicate($key);
+    $result = checkDuplicate($key, 'users');
     if($result[0] > 0){
         echo json_encode(['exists' => true]);
     }
@@ -36,7 +36,7 @@ if($key === 'email'){
     }
 }
 if($key === 'username'){
-    $result = checkDuplicate($key);
+    $result = checkDuplicate($key, 'users');
     $usernameLength = strlen($data[$key]);
     $jsonArray = [];
     if($result[0] > 0){
@@ -60,6 +60,15 @@ if($key === 'password'){
     }
     else{
         echo json_encode(['length' => false]);
+    }
+}
+if($key === 'name'){
+    $result = checkDuplicate('name', 'projects');
+    if($result[0] > 0){
+        echo json_encode(['exists' => true]);
+    }
+    else{
+        echo json_encode(['exists' => false]);
     }
 }
 

@@ -2,8 +2,10 @@
 
 namespace App\Model;
 
-use App\Repository\UserRepository;
+use App\Collection\ProjectCollection;
+use App\Repository\ProjectRepository;
 use DateTime;
+use Exception;
 
 class Project
 {
@@ -14,7 +16,7 @@ class Project
     private User $createdBy;
     private DateTime $lastEdit;
     private User $lastEditBy;
-    private Project $parentProject;
+    private null|Project $parentProject;
     private bool $private;
 
     /**
@@ -25,10 +27,10 @@ class Project
      * @param User $createdBy
      * @param DateTime $lastEdit
      * @param User $lastEditBy
-     * @param Project $parentProject
+     * @param null|Project $parentProject
      * @param bool $private
      */
-    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, Project $parentProject, bool $private)
+    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, null|Project $parentProject, bool $private)
     {
         $this->id = $id;
         $this->name = $name;
@@ -154,17 +156,17 @@ class Project
     }
 
     /**
-     * @return Project
+     * @return null|Project
      */
-    public function getParentProject(): Project
+    public function getParentProject(): null|Project
     {
         return $this->parentProject;
     }
 
     /**
-     * @param Project $parentProject
+     * @param null|Project $parentProject
      */
-    public function setParentProject(Project $parentProject): void
+    public function setParentProject(null|Project $parentProject): void
     {
         $this->parentProject = $parentProject;
     }
@@ -183,5 +185,36 @@ class Project
     public function setPrivate(bool $private): void
     {
         $this->private = $private;
+    }
+
+    /**
+     * @return ProjectCollection|null
+     * @throws Exception
+     */
+    public function getChildren(): ?ProjectCollection
+    {
+        $rep = new ProjectRepository();
+        $children = $rep->findBy('parent_project', $this->getId(), 'name');
+        $rep->closeDB();
+        if($children !== null){
+            return $children;
+        }
+        else{
+            return null;
+        }
+    }
+
+    /**
+     * @return int
+     */
+    public function getLevel(): int
+    {
+        $project = $this;
+        $i = 1;
+        while($project->getParentProject() !== null){
+            $project = $project->getParentProject();
+            $i++;
+        }
+        return $i;
     }
 }
