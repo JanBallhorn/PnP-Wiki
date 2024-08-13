@@ -1,10 +1,12 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace App\Repository;
 
 use App\Collection\UserCollection;
 use App\Database;
 use App\Model\User;
+use DateTime;
+use Exception;
 use http\Exception\InvalidArgumentException;
 use mysqli;
 use mysqli_result;
@@ -89,6 +91,7 @@ class UserRepository implements RepositoryInterface
         }
         else{
             $id = $entity->getId();
+            $registrationDate = date("Y-m-d H:i:s", $entity->getRegistrationDate()->getTimestamp());
             $firstname = $entity->getFirstname();
             $lastname = $entity->getLastname();
             $email = $entity->getEmail();
@@ -98,16 +101,16 @@ class UserRepository implements RepositoryInterface
             $token = $entity->getToken();
             $firstnamePublic = $entity->getFirstnamePublic() === true ? 1 : 0;
             $lastnamePublic = $entity->getLastnamePublic() === true ? 1 : 0;
-            $profiletext = $entity->getProfiletext();
+            $profileText = $entity->getProfileText();
             if($id === 0){
                 $query = "INSERT INTO `$this->table` (firstname, lastname, email, username, password, verified, token) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $this->db->prepare($query);
                 $stmt->bind_param("sssssis", $firstname, $lastname, $email, $username, $password, $verified, $token);
             }
             else{
-                $query = "UPDATE `$this->table` SET `firstname` = ?, `lastname` = ?, `email` = ?, `username` = ?, `password` = ?, `verified` = ?, `token` = ?, `firstname_public` = ?, `lastname_public` = ?, `profiletext` = ? WHERE `id` = ?";
+                $query = "UPDATE `$this->table` SET `firstname` = ?, `registration_date` = ?, `lastname` = ?, `email` = ?, `username` = ?, `password` = ?, `verified` = ?, `token` = ?, `firstname_public` = ?, `lastname_public` = ?, `profiletext` = ? WHERE `id` = ?";
                 $stmt = $this->db->prepare($query);
-                $stmt->bind_param("sssssisiisi", $firstname, $lastname, $email, $username, $password, $verified, $token, $firstnamePublic, $lastnamePublic, $profiletext, $id);
+                $stmt->bind_param("ssssssisiisi", $firstname, $registrationDate, $lastname, $email, $username, $password, $verified, $token, $firstnamePublic, $lastnamePublic, $profileText, $id);
             }
             $stmt->execute();
         }
@@ -134,12 +137,14 @@ class UserRepository implements RepositoryInterface
     /**
      * @param false|mysqli_result $result
      * @return User|null
+     * @throws Exception
      */
     private function findOne(false|mysqli_result $result): ?User
     {
         $user = $result->fetch_object();
         if (!empty($user)) {
-            return new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profiletext);
+            $user->registration_date = (new DateTime($user->registration_date));
+            return new User($user->id, $user->registration_date, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profileText);
         } else {
             return null;
         }
@@ -148,6 +153,7 @@ class UserRepository implements RepositoryInterface
     /**
      * @param false|mysqli_stmt $stmt
      * @return UserCollection|null
+     * @throws Exception
      */
     private function findCollection(false|mysqli_stmt $stmt): ?UserCollection
     {
@@ -155,7 +161,8 @@ class UserRepository implements RepositoryInterface
         $result = $stmt->get_result();
         if ($result->num_rows > 0) {
             while ($user = $result->fetch_object()) {
-                $user = new User($user->id, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profiletext);
+                $user->registration_date = (new DateTime($user->registration_date));
+                $user = new User($user->id, $user->registration_date, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profileText);
                 $users->offsetSet($users->key(), $user);
                 $users->next();
             }

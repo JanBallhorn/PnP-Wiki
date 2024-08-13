@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Model\User;
 use App\Repository\UserRepository;
+use DateTime;
 use Random\RandomException;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -32,14 +33,14 @@ class RegisterController extends Controller
      * @throws RuntimeError
      * @throws LoaderError|RandomException
      */
-    public function register(array $userdata): void
+    public function register(array $userData): void
     {
-        $user = new User(0, $userdata['firstname'], $userdata['lastname'], $userdata['email'], $userdata['username'], $userdata['password'], false, $this->generateToken(), false, false, '');
-        $user->setPassword(hash('sha256', $userdata['password']));
-        $sameEmail = $this->userRepository->findOneBy('email', $userdata['email']);
-        $sameUsername = $this->userRepository->findOneBy('username', $userdata['username']);
-        $usernameLength = strlen($userdata['username']);
-        $passwordLength = strlen($userdata['password']);
+        $user = new User(0, new DateTime(), $userData['firstname'], $userData['lastname'], $userData['email'], $userData['username'], $userData['password'], false, $this->generateToken(), false, false, '');
+        $user->setPassword(hash('sha256', $userData['password']));
+        $sameEmail = $this->userRepository->findOneBy('email', $userData['email']);
+        $sameUsername = $this->userRepository->findOneBy('username', $userData['username']);
+        $usernameLength = strlen($userData['username']);
+        $passwordLength = strlen($userData['password']);
         if(empty($sameEmail) && empty($sameUsername) && $usernameLength > 3 && $passwordLength > 5) {
             $this->userRepository->save($user);
             $this->userRepository->closeDB();
@@ -47,10 +48,10 @@ class RegisterController extends Controller
             header('Location: ' . $this->url . '/register/thanks');
         }
         elseif($passwordLength <= 5){
-            $this->render($this->template, ['register_error' => true, 'password_error' => true, 'firstname' => $userdata['firstname'], 'lastname' => $userdata['lastname'], 'email' => $userdata['email'], 'username' => $userdata['username']]);
+            $this->render($this->template, ['register_error' => true, 'password_error' => true, 'firstname' => $userData['firstname'], 'lastname' => $userData['lastname'], 'email' => $userData['email'], 'username' => $userData['username']]);
         }
         else{
-            $this->render($this->template, ['register_error' => true, 'password_error' => false, 'firstname' => $userdata['firstname'], 'lastname' => $userdata['lastname'], 'email' => $userdata['email'], 'username' => $userdata['username']]);
+            $this->render($this->template, ['register_error' => true, 'password_error' => false, 'firstname' => $userData['firstname'], 'lastname' => $userData['lastname'], 'email' => $userData['email'], 'username' => $userData['username']]);
         }
     }
 

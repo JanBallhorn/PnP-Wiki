@@ -31,12 +31,12 @@ class LoginController extends Controller
      * @throws RuntimeError
      * @throws LoaderError
      */
-    public function login(array $logindata): void
+    public function login(array $loginData): void
     {
-        $email = $this->userRepository->findOneBy('email', $logindata['user']);
-        $username = $this->userRepository->findOneBy('username', $logindata['user']);
+        $email = $this->userRepository->findOneBy('email', $loginData['user']);
+        $username = $this->userRepository->findOneBy('username', $loginData['user']);
         $this->userRepository->closeDB();
-        $password = hash('sha256', $logindata['password']);
+        $password = hash('sha256', $loginData['password']);
         if(!empty($email)){
             $user = $email;
         }
@@ -44,10 +44,10 @@ class LoginController extends Controller
             $user = $username;
         }
         else{
-            $this->render($this->template, ['login_error' => true, 'user' => $logindata['user']]);
+            $this->render($this->template, ['login_error' => true, 'user' => $loginData['user']]);
         }
         if(isset($user) && $user->getPassword() === $password){
-            if(isset($logindata['remember'])){
+            if(isset($loginData['remember'])){
                 $remember = true;
             }
             else{
@@ -60,7 +60,7 @@ class LoginController extends Controller
             header('Location: ' . $this->url . '/profile?' . http_build_query(['user'=>$username]));
         }
         else{
-            $this->render($this->template, ['login_error' => true, 'user' => $logindata['user']]);
+            $this->render($this->template, ['login_error' => true, 'user' => $loginData['user']]);
         }
     }
 }

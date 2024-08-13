@@ -2,9 +2,12 @@
 
 namespace App\Model;
 
+use DateTime;
+
 class User
 {
     private int $id;
+    private DateTime $registrationDate;
     private string $firstname;
     private string $lastname;
     private string $email;
@@ -14,10 +17,11 @@ class User
     private string $token;
     private bool $firstnamePublic;
     private bool $lastnamePublic;
-    private string $profiletext;
+    private string $profileText;
 
     /**
      * @param int $id
+     * @param DateTime $registrationDate
      * @param string $firstname
      * @param string $lastname
      * @param string $email
@@ -27,11 +31,12 @@ class User
      * @param string $token
      * @param bool $firstnamePublic
      * @param bool $lastnamePublic
-     * @param string $profiletext
+     * @param string $profileText
      */
-    public function __construct(int $id, string $firstname, string $lastname, string $email, string $username, string $password, bool $verified, string $token, bool $firstnamePublic, bool $lastnamePublic, string $profiletext)
+    public function __construct(int $id, DateTime $registrationDate, string $firstname, string $lastname, string $email, string $username, string $password, bool $verified, string $token, bool $firstnamePublic, bool $lastnamePublic, string $profileText)
     {
         $this->id = $id;
+        $this->registrationDate = $registrationDate;
         $this->firstname = $firstname;
         $this->lastname = $lastname;
         $this->email = $email;
@@ -41,7 +46,7 @@ class User
         $this->token = $token;
         $this->firstnamePublic = $firstnamePublic;
         $this->lastnamePublic = $lastnamePublic;
-        $this->profiletext = $profiletext;
+        $this->profileText = $profileText;
     }
 
     /**
@@ -58,6 +63,22 @@ class User
     public function setId(int $id): void
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return DateTime
+     */
+    public function getRegistrationDate(): DateTime
+    {
+        return $this->registrationDate;
+    }
+
+    /**
+     * @param DateTime $registrationDate
+     */
+    public function setRegistrationDate(DateTime $registrationDate): void
+    {
+        $this->registrationDate = $registrationDate;
     }
 
     /**
@@ -207,17 +228,17 @@ class User
     /**
      * @return string
      */
-    public function getProfiletext(): string
+    public function getProfileText(): string
     {
-        return $this->profiletext;
+        return $this->profileText;
     }
 
     /**
-     * @param string $profiletext
+     * @param string $profileText
      */
-    public function setProfiletext(string $profiletext): void
+    public function setProfileText(string $profileText): void
     {
-        $this->profiletext = $profiletext;
+        $this->profileText = $profileText;
     }
 
 }

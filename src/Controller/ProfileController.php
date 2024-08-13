@@ -25,7 +25,7 @@ class ProfileController extends Controller
         $username = $username['user'];
         $user = $this->userRepository->findOneBy('username', $username);
         $this->userRepository->closeDB();
-        $profiletextExists = !empty($user->getProfiletext());
+        $profileTextExists = !empty($user->getProfileText());
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
             'username'=>$user->getUsername(),
@@ -33,8 +33,8 @@ class ProfileController extends Controller
             'firstname'=>$user->getFirstname(),
             'lastnamePublic'=>$user->getLastnamePublic(),
             'lastname'=>$user->getLastname(),
-            'profiletextExists'=>$profiletextExists,
-            'profiletext'=>$user->getProfiletext(),
+            'profileTextExists'=>$profileTextExists,
+            'profileText'=>$user->getProfileText(),
             'user_query'=>http_build_query(['user'=>$user->getUsername()])
         ];
         $this->render($this->template, $templateData);
@@ -51,28 +51,28 @@ class ProfileController extends Controller
         $this->userRepository->closeDB();
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
-            'editmode'=>true,
+            'editMode'=>true,
             'username'=>$user->getUsername(),
             'firstnamePublic'=>$user->getFirstnamePublic(),
             'lastnamePublic'=>$user->getFirstnamePublic()
         ];
         $this->render($this->template, $templateData);
     }
-    public function save(array $profiledata): void{
-        $user = $this->userRepository->findOneBy('username', $profiledata['username']);
-        if(isset($profiledata['firstnamePublic'])){
+    public function save(array $profileData): void{
+        $user = $this->userRepository->findOneBy('username', $profileData['username']);
+        if(isset($profileData['firstnamePublic'])){
             $user->setFirstnamePublic(1);
         }
         else{
             $user->setFirstnamePublic(0);
         }
-        if(isset($profiledata['lastnamePublic'])){
+        if(isset($profileData['lastnamePublic'])){
             $user->setLastnamePublic(1);
         }
         else{
             $user->setLastnamePublic(0);
         }
-        $user->setProfiletext($profiledata['profiletext']);
+        $user->setProfileText($profileData['profiletext']);
         $this->userRepository->save($user);
         $this->userRepository->closeDB();
         header("Location: /profile?" . http_build_query(['user'=>$user->getUsername()]));
