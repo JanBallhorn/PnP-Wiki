@@ -2,26 +2,28 @@
 
 namespace App\Model;
 
+use DateTime;
+
 class Category
 {
     private int $id;
     private string $name;
-    private int $published;
-    private int $createdBy;
-    private int $lastEdit;
-    private int $lastEditBy;
+    private DateTime $published;
+    private User $createdBy;
+    private DateTime $lastEdit;
+    private User $lastEditBy;
     private string $icon;
 
     /**
      * @param int $id
      * @param string $name
-     * @param int $published
-     * @param int $createdBy
-     * @param int $lastEdit
-     * @param int $lastEditBy
+     * @param DateTime $published
+     * @param User $createdBy
+     * @param DateTime $lastEdit
+     * @param User $lastEditBy
      * @param string $icon
      */
-    public function __construct(int $id, string $name, int $published, int $createdBy, int $lastEdit, int $lastEditBy, string $icon)
+    public function __construct(int $id, string $name, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $icon)
     {
         $this->id = $id;
         $this->name = $name;
@@ -65,65 +67,65 @@ class Category
     }
 
     /**
-     * @return int
+     * @return DateTime
      */
-    public function getPublished(): int
+    public function getPublished(): DateTime
     {
         return $this->published;
     }
 
     /**
-     * @param int $published
+     * @param DateTime $published
      */
-    public function setPublished(int $published): void
+    public function setPublished(DateTime $published): void
     {
         $this->published = $published;
     }
 
     /**
-     * @return int
+     * @return User
      */
-    public function getCreatedBy(): int
+    public function getCreatedBy(): User
     {
         return $this->createdBy;
     }
 
     /**
-     * @param int $createdBy
+     * @param User $createdBy
      */
-    public function setCreatedBy(int $createdBy): void
+    public function setCreatedBy(User $createdBy): void
     {
         $this->createdBy = $createdBy;
     }
 
     /**
-     * @return int
+     * @return DateTime
      */
-    public function getLastEdit(): int
+    public function getLastEdit(): DateTime
     {
         return $this->lastEdit;
     }
 
     /**
-     * @param int $lastEdit
+     * @param DateTime $lastEdit
      */
-    public function setLastEdit(int $lastEdit): void
+    public function setLastEdit(DateTime $lastEdit): void
     {
         $this->lastEdit = $lastEdit;
     }
 
     /**
-     * @return int
+     * @return User
      */
-    public function getLastEditBy(): int
+    public function getLastEditBy(): User
     {
         return $this->lastEditBy;
     }
 
     /**
-     * @param int $lastEditBy
+     * @param User $lastEditBy
      */
-    public function setLastEditBy(int $lastEditBy): void
+    public function setLastEditBy(User $lastEditBy): void
     {
         $this->lastEditBy = $lastEditBy;
     }
