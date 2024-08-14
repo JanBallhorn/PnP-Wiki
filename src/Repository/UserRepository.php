@@ -144,7 +144,7 @@ class UserRepository implements RepositoryInterface
         $user = $result->fetch_object();
         if (!empty($user)) {
             $user->registration_date = (new DateTime($user->registration_date));
-            return new User($user->id, $user->registration_date, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profileText);
+            return new User($user->id, $user->registration_date, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profiletext);
         } else {
             return null;
         }
@@ -162,7 +162,7 @@ class UserRepository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($user = $result->fetch_object()) {
                 $user->registration_date = (new DateTime($user->registration_date));
-                $user = new User($user->id, $user->registration_date, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profileText);
+                $user = new User($user->id, $user->registration_date, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profiletext);
                 $users->offsetSet($users->key(), $user);
                 $users->next();
             }
