@@ -3,16 +3,22 @@
 namespace App;
 use App\Controller\Error404Controller;
 use App\Controller\HomeController;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionFunction;
 
 class Router{
 
-    private $uri;
+    private string $uri;
 
     public function __construct($uri)
     {
         $this->uri = $uri;
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function execRoute(): void
     {
         if(stripos($this->uri, '?')){
@@ -38,7 +44,12 @@ class Router{
                         $controller->$method($_GET);
                     }
                     else{
-                        $controller->$method();
+                        if(!$this->needParams($controller, $method)){
+                            $controller->$method();
+                        }
+                        else{
+                            new Error404Controller();
+                        }
                     }
                 }
                 else{
@@ -49,7 +60,12 @@ class Router{
                         $controller->index($_GET);
                     }
                     else{
-                        $controller->index();
+                        if(!$this->needParams($controller, 'index')){
+                            $controller->index();
+                        }
+                        else{
+                            new Error404Controller();
+                        }
                     }
                 }
 
@@ -60,4 +76,12 @@ class Router{
         }
     }
 
+    /**
+     * @throws ReflectionException
+     */
+    private function needParams(object $controller, string $method): bool{
+        $controller = new ReflectionClass($controller);
+        $method = $controller->getMethod($method);
+        return $method->getNumberOfParameters() > 0;
+    }
 }
