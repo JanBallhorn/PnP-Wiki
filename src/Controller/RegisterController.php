@@ -48,10 +48,10 @@ class RegisterController extends Controller
             header('Location: ' . $this->url . '/register/thanks');
         }
         elseif($passwordLength <= 5){
-            $this->render($this->template, ['register_error' => true, 'password_error' => true, 'firstname' => $userData['firstname'], 'lastname' => $userData['lastname'], 'email' => $userData['email'], 'username' => $userData['username']]);
+            $this->render($this->template, ['registerError' => true, 'passwordError' => true, 'firstname' => $userData['firstname'], 'lastname' => $userData['lastname'], 'email' => $userData['email'], 'username' => $userData['username']]);
         }
         else{
-            $this->render($this->template, ['register_error' => true, 'password_error' => false, 'firstname' => $userData['firstname'], 'lastname' => $userData['lastname'], 'email' => $userData['email'], 'username' => $userData['username']]);
+            $this->render($this->template, ['registerError' => true, 'passwordError' => false, 'firstname' => $userData['firstname'], 'lastname' => $userData['lastname'], 'email' => $userData['email'], 'username' => $userData['username']]);
         }
     }
 

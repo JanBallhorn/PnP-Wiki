@@ -44,7 +44,7 @@ class LoginController extends Controller
             $user = $username;
         }
         else{
-            $this->render($this->template, ['login_error' => true, 'user' => $loginData['user']]);
+            $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);
         }
         if(isset($user) && $user->getPassword() === $password){
             if(isset($loginData['remember'])){
@@ -60,7 +60,7 @@ class LoginController extends Controller
             header('Location: ' . $this->url . '/profile?' . http_build_query(['user'=>$username]));
         }
         else{
-            $this->render($this->template, ['login_error' => true, 'user' => $loginData['user']]);
+            $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);
         }
     }
 }

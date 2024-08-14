@@ -7,7 +7,7 @@
     <script src="../../assets/js/deleteAlert.js" type="text/javascript"></script>
 {% endblock %}
 
-{% block main_content %}
+{% block mainContent %}
     <h1>{{ project.name }}</h1>
     <p>{{ project.description }}</p>
     <form id="searchInProject" class="search" method="post" action="">
@@ -25,13 +25,13 @@
     {% endif %}
 {% endblock %}
 
-{% block aside_right %}
+{% block asideRight %}
     <ul>
         <li><b>Veröffentlicht:</b> {{ project.published|date("d.m.Y - H:i:s") }} Uhr</li>
         <li><b>Ersteller:</b> <a href="/profile?user={{ project.createdBy.username }}">{{ project.createdBy.username }}</a></li>
         {% if project.published|date("d.m.Y - H:i:s") != project.lastEdit|date("d.m.Y - H:i:s") %}
-        <li><b>Letzte Änderung:</b> {{ project.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
-        <li><b>Letzte Änderung von:</b> <a href="/profile?user={{ project.lastEditBy.username }}">{{ project.lastEditBy.username }}</a></li>
+            <li><b>Letzte Änderung:</b> {{ project.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
+            <li><b>Letzte Änderung von:</b> <a href="/profile?user={{ project.lastEditBy.username }}">{{ project.lastEditBy.username }}</a></li>
         {% endif %}
         {% if project.parentProject.name != null %}
             <li><b>Übergeordnetes Projekt:</b> <a href="/project/detail?name={{ project.parentProject.name }}">{{ project.parentProject.name }}</a></li>

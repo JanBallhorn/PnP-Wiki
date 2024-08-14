@@ -72,7 +72,7 @@ class ProfileController extends Controller
         else{
             $user->setLastnamePublic(0);
         }
-        $user->setProfileText($profileData['profiletext']);
+        $user->setProfileText($profileData['profileText']);
         $this->userRepository->save($user);
         $this->userRepository->closeDB();
         header("Location: /profile?" . http_build_query(['user'=>$user->getUsername()]));

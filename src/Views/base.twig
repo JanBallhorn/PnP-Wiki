@@ -25,7 +25,7 @@
                 </div>
                 <form id="search" class="search" method="post" action="">
                     <label>
-                        <input type="search" name="search" placeholder="{% block search_placeholder %}Wiki durchsuchen{% endblock %}">
+                        <input type="search" name="search" placeholder="{% block searchPlaceholder %}Wiki durchsuchen{% endblock %}">
                     </label>
                     <label>
                         <input type="submit" name="submit">
@@ -55,7 +55,7 @@
     </header>
     <main>
         <aside id="left">
-            {% block aside_left %}
+            {% block asideLeft %}
                 <nav>
                     <ul class="level1">
                         <li><a href="/">Willkommen!</a></li>
@@ -77,7 +77,7 @@
                         </li>
                         <li class="submenu"><a href="/article?filter=popular">Beliebte Artikel<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
-                                {% for article in popular_articles %}
+                                {% for article in popularArticles %}
                                     <li><a href="/article/{{ article }}">{{ article }}</a></li>
                                 {% endfor %}
                                 <li><a href="/article?filter=popular">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
@@ -91,30 +91,11 @@
             {% endblock %}
         </aside>
         <div class="content">
-            {% block main_content %}
+            {% block mainContent %}
             {% endblock %}
         </div>
         <aside id="right">
-            {% block aside_right %}
-                  {#<h5>Veröffentlichung</h5>
-                <ul>
-                    <li>Veröffentlicht: {{ published }}</li>
-                    <li>Ersteller: {{ creator }}</li>
-                    <li>Letzte Änderung: {{ lastEdit }}</li>
-                    <li>Letzte Änderung von: {{ editor }}</li>
-                </ul>
-                <h5>Projekte</h5>
-                <ul>
-                    {% for project in article_project %}
-                        <li><a href="/projekt/{{ project }}">{{ project }}</a></li>
-                    {% endfor %}
-                </ul>
-                <h5>Kategorien</h5>
-                <ul>
-                    {% for category in article_categories %}
-                        <li><a href="/kategorie/{{ category }}">{{ category }}</a></li>
-                    {% endfor %}
-                </ul>#}
+            {% block asideRight %}
             {% endblock %}
         </aside>
     </main>

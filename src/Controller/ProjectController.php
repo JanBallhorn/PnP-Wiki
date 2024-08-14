@@ -28,7 +28,7 @@ class ProjectController extends Controller
     public function index(): void
     {
         $projects = $this->projectRepository->findBy('parent_project', null, 'name');
-        $this->render($this->template, ['main_projects' => $projects->__serialize()]);
+        $this->render($this->template, ['mainProjects' => $projects->__serialize()]);
     }
 
     /**

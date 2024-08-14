@@ -2,9 +2,9 @@
 
 {% block title %}Anmeldung - {% endblock %}
 
-{% block main_content %}
+{% block mainContent %}
     <h1>Anmeldung</h1>
-    {% if login_error == true %}
+    {% if loginError == true %}
     <h4 class="error">Keine Übereinstimmung mit einem Account mit diesen Anmeldedaten.</h4>
     {% endif %}
     <form method="post" id="login" action="/login/login">

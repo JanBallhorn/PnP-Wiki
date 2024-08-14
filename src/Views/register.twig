@@ -7,10 +7,10 @@
     <script src="../../assets/js/registerForm.js" type="module"></script>
 {% endblock %}
 
-{% block main_content %}
+{% block mainContent %}
     <h1>Registrierung</h1>
     <p>Bitte registriere dich, um einen Account anzulegen und öffentliche Artikel bearbeiten zu können.</p>
-    {% if register_error == true %}
+    {% if registerError == true %}
     <h4 class="error">Bei Ihrer Registrierung ist ein Fehler aufgetreten. Überprüfen Sie Ihre Eingaben!</h4>
     {% endif %}
     <form method="post" id="register" action="/register/register">
@@ -33,7 +33,7 @@
         </label>
         <label>Passwort* (Das Password muss mindestens 6 Zeichen lang sein.)
             <input minlength="6" required type="password" name="password">
-            <span class="error length {% if password_error == true %}{% else %}hide{% endif %}">Ihr Password enthält weniger als 6 Zeichen!</span>
+            <span class="error length {% if passwordError == true %}{% else %}hide{% endif %}">Ihr Password enthält weniger als 6 Zeichen!</span>
         </label>
         <input class="button" type="submit" name="submit" value="Registrieren">
     </form>
