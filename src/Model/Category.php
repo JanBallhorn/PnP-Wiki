@@ -8,6 +8,7 @@ class Category
 {
     private int $id;
     private string $name;
+    private string $description;
     private DateTime $published;
     private User $createdBy;
     private DateTime $lastEdit;
@@ -17,16 +18,18 @@ class Category
     /**
      * @param int $id
      * @param string $name
+     * @param string $description
      * @param DateTime $published
      * @param User $createdBy
      * @param DateTime $lastEdit
      * @param User $lastEditBy
      * @param string $icon
      */
-    public function __construct(int $id, string $name, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $icon)
+    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $icon)
     {
         $this->id = $id;
         $this->name = $name;
+        $this->description = $description;
         $this->published = $published;
         $this->createdBy = $createdBy;
         $this->lastEdit = $lastEdit;
@@ -64,6 +67,22 @@ class Category
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @param string $description
+     */
+    public function setDescription(string $description): void
+    {
+        $this->description = $description;
     }
 
     /**

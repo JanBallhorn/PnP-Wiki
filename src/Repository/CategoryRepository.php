@@ -89,6 +89,7 @@ class CategoryRepository implements RepositoryInterface
         else{
             $id = $entity->getId();
             $name = $entity->getName();
+            $description = $entity->getDescription();
             $published  = date("Y-m-d H:i:s", $entity->getPublished()->getTimestamp());
             $createdBy = $entity->getCreatedBy()->getId();
             $lastEdit  = date("Y-m-d H:i:s");
@@ -96,14 +97,14 @@ class CategoryRepository implements RepositoryInterface
             $icon = $entity->getIcon();
         }
         if($id === 0){
-            $query = "INSERT INTO `$this->table` (name, created_by, last_edit_by, icon) VALUES(?, ?, ?, ?)";
+            $query = "INSERT INTO `$this->table` (name, description, created_by, last_edit_by, icon) VALUES(?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("siis", $name, $createdBy, $lastEditBy, $icon);
+            $stmt->bind_param("ssiis", $name, $description, $createdBy, $lastEditBy, $icon);
         }
         else{
-            $query = "UPDATE `$this->table` SET `name` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `icon` = ? WHERE `id` = ?";
+            $query = "UPDATE `$this->table` SET `name` = ?, `description` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `icon` = ? WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("ssisisi", $name, $published, $createdBy, $lastEdit, $lastEditBy, $icon, $id);
+            $stmt->bind_param("sssisisi", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $icon, $id);
         }
         $stmt->execute();
     }
@@ -134,7 +135,7 @@ class CategoryRepository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($category = $result->fetch_object()) {
                 $category = $this->convertDataTypes($category);
-                $category = new Category($category->id, $category->name, $category->published, $category->created_by, $category->last_edit, $category->last_edit_by, $category->icon);
+                $category = new Category($category->id, $category->name, $category->description, $category->published, $category->created_by, $category->last_edit, $category->last_edit_by, $category->icon);
                 $categories->offsetSet($category->key(), $category);
                 $categories->next();
             }
@@ -149,7 +150,7 @@ class CategoryRepository implements RepositoryInterface
         $category = $result->fetch_object();
         if(!empty($category)){
             $category = $this->convertDataTypes($category);
-            return new Category($category->id, $category->name, $category->published, $category->created_by, $category->last_edit, $category->last_edit_by, $category->icon);
+            return new Category($category->id, $category->name, $category->description, $category->published, $category->created_by, $category->last_edit, $category->last_edit_by, $category->icon);
         }
         else{
             return null;
