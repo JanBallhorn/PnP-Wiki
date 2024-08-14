@@ -1,4 +1,4 @@
-import {checkDuplicate, checkLength} from "./formCheck.js";
+import {checkDuplicate, checkMinLength} from "./formCheck.js";
 $(function (){
     let elEmail = $("input[name='email']");
     let elUsername = $("input[name='username']");
@@ -9,11 +9,11 @@ $(function (){
     checkDuplicate(elEmail, 'email', elEmail.val(), 'users');
     elUsername.blur(function (){
         checkDuplicate($(this), 'username', $(this).val(), 'users');
-        checkLength($(this), $(this).val(), 4);
+        checkMinLength($(this), $(this).val(), 4);
     });
     checkDuplicate(elUsername, 'username', elUsername.val(), 'users');
-    checkLength(elUsername, elUsername.val(), 4);
+    checkMinLength(elUsername, elUsername.val(), 4);
     elPassword.blur(function (){
-        checkLength($(this), $(this).val(), 6)
+        checkMinLength($(this), $(this).val(), 6)
     })
 })

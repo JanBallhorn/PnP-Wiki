@@ -18,23 +18,27 @@ function checkDuplicate(el, field, value, table){
     });
 }
 
-function checkLength(el, string, minLength){
-    let ajaxPath = "https://wiki.verplant-durch-aventurien.de/assets/ajax/ajax.php";
-    $.post(ajaxPath,
-        {
-            'errorType': 'length',
-            'string': string,
-            'minLength': minLength
-        },
-        function (data){
-        let result = JSON.parse(data);
-        if(result.length === false){
-            el.parent().find(".error.length").removeClass("hide");
-        }
-        else {
-            el.parent().find(".error.length").addClass("hide");
-        }
-        });
+function checkMinLength(el, string, minLength){
+    if(string.length >= minLength){
+        el.parent().find(".error.length").addClass("hide");
+    }
+    else{
+        el.parent().find(".error.length").removeClass("hide");
+    }
 }
 
-export {checkDuplicate, checkLength};
+function showMaxLength(el){
+    let i = el.val().length
+    el.siblings().each(function (){
+        if($(this).hasClass('maxLength')){
+            let lengthSpan = $(this);
+            let max = $(this).text()
+            $(this).text( i + "/" + max)
+            el.keyup(function (){
+                lengthSpan.text(el.val().length + "/" + max);
+            });
+        }
+    });
+}
+
+export {checkDuplicate, checkMinLength, showMaxLength};

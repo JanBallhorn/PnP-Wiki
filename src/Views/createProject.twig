@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block mainContent %}
-<h1>Ein neues Projekt erstellen</h1>
+    <h1>Ein neues Projekt erstellen</h1>
     {% if loggedIn == true %}
         {% if projectError == true %}
             <h4 class="error">Bei der Erstellung des Projekts ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
@@ -28,6 +28,7 @@
                             <option value="{{ project.name }}">{{ project.name }}</option>
                         {% endfor %}
                     </datalist>
+                <i class="fa-solid fa-chevron-down"></i>
                 <span class="error notfound hide">Dieses Projekt existiert nicht!</span>
             </label>
             <label>Kurze Beschreibung

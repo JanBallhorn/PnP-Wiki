@@ -28,12 +28,3 @@ if($_POST['errorType'] === 'duplicate'){
     $result = checkDuplicate($_POST['field'], $_POST['value'], $_POST['table']);
     echo json_encode(['duplicate' => $result]);
 }
-elseif ($_POST['errorType'] === 'length'){
-    $length = strlen($_POST['string']);
-    if($length >= $_POST['minLength']){
-        echo json_encode(['length' => true]);
-    }
-    else{
-        echo json_encode(['length' => false]);
-    }
-}
