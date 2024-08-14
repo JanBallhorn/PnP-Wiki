@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection ALL */
 
 function dbConnect(){
     $host = "sql718.your-server.de";
@@ -13,63 +13,27 @@ function dbConnect(){
     return $conn;
 }
 
-function checkDuplicate(string $field, string $table)
+function checkDuplicate(string $field, string $value, string $table): bool
 {
     $conn = dbConnect();
     $stmt = $conn->prepare("SELECT COUNT(`$field`) FROM `$table` WHERE `$field` = ?");
-    $stmt->bind_param("s", $_POST[$field]);
+    $stmt->bind_param("s", $value);
     $stmt->execute();
     $result = $stmt->get_result()->fetch_row();
     $conn->close();
-    return $result;
+    return $result[0] ? true : false;
 }
 
-$key = array_keys($_POST)[0];
-$data = $_POST;
-if($key === 'email'){
-    $result = checkDuplicate($key, 'users');
-    if($result[0] > 0){
-        echo json_encode(['exists' => true]);
-    }
-    else{
-        echo json_encode(['exists' => false]);
-    }
+if($_POST['errorType'] === 'duplicate'){
+    $result = checkDuplicate($_POST['field'], $_POST['value'], $_POST['table']);
+    echo json_encode(['duplicate' => $result]);
 }
-if($key === 'username'){
-    $result = checkDuplicate($key, 'users');
-    $usernameLength = strlen($data[$key]);
-    $jsonArray = [];
-    if($result[0] > 0){
-        $jsonArray['exists'] = true;
-    }
-    else{
-        $jsonArray['exists'] = false;
-    }
-    if($usernameLength > 3 || $data[$key] === ''){
-        $jsonArray['length'] = true;
-    }
-    else{
-        $jsonArray['length'] = false;
-    }
-    echo json_encode($jsonArray);
-}
-if($key === 'password'){
-    $passwordLength = strlen($data[$key]);
-    if($passwordLength > 5 || $data[$key] === ''){
+elseif ($_POST['errorType'] === 'length'){
+    $length = strlen($_POST['string']);
+    if($length >= $_POST['minLength']){
         echo json_encode(['length' => true]);
     }
     else{
         echo json_encode(['length' => false]);
     }
 }
-if($key === 'name'){
-    $result = checkDuplicate('name', 'projects');
-    if($result[0] > 0){
-        echo json_encode(['exists' => true]);
-    }
-    else{
-        echo json_encode(['exists' => false]);
-    }
-}
-
-

@@ -19,8 +19,10 @@
             <i class="fa-solid fa-magnifying-glass"></i>
         </label>
     </form>
-    <a class="button" href="/project/edit?name={{ project.name }}">Projekt bearbeiten</a>
-    <a class="button" onclick="deleteAlert('{{ project.name }}')">Projekt löschen</a>
+    {% if loggedIn == true %}
+        <a class="button" href="/project/edit?name={{ project.name }}">Projekt bearbeiten</a>
+        <a class="button" onclick="deleteAlert('{{ project.name }}')">Projekt löschen</a>
+    {% endif %}
 {% endblock %}
 
 {% block aside_right %}

@@ -5,7 +5,7 @@
 {% block head %}
     {{ parent() }}
     <script src="../../assets/js/selectSearch.js" type="text/javascript"></script>
-    <script src="../../assets/js/projectForm.js" type="text/javascript"></script>
+    <script src="../../assets/js/projectForm.js" type="text/module"></script>
 {% endblock %}
 
 {% block main_content %}
@@ -16,7 +16,7 @@
     <form method="post" action="/project/update" id="editProject">
         <input type="hidden" name="id" value="{{ project.id }}"></input>
         <label>Name des Projekts*
-            <input name="projectName" maxlength="200" required value="{{ project.name }}">
+            <input name="name" maxlength="200" required value="{{ project.name }}">
             <span class="length">200</span>
         </label>
         <label>Übergeordnetes Projekt

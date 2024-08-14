@@ -137,16 +137,17 @@ input:is(:-webkit-autofill, :autofill){
 }
 input[type="submit"]{
     font-size: 1em;
+    margin-bottom: 1.5em;
 }
 main form, main form fieldset{
     width: 100%;
-    margin: 1em 0;
+    margin-top: 1em;
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
 }
-main form fieldset{
-    flex-flow: column;
+main form.search{
+    margin-bottom: 1.5em;
 }
 main form fieldset{
     margin: 0;
@@ -239,7 +240,7 @@ main label > span{
 .error{
     color: var(--error);
 }
-main form span.length{
+main form span.maxLength{
     right: 0;
 }
 label:has(input.searchselect){

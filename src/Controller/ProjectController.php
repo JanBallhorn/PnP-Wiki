@@ -7,7 +7,6 @@ use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Exception;
-use JetBrains\PhpStorm\NoReturn;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -54,9 +53,9 @@ class ProjectController extends Controller
         $user = $this->userRepository->findOneBy('username', $username);
         $this->userRepository->closeDB();
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
-        $sameProject = $this->projectRepository->findOneBy('name', $projectData['projectName']);
+        $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
         if($sameProject === null && ($parentProject !== null || $projectData['parentProject'] === '')) {
-            $project = new Project(0, $projectData['projectName'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, isset($projectData['private']));
+            $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, isset($projectData['private']));
             $this->projectRepository->save($project);
             $this->projectRepository->closeDB();
             header("Location: /project");
@@ -67,7 +66,7 @@ class ProjectController extends Controller
             $this->render('createProject.twig', [
                 'projects' => $projects->__serialize(),
                 'projectError' => true,
-                'name' => $projectData['projectName'],
+                'name' => $projectData['name'],
                 'desc' => $projectData['description'],
                 'parent' => $projectData['parentProject'],
                 'private' => isset($projectData['private'])
@@ -106,8 +105,8 @@ class ProjectController extends Controller
     {
         $project = $this->projectRepository->findById($projectData['id']);
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
-        $sameProject = $this->projectRepository->findOneBy('name', $projectData['projectName']);
-        $project->setName($projectData['projectName']);
+        $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
+        $project->setName($projectData['name']);
         $project->setDescription($projectData['description']);
         $project->setParentProject($parentProject);
         $project->setPrivate(isset($projectData['private']));
