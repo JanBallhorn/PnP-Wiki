@@ -1,5 +1,16 @@
 $(function (){
+    $(".searchselect").click(function (){
+        if($(".searchselect + datalist").is(":visible")){
+            $(".searchselect ~ i").css("transform", "translateY(-50%) rotate(180deg)");
+        }
+        else{
+            $(".searchselect ~ i").css("transform", "translateY(-50%) rotate(0)");
+        }
+    })
     $(".searchselect + datalist option").click(function (){
+        if($(".searchselect + datalist").is(":visible")){
+            $(".searchselect ~ i").css("transform", "translateY(-50%) rotate(180deg)");
+        }
         $(".searchselect").val($(this).val());
     });
     $(".searchselect").keyup(function (){
@@ -27,6 +38,9 @@ $(function (){
         }
         else{
             $(".searchselect ~ .error.notfound").addClass("hide");
+        }
+        if($(".searchselect + datalist").is(":hidden")){
+            $(".searchselect ~ i").css("transform", "translateY(-50%) rotate(0)");
         }
     });
 });

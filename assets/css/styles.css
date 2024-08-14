@@ -265,6 +265,13 @@ input + datalist option{
 input + datalist option:hover{
     background-color: var(--box-bg);
 }
+input.searchselect ~ i{
+    position: absolute;
+    right: 0.5em;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: 0.3s;
+}
 
 /******************************************
 HEADER
