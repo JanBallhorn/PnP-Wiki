@@ -78,6 +78,11 @@ class ProfileController extends Controller
         header("Location: /profile?" . http_build_query(['user'=>$user->getUsername()]));
     }
     protected function checkOwnProfile($username): bool{
-        return $this->validateToken($this->getCookie(), $username);
+        if($this->getCookie()){
+            return $this->validateToken($this->getCookie(), $username);
+        }
+        else{
+            return false;
+        }
     }
 }
