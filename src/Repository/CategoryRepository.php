@@ -7,6 +7,7 @@ use App\Database;
 use App\Model\Category;
 use App\Repository\RepositoryInterface;
 use mysqli;
+use DateTime;
 
 class CategoryRepository implements RepositoryInterface
 {
@@ -136,7 +137,7 @@ class CategoryRepository implements RepositoryInterface
             while ($category = $result->fetch_object()) {
                 $category = $this->convertDataTypes($category);
                 $category = new Category($category->id, $category->name, $category->description, $category->published, $category->created_by, $category->last_edit, $category->last_edit_by, $category->icon);
-                $categories->offsetSet($category->key(), $category);
+                $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
             return $categories;
