@@ -7,7 +7,7 @@
     {% if loginError == true %}
     <h4 class="error">Keine Übereinstimmung mit einem Account mit diesen Anmeldedaten.</h4>
     {% endif %}
-    <form method="post" id="login" action="/login/login">
+    <form method="post" id="login" action="/login/login" class="flex-50">
         <label>Benutzername oder E-Mail*
             <input name="user" value="{{ user }}">
         </label>

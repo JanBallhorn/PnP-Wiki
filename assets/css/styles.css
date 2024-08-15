@@ -7,7 +7,8 @@ COLOR VARIABLES
     --main-bg: #f4f4f4;
     --box-bg: #ccc;
     --link: #4242ff;
-    --error: #d90000
+    --error: #d90000;
+    --svg-filter: invert(9%) sepia(98%) saturate(9%) hue-rotate(326deg) brightness(91%) contrast(93%);
 }
 :root.light{
     --txt: #222;
@@ -16,6 +17,7 @@ COLOR VARIABLES
     --box-bg: #ccc;
     --link: #4242ff;
     --error: #d90000;
+    --svg-filter: invert(9%) sepia(98%) saturate(9%) hue-rotate(326deg) brightness(91%) contrast(93%);
 }
 :root.dark{
     --txt: #f1f1f1;
@@ -24,6 +26,7 @@ COLOR VARIABLES
     --box-bg: #555;
     --link: #9d9dff;
     --error: #f66;
+    --svg-filter: invert(100%) sepia(1%) saturate(37%) hue-rotate(182deg) brightness(113%) contrast(89%);
 }
 
 /******************************************
@@ -99,19 +102,34 @@ main .button{
     background-color: var(--txt);
     transition: 0.3s;
 }
-.flex-50, .flex-33, .flex-25{
+.flex-50, .flex-33, .flex-25, .flex-20{
     display: flex;
-    justify-content: space-between;
     flex-wrap: wrap;
 }
-.flex-50 > *{
-    width: calc(50% - 1em);
+.flex-50{
+    justify-content: space-between;
 }
-.flex-33 > *{
-    width: calc(100% / 3 - 4em / 3);
+.fullwidth{
+    width: 100%;
 }
-.flex-25 > *{
-    width: calc(25% - 6em / 4);
+.flex-50 > *:not(.fullwidth){
+    width: calc(50% - 1.5em);
+    margin-bottom: 1.5em;
+}
+.flex-33 > *:not(.fullwidth){
+    width: calc(100% / 3 - 3em / 3);
+    margin-bottom: 1.5em;
+}
+.flex-25 > *:not(.fullwidth){
+    width: calc(25% - 4.5em / 4);
+    margin-bottom: 1.5em;
+}
+.flex-20 > *:not(.fullwidth){
+    width: calc(20% - 6em / 5);
+    margin-bottom: 1.5em;
+}
+.flex-33 > *:not(.fullwidth, :nth-child(3n)), .flex-25 > *:not(.fullwidth, :nth-child(4n)), .flex-20 > *:not(.fullwidth, :nth-child(5n)){
+    margin-right: calc(1.5em);
 }
 .hide{
     display: none;
@@ -126,6 +144,50 @@ input:not([type='checkbox'], [type='radio'], [type='submit']), textarea{
     border: 1px solid var(--txt);
     font-size: 1em;
     padding: 0.25em 0.5em;
+}
+main form label.button:has(input[type='file']){
+    padding: 0.2em 0.5em;
+    flex-flow: row;
+}
+main form label.button:has(input[type='file']) i{
+    margin-right: 0.25em;
+}
+main form label.button:has(input[type='file']):hover i{
+    color: var(--box-bg);
+    transition: 0.3s;
+}
+main form label.button:has(input[type='file']) span.selected-file{
+    left: 100%;
+    margin-left: 0.5em;
+    width: max-content;
+    top: 50%;
+    transform: translateY(-50%);
+    bottom: unset;
+    font-size: 1em;
+}
+main form label.button:has(input[type='file']):has(span.info){
+    margin-bottom: 4em;
+}
+main form label.button:has(input[type='file']) span.info{
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.25em;
+    font-size: 0.9em;
+    width: max-content;
+}
+main form label.button:has(input[type='file']) span.errorContainer{
+    top: calc(100% + 1.5em);
+    bottom: unset;
+    left: 0;
+    width: max-content;
+}
+span.errorContainer{
+    display: flex;
+    flex-flow: column;
+}
+input[type='file']{
+    display: none;
 }
 input:focus, textarea:focus{
     outline: none;
@@ -146,6 +208,9 @@ main form, main form fieldset{
     flex-wrap: wrap;
     justify-content: space-between;
 }
+main form:not(.flex-50){
+    flex-flow: column;
+}
 main form.search{
     margin-bottom: 1.5em;
 }
@@ -157,7 +222,6 @@ main form fieldset{
 main form label:has(input:not([type='checkbox'], [type='radio'], [type='submit']), textarea:not(.tinymce)){
     display: flex;
     flex-flow: column;
-    width: calc(50% - 1em);
     margin-bottom: 0.5em;
     padding-bottom: 1.2em;
     position: relative;
@@ -169,9 +233,6 @@ main form label:has(input[type="search"]){
     width: 100%;
     padding: 0;
     margin: 0;
-}
-#editProfile label:has(textarea){
-    width: 100%;
 }
 main form textarea{
     max-width: 100%;
@@ -189,6 +250,7 @@ main form label:has(input[type='checkbox']){
 }
 main form fieldset.checkbox{
     margin-bottom: 1.2em;
+    flex-flow: column;
 }
 main form fieldset.checkbox label{
     padding-bottom: 0;
@@ -205,7 +267,7 @@ input[type='checkbox']{
     font-size: 1rem;
     width: 1.25em;
     height: 1.25em;
-    margin-right: 0.5em;
+    margin-right: 1em;
 }
 main form label:has(input[type='checkbox']):before{
     content: '';
@@ -510,4 +572,25 @@ PROJECT LIST
 }
 .content ul li:has(ul) > .project-link > i{
     display: block;
+}
+.categories{
+    margin-top: 1.5em;
+}
+.categories > a{
+    display: flex;
+    height: 10em;
+    background-color: var(--box-bg);
+    text-align: center;
+    flex-flow: column;
+    justify-content: space-evenly;
+    border: 1px solid var(--txt);
+}
+.categories > a:hover{
+    background-color: var(--main-bg);
+    border-color: var(--box-bg);
+    transition: 0.3s;
+}
+.categories > a img{
+    filter: var(--svg-filter);
+    height: 5em;
 }

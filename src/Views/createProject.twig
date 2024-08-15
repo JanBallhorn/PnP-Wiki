@@ -14,7 +14,7 @@
         {% if projectError == true %}
             <h4 class="error">Bei der Erstellung des Projekts ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
         {% endif %}
-        <form method="post" action="/project/save" id="createProject">
+        <form method="post" action="/project/save" id="createProject" class="flex-50">
             <label>Name des Projekts*
                 <input name="name" maxlength="200" required value="{{ name }}">
                 <span class="error exists hide">Ein Projekt mit diesem Namen existiert bereits!</span>
@@ -31,11 +31,11 @@
                 <i class="fa-solid fa-chevron-down"></i>
                 <span class="error notfound hide">Dieses Projekt existiert nicht!</span>
             </label>
-            <label>Kurze Beschreibung
+            <label class="fullwidth">Kurze Beschreibung
                 <textarea name="description" maxlength="1000">{{ desc }}</textarea>
                 <span class="maxLength">1000</span>
             </label>
-            <fieldset>
+            <fieldset class="fullwidth">
                 <label>
                     <input type="checkbox" name="private" value="private" {% if private %}checked{% endif %}>
                     Soll das Projekt privat sein? (Private Projekte und ihre Inhalte können nur von dir gesehen und bearbeitet werden.)
@@ -43,6 +43,7 @@
             </fieldset>
         </form>
         <input class="button" type="submit" value="Projekt speichern" name="submit" form="createProject">
+        <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
     {% else %}
         <h4 class="error">Du hast nicht die Befugnis ein neues Projekt zu erstellen!</h4>
     {% endif %}
