@@ -1,0 +1,19 @@
+{% extends "base.twig" %}
+
+{% block title %}Kategorien - {% endblock %}
+
+{% block mainContent %}
+    <h1>Kategorien</h1>
+    <p>Hier sind alle Kategorien nach welchen Artikel kategorisiert werden können.</p>
+    {% if loggedIn == true %}
+        <a class="button" href="/category/create">Neue Kategorie anlegen</a>
+    {% endif %}
+    <div class="categories flex-20">
+        {% for category in categories %}
+            <a href="/category/detail?name={{ category.name }}">
+                <img src="{{ category.icon }}" alt="{{ category.name }}">
+                <h3>{{ category.name }}</h3>
+            </a>
+        {% endfor %}
+    </div>
+{% endblock %}
