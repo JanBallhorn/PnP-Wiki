@@ -40,5 +40,23 @@ function showMaxLength(el){
         }
     });
 }
+function checkFileType(el, allowedFileTypes, i = 0){
+    let file = el[0].files[i];
+    if(allowedFileTypes.includes(file['type'])){
+        el.parent().find(".error.fileType").addClass("hide");
+    }
+    else{
+        el.parent().find(".error.fileType").removeClass("hide");
+    }
+}
+function checkFileSize(el, allowedFileSize, i = 0){
+    let file = el[0].files[i];
+    if(file['size'] <= allowedFileSize){
+        el.parent().find(".error.fileSize").addClass("hide");
+    }
+    else{
+        el.parent().find(".error.fileSize").removeClass("hide");
+    }
+}
 
-export {checkDuplicate, checkMinLength, showMaxLength};
+export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize};
