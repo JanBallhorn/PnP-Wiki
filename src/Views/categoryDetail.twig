@@ -1,0 +1,37 @@
+{% extends "base.twig" %}
+
+{% block title %}{{ project.name }} - {% endblock %}
+
+{% block head %}
+    {{ parent() }}
+    <script src="../../assets/js/deleteAlert.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block mainContent %}
+    <h1>{{ category.name }}</h1>
+    <p>{{ category.description }}</p>
+    <form id="searchInCategory" class="search" method="post" action="">
+        <label>
+            <input type="search" name="search" placeholder="{{ category.name }} durchsuchen">
+        </label>
+        <label>
+            <input type="submit" name="submit">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </label>
+    </form>
+    {% if loggedIn == true %}
+        <a class="button" href="/category/edit?name={{ category.name }}">Kategorie bearbeiten</a>
+        <a class="button" onclick="deleteAlert('{{ category.name }}')">Kategorie löschen</a>
+    {% endif %}
+{% endblock %}
+
+{% block asideRight %}
+    <ul>
+        <li><b>Veröffentlicht:</b> {{ category.published|date("d.m.Y - H:i:s") }} Uhr</li>
+        <li><b>Ersteller:</b> <a href="/profile?user={{ category.createdBy.username }}">{{ category.createdBy.username }}</a></li>
+        {% if category.published|date("d.m.Y - H:i:s") != category.lastEdit|date("d.m.Y - H:i:s") %}
+            <li><b>Letzte Änderung:</b> {{ category.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
+            <li><b>Letzte Änderung von:</b> <a href="/profile?user={{ category.lastEditBy.username }}">{{ category.lastEditBy.username }}</a></li>
+        {% endif %}
+    </ul>
+{% endblock %}

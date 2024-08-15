@@ -213,6 +213,7 @@ main form:not(.flex-50){
 }
 main form.search{
     margin-bottom: 1.5em;
+    position: relative;
 }
 main form fieldset{
     margin: 0;
@@ -224,9 +225,6 @@ main form label:has(input:not([type='checkbox'], [type='radio'], [type='submit']
     flex-flow: column;
     margin-bottom: 0.5em;
     padding-bottom: 1.2em;
-    position: relative;
-}
-main .search label:has(input[type="submit"]){
     position: relative;
 }
 main form label:has(input[type="search"]){
@@ -583,11 +581,10 @@ PROJECT LIST
     text-align: center;
     flex-flow: column;
     justify-content: space-evenly;
-    border: 1px solid var(--txt);
+    border: 3px solid var(--txt);
 }
 .categories > a:hover{
     background-color: var(--main-bg);
-    border-color: var(--box-bg);
     transition: 0.3s;
 }
 .categories > a img{

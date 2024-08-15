@@ -6,7 +6,7 @@
     <h1>Willkommen im Pen and Paper Wiki!</h1>
     <p>Hier findest du alles rund um die Welt des Pen and Paper-Systems "Das schwarze Auge" (DSA). Navigiere in einzelne Projekte, um in ihnen explizit nach Inhalten zu suchen. Wenn du dich registrierst und anmeldest kannst du auch selber Artikel erstellen oder öffentliche Artikel bearbeiten.</p>
     <div class="flex-50">
-        <div class="projects">
+        <div class="popularProjects">
             <h2>Projekte</h2>
             <ul>
                 {% for project in projects %}
@@ -15,7 +15,7 @@
             </ul>
             <a href="/project">Alle Projekte</a>
         </div>
-        <div class="categories">
+        <div class="popularCategories">
             <h2>Kategorien</h2>
             <ul>
                 {% for category in categories %}
@@ -24,7 +24,7 @@
             </ul>
             <a href="/categories">Alle Kategorien</a>
         </div>
-        <div class="popular-articles">
+        <div class="popularArticles">
             <h2>Beliebte Artikel</h2>
             <ul>
                 {% for article in popularArticles %}
@@ -33,7 +33,7 @@
             </ul>
             <a href="/article?filter=popular">Mehr beliebte Artikel</a>
         </div>
-        <div class="new-articles">
+        <div class="newArticles">
             <h2>Neue Artikel</h2>
             <ul>
                 {% for article in newArticles %}

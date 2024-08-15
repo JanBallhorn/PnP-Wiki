@@ -6,6 +6,9 @@ function deleteAlert(subject){
     if(pathArray[0] === 'project'){
         newPath = "/project/delete";
     }
+    if(pathArray[0] === 'category'){
+        newPath = "/category/delete";
+    }
     if(alert === "löschen"){
         location.href = newPath + "?name=" + subject;
     }

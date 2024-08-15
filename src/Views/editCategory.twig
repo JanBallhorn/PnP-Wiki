@@ -1,0 +1,43 @@
+{% extends "base.twig" %}
+
+{% block title %}{{ category.name }} bearbeiten - {% endblock %}
+
+{% block head %}
+    {{ parent() }}
+    <script src="../../assets/js/selectSearch.js" type="text/javascript"></script>
+    <script src="../../assets/js/categoryForm.js" type="module"></script>
+{% endblock %}
+
+{% block mainContent %}
+    <h1>{{ category.name }} bearbeiten</h1>
+    {% if loggedIn == true %}
+        {% if categoryError == true %}
+            <h4 class="error">Bei der Bearbeitung der Kategorie ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
+        {% endif %}
+        <form method="post" action="/category/update" id="editCategory" enctype="multipart/form-data">
+            <input type="hidden" name="id" value="{{ category.id }}">
+            <label>Name der Kategorie*
+                <input name="name" maxlength="150" required value="{{ category.name }}">
+                <span class="error exists hide">Eine Kategorie mit diesem Namen existiert bereits!</span>
+                <span class="maxLength">150</span>
+            </label>
+            <label>Kurze Beschreibung
+                <textarea name="description" maxlength="1000">{{ category.description }}</textarea>
+                <span class="maxLength">1000</span>
+            </label>
+            <label class="button"><i class="fa-solid fa-upload"></i>Upload für neues Kategorie-Icon
+                <input type="file" name="fileUpload" accept="image/svg+xml">
+                <span class="selected-file"></span>
+                <span class="info">Nur anfügen, wenn du das Icon ändern möchtest. Die Datei muss ein SVG sein und darf maximal 20 KB groß sein.</span>
+                <span class="errorContainer">
+                    <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Die Datei ist zu groß.</span>
+                    <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
+                </span>
+            </label>
+        </form>
+        <input class="button" type="submit" value="Änderungen speichern" name="submit" form="editCategory">
+        <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
+    {% else %}
+        <h4 class="error">Du hast nicht die Befugnis diese Kategorie zu bearbeiten!</h4>
+    {% endif %}
+{% endblock %}
