@@ -2,10 +2,27 @@ import {checkDuplicate, showMaxLength, checkFileType, checkFileSize} from "./for
 $(function (){
     let elName = $("input[name='name']");
     let elFile = $("input[name='fileUpload']");
+    let edit = false;
+    let origName = $("h1").text().split(' ')[0];
+    let path = $(location).attr('pathname');
+    let pathArray = path.slice(1).split("/");
+    if(pathArray[1] === 'edit'){
+        edit = true;
+    }
     elName.blur(function (){
-        checkDuplicate(elName, 'name', elName.val(), 'categories');
+        if(!edit){
+            checkDuplicate(elName, 'name', elName.val(), 'categories');
+        }
+        else{
+            checkDuplicate(elName, 'name', elName.val(), 'categories', origName);
+        }
     })
-    checkDuplicate(elName, 'name', elName.val(), 'categories');
+    if(!edit){
+        checkDuplicate(elName, 'name', elName.val(), 'categories');
+    }
+    else{
+        checkDuplicate(elName, 'name', elName.val(), 'categories', origName);
+    }
     $("main form input, main form textarea").each(function (){
         let input = $(this);
         showMaxLength(input);

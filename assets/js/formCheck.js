@@ -1,4 +1,4 @@
-function checkDuplicate(el, field, value, table){
+function checkDuplicate(el, field, value, table, orig = ''){
     let ajaxPath = "https://wiki.verplant-durch-aventurien.de/assets/ajax/ajax.php";
     $.post(ajaxPath,
         {
@@ -9,7 +9,7 @@ function checkDuplicate(el, field, value, table){
         },
         function(data){
         let result = JSON.parse(data);
-        if(result.duplicate === true){
+        if(result.duplicate === true && value !== orig){
             el.parent().find(".error.exists").removeClass("hide");
         }
         else {

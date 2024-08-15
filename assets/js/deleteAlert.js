@@ -2,7 +2,6 @@ function deleteAlert(subject){
     let alert = prompt('Bist du sicher, dass du "' + subject + '" löschen möchtest? \r\nDann gib hier "löschen" ein!');
     let path = $(location).attr('pathname');
     let pathArray = path.slice(1).split("/");
-    console.log(pathArray[0])
     let newPath = '';
     if(pathArray[0] === 'project'){
         newPath = "/project/delete";
