@@ -25,7 +25,7 @@ abstract class Controller
      * @throws SyntaxError
      * @throws LoaderError
      */
-    function render(string $view, array $params = []): void
+    protected function render(string $view, array $params = []): void
     {
         $loader = new FilesystemLoader(__DIR__ . '/../Views');
         $twig = new Environment($loader, ['debug' => true]);
@@ -40,11 +40,11 @@ abstract class Controller
         }
         echo $twig->render($view, $twigParams);
     }
-    function checkLogin(): bool
+    protected function checkLogin(): bool
     {
         return isset($_COOKIE['login']);
     }
-    function buildToken(string $username, int $userId, bool $remember): string
+    protected function buildToken(string $username, int $userId, bool $remember): string
     {
         $tokenBuilder = new Builder(new JoseEncoder(), ChainedFormatter::default());
         $algorithm = new Sha256();
@@ -66,21 +66,21 @@ abstract class Controller
             ->getToken($algorithm, $signingKey);
         return $token->toString();
     }
-    function validateToken(string $token, string $username): bool
+    protected function validateToken(string $token, string $username): bool
     {
         $parser = new Parser(new JoseEncoder());
         $token = $parser->parse($token);
         $validator = new Validator();
         return $validator->validate($token, new RelatedTo($username));
     }
-    function getUsernameFromToken(string $token): string
+    protected function getUsernameFromToken(string $token): string
     {
         $parser = new Parser(new JoseEncoder());
         $token = $parser->parse($token);
         return $token->claims()->get('username');
     }
 
-    function createCookie(string $token, bool $remember): void
+    protected function createCookie(string $token, bool $remember): void
     {
         if($remember === true){
             $extratime = 15768000;
@@ -90,14 +90,26 @@ abstract class Controller
         }
         setcookie("login", $token, time() + $extratime, "/", "wiki.verplant-durch-aventurien.de", true, true);
     }
-    function getCookie(): ?string
+    protected function getCookie(): ?string
     {
         return $_COOKIE["login"] ?? null;
     }
-    function destroyCookie(): void
+    protected function destroyCookie(): void
     {
         if(isset($_COOKIE["login"])){
             setcookie("login", "", time() - 3600, "/", "wiki.verplant-durch-aventurien.de", true);
         }
+    }
+    protected function encodeImg(string $img): string
+    {
+        $location = dirname($_SERVER['DOCUMENT_ROOT']);
+        $image = $location . "/externalImages/" . $img;
+        if(!exif_imagetype($image)){
+            $imgType = "image/svg+xml";
+        }
+        else{
+            $imgType = image_type_to_mime_type(exif_imagetype($image));
+        }
+        return "data:" . $imgType . ";base64," . base64_encode(file_get_contents($image));
     }
 }

@@ -48,16 +48,16 @@ class CategoryController extends Controller
      */
     public function save(array $categoryData): void
     {
-        $uploader = new FileUpload(__DIR__ . '/../../assets/img/categoryIcons/', $categoryData['name'] . '.svg', ['svg'], 20000, $_FILES);
+        $uploader = new FileUpload(__DIR__ . '/../../../externalImages/categoryIcons/', str_replace('/', '-', $categoryData['name']) . '.svg', ['svg'], 20000, $_FILES);
         $upload = $this->prepareUpload($uploader);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $this->userRepository->closeDB();
         $sameCategory = $this->categoryRepository->findOneBy('name', $categoryData['name']);
         if($sameCategory === null && $upload !== false){
-            $viewPath = "../../assets/img/categoryIcons/" . $upload->getFileName();
             $upload->upload();
-            $category = new Category(0, $categoryData['name'], $categoryData['description'], new DateTime(), $user, new DateTime(), $user, $viewPath);
+            $icon = $this->encodeImg("categoryIcons/" . $upload->getFileName());
+            $category = new Category(0, $categoryData['name'], $categoryData['description'], new DateTime(), $user, new DateTime(), $user, $icon);
             $this->categoryRepository->save($category);
             $this->categoryRepository->closeDB();
             header("Location: /category");
@@ -113,13 +113,13 @@ class CategoryController extends Controller
         $category->setName($categoryData['name']);
         $category->setDescription($categoryData['description']);
         if(!empty($_FILES['fileUpload']['name'])){
-            $uploader = new FileUpload(__DIR__ . '/../../assets/img/categoryIcons/', $categoryData['name'] . '.svg', ['svg'], 20000, $_FILES);
+            $uploader = new FileUpload(__DIR__ . '/../../../externalImages/categoryIcons/', str_replace('/', '-', $categoryData['name']) . '.svg', ['svg'], 20000, $_FILES);
             $upload = $this->prepareUpload($uploader);
         }
         if($sameCategory->getId() === $category->getId() && isset($upload) && $upload !== false){
-            $viewPath = "../../assets/img/categoryIcons/" . $upload->getFileName();
-            $category->setIcon($viewPath);
             $upload->upload();
+            $icon = $this->encodeImg("categoryIcons/" . $upload->getFileName());
+            $category->setIcon($icon);
             $this->categoryRepository->save($category);
             $this->categoryRepository->closeDB();
             header("Location: /category");
