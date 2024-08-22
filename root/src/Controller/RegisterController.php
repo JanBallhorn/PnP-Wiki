@@ -43,7 +43,6 @@ class RegisterController extends Controller
         $passwordLength = strlen($userData['password']);
         if(empty($sameEmail) && empty($sameUsername) && $usernameLength > 3 && $passwordLength > 5) {
             $this->userRepository->save($user);
-            $this->userRepository->closeDB();
             $whiteListFile = fopen(__DIR__ . "/../../inc/whitelist.json", "r");
             $whiteList = fread($whiteListFile, filesize(__DIR__ . "/../../inc/whitelist.json"));
             $whiteList = json_decode($whiteList, false);
@@ -86,7 +85,6 @@ class RegisterController extends Controller
         else{
             $this->render('verified.twig', ['verified' => false]);
         }
-        $this->userRepository->closeDB();
     }
     /**
      * @throws RandomException

@@ -14,11 +14,9 @@ class CategoryRepository implements RepositoryInterface
     private mysqli $db;
     private string $table = 'categories';
 
-    public function __construct(){
-        $this->db = Database::dbConnect();
-    }
     public function findAll(string $order = ''): ?CategoryCollection
     {
+        $this->connectDB();
         if(!empty($order)){
             $query = "SELECT * FROM `$this->table` ORDER BY `$order`";
         }
@@ -32,6 +30,7 @@ class CategoryRepository implements RepositoryInterface
 
     public function findById(int $id): ?Category
     {
+        $this->connectDB();
         $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `id` = ?");
         $stmt->bind_param('i', $id);
         $stmt->execute();
@@ -41,6 +40,7 @@ class CategoryRepository implements RepositoryInterface
 
     public function findBy(string $column, mixed $value, string $order = ''): ?CategoryCollection
     {
+        $this->connectDB();
         if(!empty($order) && $value !== null){
             $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order`";
         }
@@ -65,6 +65,7 @@ class CategoryRepository implements RepositoryInterface
 
     public function findOneBy(string $column, mixed $value): ?Category
     {
+        $this->connectDB();
         if($value === null){
             $query = "SELECT * FROM `$this->table` WHERE `$column` IS null";
         }
@@ -88,6 +89,7 @@ class CategoryRepository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Category::class));
         }
         else{
+            $this->connectDB();
             $id = $entity->getId();
             $name = $entity->getName();
             $description = $entity->getDescription();
@@ -108,6 +110,7 @@ class CategoryRepository implements RepositoryInterface
             $stmt->bind_param("sssisisi", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $icon, $id);
         }
         $stmt->execute();
+        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -116,12 +119,18 @@ class CategoryRepository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Category::class));
         }
         else{
+            $this->connectDB();
             $id = $entity->getId();
             $query = "DELETE FROM `$this->table` WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("i", $id);
             $stmt->execute();
+            $this->closeDB();
         }
+    }
+    public function connectDB(): void
+    {
+        $this->db = Database::dbConnect();
     }
 
     public function closeDB(): void
@@ -140,8 +149,11 @@ class CategoryRepository implements RepositoryInterface
                 $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
+            $this->closeDB();
             return $categories;
-        } else {
+        }
+        else {
+            $this->closeDB();
             return null;
         }
     }
@@ -149,6 +161,7 @@ class CategoryRepository implements RepositoryInterface
     private function findOne(false|\mysqli_result $result): ?Category
     {
         $category = $result->fetch_object();
+        $this->closeDB();
         if(!empty($category)){
             $category = $this->convertDataTypes($category);
             return new Category($category->id, $category->name, $category->description, $category->published, $category->created_by, $category->last_edit, $category->last_edit_by, $category->icon);
@@ -162,6 +175,7 @@ class CategoryRepository implements RepositoryInterface
         $category->created_by = (new UserRepository())->findById($category->created_by);
         $category->last_edit = (new DateTime($category->last_edit));
         $category->last_edit_by = (new UserRepository())->findById($category->last_edit_by);
+        $this->connectDB();
         return $category;
     }
 }

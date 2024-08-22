@@ -24,7 +24,6 @@ class ProfileController extends Controller
     {
         $username = $username['user'];
         $user = $this->userRepository->findOneBy('username', $username);
-        $this->userRepository->closeDB();
         $profileTextExists = !empty($user->getProfileText());
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
@@ -48,13 +47,12 @@ class ProfileController extends Controller
     public function edit(array $username): void{
         $username = $username['user'];
         $user = $this->userRepository->findOneBy('username', $username);
-        $this->userRepository->closeDB();
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
             'editMode'=>true,
             'username'=>$user->getUsername(),
             'firstnamePublic'=>$user->getFirstnamePublic(),
-            'lastnamePublic'=>$user->getFirstnamePublic()
+            'lastnamePublic'=>$user->getLastnamePublic()
         ];
         $this->render($this->template, $templateData);
     }
@@ -64,7 +62,6 @@ class ProfileController extends Controller
         $user->setLastnamePublic(isset($profileData['lastnamePublic']));
         $user->setProfileText($profileData['profileText']);
         $this->userRepository->save($user);
-        $this->userRepository->closeDB();
         header("Location: /profile?" . http_build_query(['user'=>$user->getUsername()]));
     }
     protected function checkOwnProfile($username): bool{

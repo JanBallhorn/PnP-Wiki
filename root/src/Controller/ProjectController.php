@@ -40,7 +40,6 @@ class ProjectController extends Controller
     public function create(): void
     {
         $projects = $this->projectRepository->findAll();
-        $this->projectRepository->closeDB();
         $this->render('createProject.twig', ['projects' => $projects->__serialize()]);
     }
 
@@ -51,18 +50,15 @@ class ProjectController extends Controller
     {
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
-        $this->userRepository->closeDB();
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
         if($sameProject === null && ($parentProject !== null || $projectData['parentProject'] === '')) {
             $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, isset($projectData['private']));
             $this->projectRepository->save($project);
-            $this->projectRepository->closeDB();
             header("Location: /project");
         }
         else{
             $projects = $this->projectRepository->findAll();
-            $this->projectRepository->closeDB();
             $this->render('createProject.twig', [
                 'projects' => $projects->__serialize(),
                 'projectError' => true,
@@ -80,7 +76,6 @@ class ProjectController extends Controller
     public function detail(array $project): void
     {
         $project = $this->projectRepository->findOneBy('name', $project['name']);
-        $this->projectRepository->closeDB();
         $this->render("projectDetail.twig", ['project' => $project]);
     }
 
@@ -94,7 +89,6 @@ class ProjectController extends Controller
     {
         $projects = $this->projectRepository->findAll();
         $project = $this->projectRepository->findOneBy('name', $project['name']);
-        $this->projectRepository->closeDB();
         $this->render("editProject.twig", ['projects' => $projects->__serialize(), 'project' => $project]);
     }
 
@@ -112,12 +106,10 @@ class ProjectController extends Controller
         $project->setPrivate(isset($projectData['private']));
         if($sameProject->getId() === $project->getId() && ($parentProject !== null || $projectData['parentProject'] === '')) {
             $this->projectRepository->save($project);
-            $this->projectRepository->closeDB();
             header("Location: /project/detail?" . http_build_query(['name'=>$project->getName()]));
         }
         else{
             $projects = $this->projectRepository->findAll();
-            $this->projectRepository->closeDB();
             $this->render("editProject.twig", ['projects' => $projects->__serialize(), 'project' => $project]);
         }
     }
@@ -129,7 +121,6 @@ class ProjectController extends Controller
     {
         $project = $this->projectRepository->findOneBy('name', $projectName['name']);
         $this->projectRepository->delete($project);
-        $this->projectRepository->closeDB();
         header("Location: /project");
     }
 }

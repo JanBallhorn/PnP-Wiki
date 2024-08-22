@@ -27,7 +27,6 @@ class CategoryController extends Controller
     public function index(): void
     {
         $categories = $this->categoryRepository->findAll('name');
-        $this->categoryRepository->closeDB();
         $this->render($this->template, ['categories' => $categories]);
     }
 
@@ -52,20 +51,17 @@ class CategoryController extends Controller
         $upload = $this->prepareUpload($uploader);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
-        $this->userRepository->closeDB();
         $sameCategory = $this->categoryRepository->findOneBy('name', $categoryData['name']);
         if($sameCategory === null && $upload !== false){
             $upload->upload();
             $icon = $this->encodeImg("categoryIcons/" . $upload->getFileName());
             $category = new Category(0, $categoryData['name'], $categoryData['description'], new DateTime(), $user, new DateTime(), $user, $icon);
             $this->categoryRepository->save($category);
-            $this->categoryRepository->closeDB();
             header("Location: /category");
         }
         else{
             $errorFileSize = !$uploader->checkFileSize();
             $errorFileType = !$uploader->checkIfCorrectFileType();
-            $this->categoryRepository->closeDB();
             $this->render('createCategory.twig', [
                 'categoryError' => true,
                 'name' => $categoryData['name'],
@@ -84,7 +80,6 @@ class CategoryController extends Controller
     public function detail(array $categoryName): void
     {
         $category = $this->categoryRepository->findOneBy('name', $categoryName['name']);
-        $this->categoryRepository->closeDB();
         $this->render('categoryDetail.twig', ['category' => $category]);
 
     }
@@ -97,7 +92,6 @@ class CategoryController extends Controller
     public function edit(array $categoryName): void
     {
         $category = $this->categoryRepository->findOneBy('name', $categoryName['name']);
-        $this->categoryRepository->closeDB();
         $this->render('editCategory.twig', ['category' => $category]);
     }
 
@@ -121,12 +115,10 @@ class CategoryController extends Controller
             $icon = $this->encodeImg("categoryIcons/" . $upload->getFileName());
             $category->setIcon($icon);
             $this->categoryRepository->save($category);
-            $this->categoryRepository->closeDB();
             header("Location: /category");
         }
         elseif($sameCategory->getId() === $category->getId() && !isset($upload)){
             $this->categoryRepository->save($category);
-            $this->categoryRepository->closeDB();
             header("Location: /category");
         }
         else{
@@ -138,7 +130,6 @@ class CategoryController extends Controller
                 $errorFileSize = false;
                 $errorFileType = false;
             }
-            $this->categoryRepository->closeDB();
             $this->render('editCategory.twig', [
                 'categoryError' => true,
                 'name' => $categoryData['name'],
@@ -152,7 +143,6 @@ class CategoryController extends Controller
     {
         $category = $this->categoryRepository->findOneBy('name', $categoryName['name']);
         $this->categoryRepository->delete($category);
-        $this->categoryRepository->closeDB();
         header("Location: /category");
     }
     private function prepareUpload(FileUpload $uploader): FileUpload|false

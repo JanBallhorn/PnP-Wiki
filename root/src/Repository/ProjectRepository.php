@@ -17,15 +17,12 @@ class ProjectRepository implements RepositoryInterface
     private mysqli $db;
     private string $table = 'projects';
 
-    public function __construct(){
-        $this->db = Database::dbConnect();
-    }
-
     /**
      * @throws Exception
      */
     public function findAll(string $order = ''): ?ProjectCollection
     {
+        $this->connectDB();
         if(!empty($order)){
             $query = "SELECT * FROM `$this->table` ORDER BY `$order`";
         }
@@ -42,6 +39,7 @@ class ProjectRepository implements RepositoryInterface
      */
     public function findById(int $id): ?Project
     {
+        $this->connectDB();
         $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `id` = ?");
         $stmt->bind_param('i', $id);
         $stmt->execute();
@@ -54,6 +52,7 @@ class ProjectRepository implements RepositoryInterface
      */
     public function findBy(string $column, mixed $value, string $order = ''): ?ProjectCollection
     {
+        $this->connectDB();
         if(!empty($order) && $value !== null){
             $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order`";
         }
@@ -81,6 +80,7 @@ class ProjectRepository implements RepositoryInterface
      */
     public function findOneBy(string $column, mixed $value): ?Project
     {
+        $this->connectDB();
         if($value === null){
             $query = "SELECT * FROM `$this->table` WHERE `$column` IS null";
         }
@@ -104,6 +104,7 @@ class ProjectRepository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Project::class));
         }
         else{
+            $this->connectDB();
             $id = $entity->getId();
             $name = $entity->getName();
             $description = $entity->getDescription();
@@ -126,6 +127,7 @@ class ProjectRepository implements RepositoryInterface
             $stmt->bind_param("sssisiiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $searched, $id);
         }
         $stmt->execute();
+        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -134,12 +136,18 @@ class ProjectRepository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Project::class));
         }
         else{
+            $this->connectDB();
             $id = $entity->getId();
             $query = "DELETE FROM `$this->table` WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("i", $id);
             $stmt->execute();
+            $this->closeDB();
         }
+    }
+    public function connectDB(): void
+    {
+        $this->db = Database::dbConnect();
     }
 
     public function closeDB(): void
@@ -155,6 +163,7 @@ class ProjectRepository implements RepositoryInterface
     private function findOne(false|mysqli_result $result): ?Project
     {
         $project = $result->fetch_object();
+        $this->closeDB();
         if (!empty($project)) {
             $project = $this->convertDataTypes($project);
             return new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private, $project->searched);
@@ -179,8 +188,11 @@ class ProjectRepository implements RepositoryInterface
                 $projects->offsetSet($projects->key(), $project);
                 $projects->next();
             }
+            $this->closeDB();
             return $projects;
-        } else {
+        }
+        else {
+            $this->closeDB();
             return null;
         }
     }
@@ -200,6 +212,7 @@ class ProjectRepository implements RepositoryInterface
             $project->parent_project = null;
         }
         $project->private = $project->private === 1;
+        $this->connectDB();
         return $project;
     }
 }

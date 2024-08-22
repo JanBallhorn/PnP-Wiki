@@ -214,7 +214,6 @@ class Project
     {
         $rep = new ProjectRepository();
         $children = $rep->findBy('parent_project', $this->getId(), 'name');
-        $rep->closeDB();
         if($children !== null){
             return $children;
         }

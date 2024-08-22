@@ -35,7 +35,6 @@ class LoginController extends Controller
     {
         $email = $this->userRepository->findOneBy('email', $loginData['user']);
         $username = $this->userRepository->findOneBy('username', $loginData['user']);
-        $this->userRepository->closeDB();
         $password = hash('sha256', $loginData['password']);
         if(!empty($email)){
             $user = $email;
