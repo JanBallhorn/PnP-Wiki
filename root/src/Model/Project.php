@@ -18,6 +18,7 @@ class Project
     private User $lastEditBy;
     private null|Project $parentProject;
     private bool $private;
+    private int $searched;
 
     /**
      * @param int $id
@@ -29,8 +30,9 @@ class Project
      * @param User $lastEditBy
      * @param null|Project $parentProject
      * @param bool $private
+     * @param int $searched
      */
-    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, null|Project $parentProject, bool $private)
+    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, null|Project $parentProject, bool $private, int $searched)
     {
         $this->id = $id;
         $this->name = $name;
@@ -41,6 +43,7 @@ class Project
         $this->lastEditBy = $lastEditBy;
         $this->parentProject = $parentProject;
         $this->private = $private;
+        $this->searched = $searched;
     }
 
     /**
@@ -185,6 +188,22 @@ class Project
     public function setPrivate(bool $private): void
     {
         $this->private = $private;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSearched(): int
+    {
+        return $this->searched;
+    }
+
+    /**
+     * @param int $searched
+     */
+    public function setSearched(int $searched): void
+    {
+        $this->searched = $searched;
     }
 
     /**
