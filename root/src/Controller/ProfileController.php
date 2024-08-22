@@ -60,18 +60,8 @@ class ProfileController extends Controller
     }
     public function save(array $profileData): void{
         $user = $this->userRepository->findOneBy('username', $profileData['username']);
-        if(isset($profileData['firstnamePublic'])){
-            $user->setFirstnamePublic(1);
-        }
-        else{
-            $user->setFirstnamePublic(0);
-        }
-        if(isset($profileData['lastnamePublic'])){
-            $user->setLastnamePublic(1);
-        }
-        else{
-            $user->setLastnamePublic(0);
-        }
+        $user->setFirstnamePublic(isset($profileData['firstnamePublic']));
+        $user->setLastnamePublic(isset($profileData['lastnamePublic']));
         $user->setProfileText($profileData['profileText']);
         $this->userRepository->save($user);
         $this->userRepository->closeDB();

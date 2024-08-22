@@ -44,7 +44,12 @@ class RegisterController extends Controller
         if(empty($sameEmail) && empty($sameUsername) && $usernameLength > 3 && $passwordLength > 5) {
             $this->userRepository->save($user);
             $this->userRepository->closeDB();
-            $this->sendMail($user);
+            $whiteListFile = fopen(__DIR__ . "/../../inc/whitelist.json", "r");
+            $whiteList = fread($whiteListFile, filesize(__DIR__ . "/../../inc/whitelist.json"));
+            $whiteList = json_decode($whiteList, false);
+            if(in_array($userData['email'], $whiteList)){
+                $this->sendMail($user);
+            }
             header('Location: ' . $this->url . '/register/thanks');
         }
         elseif($passwordLength <= 5){

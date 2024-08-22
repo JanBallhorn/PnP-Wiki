@@ -9,9 +9,9 @@
 {% endblock %}
 
 {% block mainContent %}
-    <h1>Ein neues Projekt erstellen</h1>
-    {% if loggedIn == true %}
-        {% if projectError == true %}
+    {% if loggedIn %}
+        <h1>Ein neues Projekt erstellen</h1>
+        {% if projectError %}
             <h4 class="error">Bei der Erstellung des Projekts ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
         {% endif %}
         <form method="post" action="/project/save" id="createProject" class="flex-50">
@@ -45,6 +45,6 @@
         <input class="button" type="submit" value="Projekt speichern" name="submit" form="createProject">
         <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
     {% else %}
-        <h4 class="error">Du hast nicht die Befugnis ein neues Projekt zu erstellen!</h4>
+        {{ _self.notLoggedIn() }}
     {% endif %}
 {% endblock %}

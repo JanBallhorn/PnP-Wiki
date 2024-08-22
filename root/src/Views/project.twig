@@ -29,14 +29,15 @@
 {% endblock %}
 
 {% block mainContent %}
-    <h1>Projekte</h1>
-    <p>Hier findest du alle Projekte und Subprojekte, in denen du nach Artikeln suchen kannst.</p>
-    {% if loggedIn == true %}
-        <a class="button" href="/project/create">Neues Projekt anlegen</a>
+    {% if loggedIn %}
+        <h1>Projekte</h1>
+        <p>Hier findest du alle Projekte und Subprojekte, in denen du nach Artikeln suchen kannst.</p><a class="button" href="/project/create">Neues Projekt anlegen</a>
+        <ul class="level1">
+        {% for project in mainProjects %}
+                {{ recursiveProject(project) }}
+        {% endfor %}
+        </ul>
+    {% else %}
+        {{ _self.notLoggedIn() }}
     {% endif %}
-    <ul class="level1">
-    {% for project in mainProjects %}
-            {{ recursiveProject(project) }}
-    {% endfor %}
-    </ul>
 {% endblock %}

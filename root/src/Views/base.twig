@@ -1,3 +1,9 @@
+{% macro notLoggedIn() %}
+    <h3>Bitte registriere dich oder melde dich an, um den Inhalt dieser Seite sehen zu können!</h3>
+    <a class="button" href="/register">Registrieren</a>
+    <a class="button" href="/login">Anmelden</a>
+{% endmacro %}
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -25,7 +31,7 @@
                 </div>
                 <form id="search" class="search" method="post" action="">
                     <label>
-                        <input type="search" name="search" placeholder="{% block searchPlaceholder %}Wiki durchsuchen{% endblock %}">
+                        <input type="search" name="search" placeholder="Wiki durchsuchen">
                     </label>
                     <label>
                         <input type="submit" name="submit">
@@ -42,7 +48,7 @@
                     </label>
                 </div>
                 <div class="login">
-                    {% if loggedIn == true %}
+                    {% if loggedIn %}
                         <a class="button" href="/profile?{{ user }}">Ihr Profil</a>
                         <a class="button" href="/logout">Abmelden</a>
                     {% else %}

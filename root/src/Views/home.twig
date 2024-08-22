@@ -5,42 +5,44 @@
 {% block mainContent %}
     <h1>Willkommen im Pen and Paper Wiki!</h1>
     <p>Hier findest du alles rund um die Welt des Pen and Paper-Systems "Das schwarze Auge" (DSA). Navigiere in einzelne Projekte, um in ihnen explizit nach Inhalten zu suchen. Wenn du dich registrierst und anmeldest kannst du auch selber Artikel erstellen oder öffentliche Artikel bearbeiten.</p>
-    <div class="flex-50">
-        <div class="popularProjects">
-            <h2>Projekte</h2>
-            <ul>
-                {% for project in projects %}
-                    <li><a href="/project?project={{ project }}">{{ project }}</a></li>
-                {% endfor %}
-            </ul>
-            <a href="/project">Alle Projekte</a>
+    {% if LoggedIn %}
+        <div class="flex-50">
+            <div class="popularProjects">
+                <h2>Projekte</h2>
+                <ul>
+                    {% for project in projects %}
+                        <li><a href="/project?project={{ project }}">{{ project }}</a></li>
+                    {% endfor %}
+                </ul>
+                <a href="/project">Alle Projekte</a>
+            </div>
+            <div class="popularCategories">
+                <h2>Kategorien</h2>
+                <ul>
+                    {% for category in categories %}
+                        <li><a href="/category?category={{ category }}">{{ category }}</a></li>
+                    {% endfor %}
+                </ul>
+                <a href="/categories">Alle Kategorien</a>
+            </div>
+            <div class="popularArticles">
+                <h2>Beliebte Artikel</h2>
+                <ul>
+                    {% for article in popularArticles %}
+                        <li><a href="/article?name={{ article }}">{{ article }}</a></li>
+                    {% endfor %}
+                </ul>
+                <a href="/article?filter=popular">Mehr beliebte Artikel</a>
+            </div>
+            <div class="newArticles">
+                <h2>Neue Artikel</h2>
+                <ul>
+                    {% for article in newArticles %}
+                        <li><a href="/article?name={{ article }}">{{ article }}</a></li>
+                    {% endfor %}
+                </ul>
+                <a href="/article?filter=new">Mehr Artikel</a>
+            </div>
         </div>
-        <div class="popularCategories">
-            <h2>Kategorien</h2>
-            <ul>
-                {% for category in categories %}
-                    <li><a href="/category?category={{ category }}">{{ category }}</a></li>
-                {% endfor %}
-            </ul>
-            <a href="/categories">Alle Kategorien</a>
-        </div>
-        <div class="popularArticles">
-            <h2>Beliebte Artikel</h2>
-            <ul>
-                {% for article in popularArticles %}
-                    <li><a href="/article?name={{ article }}">{{ article }}</a></li>
-                {% endfor %}
-            </ul>
-            <a href="/article?filter=popular">Mehr beliebte Artikel</a>
-        </div>
-        <div class="newArticles">
-            <h2>Neue Artikel</h2>
-            <ul>
-                {% for article in newArticles %}
-                    <li><a href="/article?name={{ article }}">{{ article }}</a></li>
-                {% endfor %}
-            </ul>
-            <a href="/article?filter=new">Mehr Artikel</a>
-        </div>
-    </div>
+    {% endif %}
 {% endblock %}

@@ -4,8 +4,10 @@
 
 {% block mainContent %}
     <h1>Anmeldung</h1>
-    {% if loginError == true %}
-    <h4 class="error">Keine Übereinstimmung mit einem Account mit diesen Anmeldedaten.</h4>
+    {% if loginError %}
+        <h4 class="error">Keine Übereinstimmung mit einem Account mit diesen Anmeldedaten.</h4>
+    {% elseif verificationError %}
+        <h4 class="error">Ihr Account wurde nicht verifiziert.</h4>
     {% endif %}
     <form method="post" id="login" action="/login/login" class="flex-50">
         <label>Benutzername oder E-Mail*

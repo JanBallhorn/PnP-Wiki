@@ -9,56 +9,62 @@
 {% endblock %}
 
 {% block mainContent %}
-    {% if ownProfile == true %}
-        <h1>Ihr Profil</h1>
+    {% if loggedIn %}
+        {% if ownProfile %}
+            <h1>Ihr Profil</h1>
+        {% else %}
+            <h1>Profil von {{ username }}</h1>
+        {% endif %}
+        {% if editMode and ownProfile %}
+            <form method="post" id="editProfile" action="/profile/save">
+                <input name="username" type="hidden" value="{{ username }}">
+                <fieldset class="checkbox">
+                    <label>
+                        <input type="checkbox" name="firstnamePublic" {% if firstnamePublic %}checked{% endif %}>
+                    Vornamen veröffentlichen?</label>
+                    <label>
+                        <input type="checkbox" name="lastnamePublic" {% if lastnamePublic %}checked{% endif %}>
+                    Nachnamen veröffentlichen?</label>
+                </fieldset>
+                <label>Profiltext
+                    <textarea maxlength="2500" name="profileText">{{ profileText }}</textarea>
+                </label>
+            </form>
+            <input form="editProfile" type="submit" class="button" name="submit" value="Profil speichern">
+        {% elseif editMode and ownProfile != true %}
+            <p class="error">Du kannst dieses Profil nicht bearbeiten!</p>
+        {% else %}
+            {% if firstnamePublic or lastnamePublic %}
+                <p><b>Name: </b>
+                    {% if firstnamePublic %}
+                        {{ firstname }}
+                    {% endif %}
+                    {% if lastnamePublic %}
+                        {{ lastname }}
+                    {% endif %}
+                </p>
+            {% endif %}
+            {% if profileTextExists %}
+                <div>
+                    <b>Profilbeschreibung:</b>
+                    <p>{{ profileText }}</p>
+                </div>
+            {% endif %}
+            {% if ownProfile %}
+                <a class="button" href="/profile/edit?{{ user_query }}">Profil bearbeiten</a>
+            {% endif %}
+        {% endif %}
     {% else %}
-        <h1>Profil von {{ username }}</h1>
-    {% endif %}
-    {% if editMode == true and ownProfile == true %}
-        <form method="post" id="editProfile" action="/profile/save">
-            <input name="username" type="hidden" value="{{ username }}">
-            <fieldset class="checkbox">
-                <label>
-                    <input type="checkbox" name="firstnamePublic" {% if firstnamePublic == 1 %}checked{% endif %}>
-                Vornamen veröffentlichen?</label>
-                <label>
-                    <input type="checkbox" name="lastnamePublic" {% if lastnamePublic == 1 %}checked{% endif %}>
-                Nachnamen veröffentlichen?</label>
-            </fieldset>
-            <label>Profiltext
-                <textarea maxlength="2500" name="profileText">{{ profileText }}</textarea>
-            </label>
-        </form>
-        <input form="editProfile" type="submit" class="button" name="submit" value="Profil speichern">
-    {% elseif editMode == true and ownProfile == false %}
-        <p class="error">Du kannst dieses Profil nicht bearbeiten!</p>
-    {% else %}
-        {% if firstnamePublic == 1 or lastnamePublic == 1 %}
-            <p><b>Name: </b>
-                {% if firstnamePublic == 1 %}
-                    {{ firstname }}
-                {% endif %}
-                {% if lastnamePublic == 1 %}
-                    {{ lastname }}
-                {% endif %}
-            </p>
-        {% endif %}
-        {% if profileTextExists == true %}
-            <div>
-                <b>Profilbeschreibung:</b>
-                <p>{{ profileText }}</p>
-            </div>
-        {% endif %}
-        {% if ownProfile == true %}
-            <a class="button" href="/profile/edit?{{ user_query }}">Profil bearbeiten</a>
-        {% endif %}
+        {{ _self.notLoggedIn() }}
     {% endif %}
 {% endblock %}
 
 {% block asideRight %}
-    <h5>Statistiken:</h5>
-    <ul>
-        <li>Erstellte Artikel:<br> {{ createdArticles }}</li>
-        <li>Neuster Artikel:<br> {{ newestArticle }}</li>
-    </ul>
+    {% if loggedIn %}
+        <h5>Statistiken:</h5>
+        <ul>
+            <li>Erstellte Artikel:<br> {{ createdArticles }}</li>
+            <li>Neuster Artikel:<br> {{ newestArticle }}</li>
+        </ul>
+    {% endif %}
 {% endblock %}

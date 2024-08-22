@@ -47,17 +47,22 @@ class LoginController extends Controller
             $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);
         }
         if(isset($user) && $user->getPassword() === $password){
-            if(isset($loginData['remember'])){
-                $remember = true;
+            if($user->getVerified()){
+                if(isset($loginData['remember'])){
+                    $remember = true;
+                }
+                else{
+                    $remember = false;
+                }
+                $userId = $user->getId();
+                $username = $user->getUsername();
+                $token = $this->buildToken($username, $userId, $remember);
+                $this->createCookie($token, $remember);
+                header('Location: ' . $this->url . '/profile?' . http_build_query(['user'=>$username]));
             }
             else{
-                $remember = false;
+                $this->render($this->template, ['verificationError' => true, 'user' => $loginData['user']]);
             }
-            $userId = $user->getId();
-            $username = $user->getUsername();
-            $token = $this->buildToken($username, $userId, $remember);
-            $this->createCookie($token, $remember);
-            header('Location: ' . $this->url . '/profile?' . http_build_query(['user'=>$username]));
         }
         else{
             $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);

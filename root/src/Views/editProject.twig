@@ -9,9 +9,9 @@
 {% endblock %}
 
 {% block mainContent %}
-    <h1>{{ project.name }} bearbeiten</h1>
-    {% if loggedIn == true %}
-        {% if projectError == true %}
+    {% if loggedIn %}
+        <h1>{{ project.name }} bearbeiten</h1>
+        {% if projectError %}
             <h4 class="error">Bei der Bearbeitung des Projekts ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
         {% endif %}
         <form method="post" action="/project/update" id="editProject" class="flex-50">
@@ -46,6 +46,6 @@
         <input class="button" type="submit" value="Änderungen speichern" name="submit" form="editProject">
         <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
     {% else %}
-        <h4 class="error">Du hast nicht die Befugnis dieses Projekt zu bearbeiten!</h4>
+        {{ _self.notLoggedIn() }}
     {% endif %}
 {% endblock %}

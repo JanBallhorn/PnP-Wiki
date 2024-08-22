@@ -9,9 +9,9 @@
 {% endblock %}
 
 {% block mainContent %}
-    <h1>Eine neue Kategorie erstellen</h1>
-    {% if loggedIn == true %}
-        {% if categoryError == true %}
+    {% if loggedIn %}
+        <h1>Eine neue Kategorie erstellen</h1>
+        {% if categoryError %}
             <h4 class="error">Bei der Erstellung der Kategorie ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
         {% endif %}
         <form method="post" action="/category/save" id="createCategory" enctype="multipart/form-data">
@@ -37,6 +37,6 @@
         <input class="button" type="submit" value="Kategorie speichern" name="submit" form="createCategory">
         <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
     {% else %}
-        <h4 class="error">Du hast nicht die Befugnis eine neue Kategorie zu erstellen!</h4>
+        {{ _self.notLoggedIn() }}
     {% endif %}
 {% endblock %}

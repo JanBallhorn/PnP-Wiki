@@ -10,8 +10,8 @@
 {% block mainContent %}
     <h1>Registrierung</h1>
     <p>Bitte registriere dich, um einen Account anzulegen und öffentliche Artikel bearbeiten zu können.</p>
-    {% if registerError == true %}
-    <h4 class="error">Bei Ihrer Registrierung ist ein Fehler aufgetreten. Überprüfen Sie Ihre Eingaben!</h4>
+    {% if registerError %}
+        <h4 class="error">Bei Ihrer Registrierung ist ein Fehler aufgetreten. Überprüfen Sie Ihre Eingaben!</h4>
     {% endif %}
     <form method="post" id="register" action="/register/register" class="flex-50">
         <fieldset class="flex-50 fullwidth">
@@ -33,7 +33,7 @@
         </label>
         <label>Passwort* (Das Password muss mindestens 6 Zeichen lang sein.)
             <input minlength="6" required type="password" name="password">
-            <span class="error length {% if passwordError == true %}{% else %}hide{% endif %}">Ihr Password enthält weniger als 6 Zeichen!</span>
+            <span class="error length {% if passwordError %}{% else %}hide{% endif %}">Ihr Password enthält weniger als 6 Zeichen!</span>
         </label>
     </form>
     <input class="button" type="submit" name="submit" value="Registrieren" form="register">
