@@ -81,4 +81,14 @@ abstract class Repository
         }
         return $stmt->get_result();
     }
+    protected function deleteFunc(string $table, object $entity): void
+    {
+        $this->connectDB();
+        $id = $entity->getId();
+        $query = "DELETE FROM `$table` WHERE `id` = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $this->closeDB();
+    }
 }

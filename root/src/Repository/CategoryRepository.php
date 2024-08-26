@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Collection\CategoryCollection;
 use App\Model\Category;
 use DateTime;
+use InvalidArgumentException;
 
 class CategoryRepository extends Repository implements RepositoryInterface
 {
@@ -66,13 +67,7 @@ class CategoryRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Category::class));
         }
         else{
-            $this->connectDB();
-            $id = $entity->getId();
-            $query = "DELETE FROM `$this->table` WHERE `id` = ?";
-            $stmt = $this->db->prepare($query);
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $this->closeDB();
+            $this->deleteFunc($this->table, $entity);
         }
     }
 

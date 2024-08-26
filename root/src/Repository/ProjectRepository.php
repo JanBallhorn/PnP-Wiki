@@ -84,13 +84,7 @@ class ProjectRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Project::class));
         }
         else{
-            $this->connectDB();
-            $id = $entity->getId();
-            $query = "DELETE FROM `$this->table` WHERE `id` = ?";
-            $stmt = $this->db->prepare($query);
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $this->closeDB();
+            $this->deleteFunc($this->table, $entity);
         }
     }
 
