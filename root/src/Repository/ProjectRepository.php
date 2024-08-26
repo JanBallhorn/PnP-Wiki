@@ -3,18 +3,15 @@
 namespace App\Repository;
 
 use App\Collection\ProjectCollection;
-use App\Database;
 use App\Model\Project;
 use DateTime;
 use Exception;
 use http\Exception\InvalidArgumentException;
-use mysqli;
 use mysqli_result;
 use mysqli_stmt;
 
-class ProjectRepository implements RepositoryInterface
+class ProjectRepository extends Repository implements RepositoryInterface
 {
-    private mysqli $db;
     private string $table = 'projects';
 
     /**
@@ -22,16 +19,7 @@ class ProjectRepository implements RepositoryInterface
      */
     public function findAll(string $order = ''): ?ProjectCollection
     {
-        $this->connectDB();
-        if(!empty($order)){
-            $query = "SELECT * FROM `$this->table` ORDER BY `$order`";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table`";
-        }
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        return $this->findCollection($stmt);
+        return $this->findCollection($this->findAllFunc($this->table, $order));
     }
 
     /**
@@ -39,12 +27,7 @@ class ProjectRepository implements RepositoryInterface
      */
     public function findById(int $id): ?Project
     {
-        $this->connectDB();
-        $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `id` = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $this->findOne($result);
+        return $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
     /**
@@ -52,27 +35,7 @@ class ProjectRepository implements RepositoryInterface
      */
     public function findBy(string $column, mixed $value, string $order = ''): ?ProjectCollection
     {
-        $this->connectDB();
-        if(!empty($order) && $value !== null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order`";
-        }
-        elseif(!empty($order) && $value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null ORDER BY `$order`";
-        }
-        elseif(empty($order) && $value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS NULL";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
-        }
-        $stmt = $this->db->prepare($query);
-        if($value === null){
-            $stmt->execute();
-        }
-        else{
-            $stmt->execute([$value]);
-        }
-        return $this->findCollection($stmt);
+        return $this->findCollection($this->findByFunc($this->table, $column, $value, $order));
     }
 
     /**
@@ -80,22 +43,7 @@ class ProjectRepository implements RepositoryInterface
      */
     public function findOneBy(string $column, mixed $value): ?Project
     {
-        $this->connectDB();
-        if($value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
-        }
-        $stmt = $this->db->prepare($query);
-        if($value === null){
-            $stmt->execute();
-        }
-        else{
-            $stmt->execute([$value]);
-        }
-        $result = $stmt->get_result();
-        return $this->findOne($result);
+        return $this->findOne($this->findOneByFunc($this->table, $column, $value));
     }
 
     public function save(object $entity): void
@@ -144,15 +92,6 @@ class ProjectRepository implements RepositoryInterface
             $stmt->execute();
             $this->closeDB();
         }
-    }
-    public function connectDB(): void
-    {
-        $this->db = Database::dbConnect();
-    }
-
-    public function closeDB(): void
-    {
-        $this->db->close();
     }
 
     /**

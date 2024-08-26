@@ -1,86 +1,33 @@
-<?php /** @noinspection ALL */
+<?php
 
 namespace App\Repository;
 
 use App\Collection\CategoryCollection;
-use App\Database;
 use App\Model\Category;
-use App\Repository\RepositoryInterface;
-use mysqli;
 use DateTime;
 
-class CategoryRepository implements RepositoryInterface
+class CategoryRepository extends Repository implements RepositoryInterface
 {
-    private mysqli $db;
     private string $table = 'categories';
 
     public function findAll(string $order = ''): ?CategoryCollection
     {
-        $this->connectDB();
-        if(!empty($order)){
-            $query = "SELECT * FROM `$this->table` ORDER BY `$order`";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table`";
-        }
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        return $this->findCollection($stmt);
+        return $this->findCollection($this->findAllFunc($this->table, $order));
     }
 
     public function findById(int $id): ?Category
     {
-        $this->connectDB();
-        $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `id` = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $this->findOne($result);
+        return $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
     public function findBy(string $column, mixed $value, string $order = ''): ?CategoryCollection
     {
-        $this->connectDB();
-        if(!empty($order) && $value !== null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order`";
-        }
-        elseif(!empty($order) && $value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null ORDER BY `$order`";
-        }
-        elseif(empty($order) && $value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS NULL";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
-        }
-        $stmt = $this->db->prepare($query);
-        if($value === null){
-            $stmt->execute();
-        }
-        else{
-            $stmt->execute([$value]);
-        }
-        return $this->findCollection($stmt);
+        return $this->findCollection($this->findByFunc($this->table, $column, $value, $order));
     }
 
     public function findOneBy(string $column, mixed $value): ?Category
     {
-        $this->connectDB();
-        if($value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
-        }
-        $stmt = $this->db->prepare($query);
-        if($value === null){
-            $stmt->execute();
-        }
-        else{
-            $stmt->execute([$value]);
-        }
-        $result = $stmt->get_result();
-        return $this->findOne($result);
+        return $this->findOne($this->findOneByFunc($this->table, $column, $value));
     }
 
     public function save(object $entity): void
@@ -127,15 +74,6 @@ class CategoryRepository implements RepositoryInterface
             $stmt->execute();
             $this->closeDB();
         }
-    }
-    public function connectDB(): void
-    {
-        $this->db = Database::dbConnect();
-    }
-
-    public function closeDB(): void
-    {
-        $this->db->close();
     }
 
     private function findCollection(false|\mysqli_stmt $stmt): ?CategoryCollection

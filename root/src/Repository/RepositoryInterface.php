@@ -11,6 +11,4 @@ interface RepositoryInterface
     public function findOneBy(string $column, mixed $value);
     public function save(object $entity): void;
     public function delete(object $entity): void;
-    public function connectDB(): void;
-    public function closeDB(): void;
 }

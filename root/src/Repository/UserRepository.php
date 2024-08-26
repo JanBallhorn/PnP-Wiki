@@ -1,87 +1,49 @@
-<?php /** @noinspection ALL */
+<?php
 
 namespace App\Repository;
 
 use App\Collection\UserCollection;
-use App\Database;
 use App\Model\User;
 use DateTime;
 use Exception;
 use http\Exception\InvalidArgumentException;
-use mysqli;
 use mysqli_result;
 use mysqli_stmt;
 
-class UserRepository implements RepositoryInterface
+class UserRepository extends Repository implements RepositoryInterface
 {
-    private mysqli $db;
     private string $table = 'users';
+
+    /**
+     * @throws Exception
+     */
     public function findAll(string $order = ''): ?UserCollection
     {
-        $this->connectDB();
-        if(!empty($order)){
-            $query = "SELECT * FROM `$this->table` ORDER BY `$order`";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table`";
-        }
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        return $this->findCollection($stmt);
+        return $this->findCollection($this->findAllFunc($this->table, $order));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findById(int $id): ?User
     {
-        $this->connectDB();
-        $stmt = $this->db->prepare("SELECT * FROM `$this->table` WHERE `id` = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        return $this->findOne($result);
+        return $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findBy(string $column, mixed $value, string $order = ''): ?UserCollection
     {
-        $this->connectDB();
-        if(!empty($order) && $value !== null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ? ORDER BY `$order`";
-        }
-        elseif(!empty($order) && $value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null ORDER BY `$order`";
-        }
-        elseif(empty($order) && $value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS NULL";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
-        }
-        $stmt = $this->db->prepare($query);
-        if($value === null){
-            $stmt->execute();
-        }
-        else{
-            $stmt->execute([$value]);
-        }
-        return $this->findCollection($stmt);
+        return $this->findCollection($this->findByFunc($this->table, $column, $value, $order));
     }
+
+    /**
+     * @throws Exception
+     */
     public function findOneBy(string $column, mixed $value): ?User
     {
-        $this->connectDB();
-        if($value === null){
-            $query = "SELECT * FROM `$this->table` WHERE `$column` IS null";
-        }
-        else{
-            $query = "SELECT * FROM `$this->table` WHERE `$column` = ?";
-        }
-        $stmt = $this->db->prepare($query);
-        if($value === null){
-            $stmt->execute();
-        }
-        else{
-            $stmt->execute([$value]);
-        }
-        $result = $stmt->get_result();
-        return $this->findOne($result);
+        return $this->findOne($this->findOneByFunc($this->table, $column, $value));
     }
 
     public function save(object $entity): void
@@ -132,14 +94,6 @@ class UserRepository implements RepositoryInterface
             $stmt->execute();
             $this->closeDB();
         }
-    }
-    public function connectDB(): void
-    {
-        $this->db = Database::dbConnect();
-    }
-    public function closeDB(): void
-    {
-        $this->db->close();
     }
 
     /**
