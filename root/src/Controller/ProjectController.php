@@ -53,7 +53,7 @@ class ProjectController extends Controller
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
         if($sameProject === null && ($parentProject !== null || $projectData['parentProject'] === '')) {
-            $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, isset($projectData['private']));
+            $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, isset($projectData['private']), 0);
             $this->projectRepository->save($project);
             header("Location: /project");
         }
