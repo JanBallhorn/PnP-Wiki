@@ -141,9 +141,6 @@ class ProjectRepository extends Repository implements RepositoryInterface
         if($project->parent_project !== null){
             $project->parent_project = $this->findById($project->parent_project);
         }
-        else{
-            $project->parent_project = null;
-        }
         $project->private = $project->private === 1;
         $this->connectDB();
         return $project;
