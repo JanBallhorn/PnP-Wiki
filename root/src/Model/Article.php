@@ -2,36 +2,42 @@
 
 namespace App\Model;
 
+use App\Collection\ArticleListCollection;
+use App\Collection\CategoryCollection;
+use App\Repository\ArticleInfoRepository;
+use App\Repository\ArticleListRepository;
+use App\Repository\ListElementRepository;
+use DateTime;
+use Exception;
+
 class Article
 {
     private int $id;
-    private int $published;
-    private int $createdBy;
-    private int $lastEdit;
-    private int $lastEditBy;
+    private DateTime $published;
+    private User $createdBy;
+    private DateTime $lastEdit;
+    private User $lastEditBy;
     private string $headline;
-    private int $project;
-    private string $img;
-    private string $figcaption;
-    private int $private;
-    private int $editable;
+    private Project $project;
+    private ?CategoryCollection $categories;
+    private bool $private;
+    private bool $editable;
     private int $called;
 
     /**
      * @param int $id
-     * @param int $published
-     * @param int $createdBy
-     * @param int $lastEdit
-     * @param int $lastEditBy
+     * @param DateTime $published
+     * @param User $createdBy
+     * @param DateTime $lastEdit
+     * @param User $lastEditBy
      * @param string $headline
-     * @param int $project
-     * @param string $img
-     * @param string $figcaption
-     * @param int $private
-     * @param int $editable
+     * @param Project $project
+     * @param CategoryCollection|null $categories
+     * @param bool $private
+     * @param bool $editable
      * @param int $called
      */
-    public function __construct(int $id, int $published, int $createdBy, int $lastEdit, int $lastEditBy, string $headline, int $project, string $img, string $figcaption, int $private, int $editable, int $called)
+    public function __construct(int $id, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $headline, Project $project, ?CategoryCollection $categories, bool $private, bool $editable, int $called)
     {
         $this->id = $id;
         $this->published = $published;
@@ -40,8 +46,7 @@ class Article
         $this->lastEditBy = $lastEditBy;
         $this->headline = $headline;
         $this->project = $project;
-        $this->img = $img;
-        $this->figcaption = $figcaption;
+        $this->categories = $categories;
         $this->private = $private;
         $this->editable = $editable;
         $this->called = $called;
@@ -64,65 +69,65 @@ class Article
     }
 
     /**
-     * @return int
+     * @return DateTime
      */
-    public function getPublished(): int
+    public function getPublished(): DateTime
     {
         return $this->published;
     }
 
     /**
-     * @param int $published
+     * @param DateTime $published
      */
-    public function setPublished(int $published): void
+    public function setPublished(DateTime $published): void
     {
         $this->published = $published;
     }
 
     /**
-     * @return int
+     * @return User
      */
-    public function getCreatedBy(): int
+    public function getCreatedBy(): User
     {
         return $this->createdBy;
     }
 
     /**
-     * @param int $createdBy
+     * @param User $createdBy
      */
-    public function setCreatedBy(int $createdBy): void
+    public function setCreatedBy(User $createdBy): void
     {
         $this->createdBy = $createdBy;
     }
 
     /**
-     * @return int
+     * @return DateTime
      */
-    public function getLastEdit(): int
+    public function getLastEdit(): DateTime
     {
         return $this->lastEdit;
     }
 
     /**
-     * @param int $lastEdit
+     * @param DateTime $lastEdit
      */
-    public function setLastEdit(int $lastEdit): void
+    public function setLastEdit(DateTime $lastEdit): void
     {
         $this->lastEdit = $lastEdit;
     }
 
     /**
-     * @return int
+     * @return User
      */
-    public function getLastEditBy(): int
+    public function getLastEditBy(): User
     {
         return $this->lastEditBy;
     }
 
     /**
-     * @param int $lastEditBy
+     * @param User $lastEditBy
      */
-    public function setLastEditBy(int $lastEditBy): void
+    public function setLastEditBy(User $lastEditBy): void
     {
         $this->lastEditBy = $lastEditBy;
     }
@@ -144,81 +149,65 @@ class Article
     }
 
     /**
-     * @return int
+     * @return Project
      */
-    public function getProject(): int
+    public function getProject(): Project
     {
         return $this->project;
     }
 
     /**
-     * @param int $project
+     * @param Project $project
      */
-    public function setProject(int $project): void
+    public function setProject(Project $project): void
     {
         $this->project = $project;
     }
 
     /**
-     * @return string
+     * @return CategoryCollection|null
      */
-    public function getImg(): string
+    public function getCategories(): ?CategoryCollection
     {
-        return $this->img;
+        return $this->categories;
     }
 
     /**
-     * @param string $img
+     * @param CategoryCollection|null $categories
      */
-    public function setImg(string $img): void
+    public function setCategories(?CategoryCollection $categories): void
     {
-        $this->img = $img;
+        $this->categories = $categories;
     }
 
     /**
-     * @return string
+     * @return bool
      */
-    public function getFigcaption(): string
-    {
-        return $this->figcaption;
-    }
-
-    /**
-     * @param string $figcaption
-     */
-    public function setFigcaption(string $figcaption): void
-    {
-        $this->figcaption = $figcaption;
-    }
-
-    /**
-     * @return int
-     */
-    public function getPrivate(): int
+    public function getPrivate(): bool
     {
         return $this->private;
     }
 
     /**
-     * @param int $private
+     * @param bool $private
      */
-    public function setPrivate(int $private): void
+    public function setPrivate(bool $private): void
     {
         $this->private = $private;
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function getEditable(): int
+    public function getEditable(): bool
     {
         return $this->editable;
     }
 
     /**
-     * @param int $editable
+     * @param bool $editable
      */
-    public function setEditable(int $editable): void
+    public function setEditable(bool $editable): void
     {
         $this->editable = $editable;
     }
@@ -238,4 +227,33 @@ class Article
     {
         $this->called = $called;
     }
+
+    /**
+     * @throws Exception
+     */
+    public function getInfo(): ArticleInfo
+    {
+        return (new ArticleInfoRepository())->findOneBy('article', $this->getId());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getLists(): ArticleListCollection
+    {
+        $listElements = (new ListElementRepository())->findBy('article', $this->getId());
+        $lists = new ArticleListCollection();
+        for($i = 1; $i <= $listElements->count(); $i++){
+            $list = $listElements->current()->getList();
+            $lists->offsetSet($lists->key(), $list);
+            $lists->next();
+            $listElements->next();
+        }
+        return $lists;
+    }
+
+    public function getContent(){
+
+    }
+
 }

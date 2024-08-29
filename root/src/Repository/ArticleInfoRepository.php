@@ -4,27 +4,40 @@ namespace App\Repository;
 
 use App\Collection\ArticleInfoCollection;
 use App\Model\ArticleInfo;
-use App\Model\ArticleInfoContent;
+use Exception;
 use InvalidArgumentException;
 
 class ArticleInfoRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'article_info';
+
+    /**
+     * @throws Exception
+     */
     public function findAll(string $order = ''): ?ArticleInfoCollection
     {
         return $this->findCollection($this->findAllFunc($this->table, $order));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findById(int $id): ?ArticleInfo
     {
         return $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findBy(string $column, mixed $value, string $order = ''): ?ArticleInfoCollection
     {
         return $this->findCollection($this->findByFunc($this->table, $column, $value, $order));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findOneBy(string $column, mixed $value): ?ArticleInfo
     {
         return $this->findOne($this->findOneByFunc($this->table, $column, $value));
@@ -66,6 +79,10 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             $this->deleteFunc($this->table, $entity);
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function findCollection(false|\mysqli_stmt $stmt): ?ArticleInfoCollection
     {
         $infos = new ArticleInfoCollection();
@@ -85,6 +102,10 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             return null;
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function findOne(false|\mysqli_result $result): ?ArticleInfo
     {
         $info = $result->fetch_object();
@@ -97,6 +118,10 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             return null;
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function convertDataTypes(object $info): object{
         $info->article = (new ArticleRepository())->findById($info->article);
         $this->connectDB();
