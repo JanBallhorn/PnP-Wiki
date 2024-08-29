@@ -70,7 +70,7 @@ class ProjectRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("ssiiii", $name, $description, $createdBy, $lastEditBy, $parentProject, $private);
         }
         else{
-            $query = "UPDATE `$this->table` SET `name` = ?, `description` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `parent_project` = ?, `private` = ?, `searched = ?` WHERE `id` = ?";
+            $query = "UPDATE `$this->table` SET `name` = ?, `description` = ?, `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `parent_project` = ?, `private` = ?, `searched` = ? WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("sssisiiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $searched, $id);
         }
