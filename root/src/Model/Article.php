@@ -5,7 +5,6 @@ namespace App\Model;
 use App\Collection\ArticleListCollection;
 use App\Collection\CategoryCollection;
 use App\Repository\ArticleInfoRepository;
-use App\Repository\ArticleListRepository;
 use App\Repository\ListElementRepository;
 use DateTime;
 use Exception;
