@@ -90,7 +90,7 @@ class ArticleInfoContentRepository extends Repository implements RepositoryInter
     {
         $infoContent = $result->fetch_object();
         $this->closeDB();
-        if(!empty($source)){
+        if(!empty($infoContent)){
             $infoContent = $this->convertDataTypes($infoContent);
             return new ArticleInfoContent($infoContent->id, $infoContent->info, $infoContent->topic, $infoContent->content, $infoContent->headline, $infoContent->sequence);
         }

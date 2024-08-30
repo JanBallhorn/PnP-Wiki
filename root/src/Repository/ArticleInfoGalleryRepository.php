@@ -88,7 +88,7 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
     {
         $infoGallery = $result->fetch_object();
         $this->closeDB();
-        if(!empty($source)){
+        if(!empty($infoGallery)){
             $infoGallery = $this->convertDataTypes($infoGallery);
             return new ArticleInfoGallery($infoGallery->id, $infoGallery->info, $infoGallery->img, $infoGallery->figcaption, $infoGallery->sequence);
         }

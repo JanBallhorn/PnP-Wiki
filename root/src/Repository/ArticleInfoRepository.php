@@ -110,7 +110,7 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
     {
         $info = $result->fetch_object();
         $this->closeDB();
-        if(!empty($source)){
+        if(!empty($info)){
             $info = $this->convertDataTypes($info);
             return new ArticleInfo($info->id, $info->article, $info->headline, $info->img, $info->figcaption);
         }

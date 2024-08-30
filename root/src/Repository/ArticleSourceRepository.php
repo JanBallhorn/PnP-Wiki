@@ -89,7 +89,7 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
     {
         $articleSource = $result->fetch_object();
         $this->closeDB();
-        if(!empty($source)){
+        if(!empty($articleSource)){
             $articleSource = $this->convertDataTypes($articleSource);
             return new ArticleSource($articleSource->id, $articleSource->article, $articleSource->source, $articleSource->page, $articleSource->link);
         }
