@@ -81,16 +81,16 @@
                                 <li><a href="/category">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
                         </li>
-                        <li class="submenu"><a href="/article?filter=popular">Beliebte Artikel<i class="fa-solid fa-arrow-right"></i></a>
+                        <li class="submenu"><a href="/article/list?filter=called&page=1">Beliebte Artikel<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for article in popularArticles %}
                                     <li><a href="/article/{{ article }}">{{ article }}</a></li>
                                 {% endfor %}
-                                <li><a href="/article?filter=popular">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
+                                <li><a href="/article/list?filter=called&page=1">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
                         </li>
-                        <li><a href="/create">Artikel erstellen</a></li>
-                        <li><a href="/random">Zufälliger Artikel</a></li>
+                        <li><a href="/article/create">Artikel erstellen</a></li>
+                        <li><a href="/article/random">Zufälliger Artikel</a></li>
                         <li><a href="/search">Suche</a></li>
                     </ul>
                 </nav>

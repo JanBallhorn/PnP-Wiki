@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Controller\Controller;
 use App\FileUpload;
 use App\Model\Category;
 use App\Repository\CategoryRepository;

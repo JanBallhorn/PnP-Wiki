@@ -39,7 +39,7 @@ class ProjectController extends Controller
      */
     public function create(): void
     {
-        $projects = $this->projectRepository->findAll();
+        $projects = $this->projectRepository->findAll('name');
         $this->render('createProject.twig', ['projects' => $projects->__serialize()]);
     }
 
