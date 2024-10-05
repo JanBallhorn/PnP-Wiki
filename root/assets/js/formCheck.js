@@ -58,5 +58,22 @@ function checkFileSize(el, allowedFileSize, i = 0){
         el.parent().find(".error.fileSize").removeClass("hide");
     }
 }
+function checkCheckboxCollectionChecked(el){
+    let checked = false;
+    let inputs = el.children().children();
+    inputs.each(function (){
+        if($(this).is(":checked")){
+            checked = true;
+            return false;
+        }
+    })
+    if (checked){
+        el.find(".error.notChecked").addClass("hide");
+    }
+    else{
+        el.find(".error.notChecked").removeClass("hide");
+    }
+    console.log(checked);
+}
 
-export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize};
+export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked};
