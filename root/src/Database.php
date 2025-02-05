@@ -7,7 +7,14 @@ class Database
 {
     public static function dbConnect(): mysqli
     {
-        $conn = new mysqli("sql718.your-server.de", "verpla_1", "zUz5ffaPKifb711z", "dsa_wiki");
+        $location = dirname($_SERVER['DOCUMENT_ROOT']);
+        $file = fopen($location . '/db_credentials.txt', 'r');
+        $host = chop(fgets($file));
+        $user = chop(fgets($file));
+        $password = chop(fgets($file));
+        $dbname = chop(fgets($file));
+        fclose($file);
+        $conn = new mysqli($host, $user, $password, $dbname);
         if ($conn->connect_error) {
             die("Connection failed: " . $conn->connect_error);
         }

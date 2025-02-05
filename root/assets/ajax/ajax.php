@@ -1,10 +1,13 @@
 <?php /** @noinspection ALL */
 
 function dbConnect(){
-    $host = "sql718.your-server.de";
-    $username = "verpla_1";
-    $password = "zUz5ffaPKifb711z";
-    $dbname = "dsa_wiki";
+    $location = dirname($_SERVER['DOCUMENT_ROOT']);
+    $file = fopen($location . '/db_credentials.txt', 'r');
+    $host = chop(fgets($file));
+    $user = chop(fgets($file));
+    $password = chop(fgets($file));
+    $dbname = chop(fgets($file));
+    fclose($file);
 
     $conn = new mysqli($host, $username, $password, $dbname);
     if($conn->connect_error){
