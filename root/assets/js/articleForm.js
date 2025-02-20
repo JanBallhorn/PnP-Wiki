@@ -3,10 +3,10 @@ $(function (){
     let elHeadline = $("input[name='headline']");
     let elCheckbox = $("fieldset.checkbox.required");
     let edit = false;
-    let origName = $("h1").text().split(' ')[0];
+    let origName = $("h1").text().split(' ')[1];
     let path = $(location).attr('pathname');
     let pathArray = path.slice(1).split("/");
-    if(pathArray[1] === 'edit'){
+    if(pathArray[1] === 'edit' || pathArray[1] === 'update'){
         edit = true;
     }
     elHeadline.blur(function (){
@@ -24,7 +24,7 @@ $(function (){
         checkDuplicate(elHeadline, 'headline', elHeadline.val(), 'articles', origName);
     }
     elCheckbox.children().children().each(function(){
-        $(this).blur(function (){
+        $(this).click(function (){
             checkCheckboxCollectionChecked(elCheckbox);
         });
     });

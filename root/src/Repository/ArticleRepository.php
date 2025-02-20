@@ -217,7 +217,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $categories->next();
             }
             $this->closeDB();
-            return $category;
+            return $categories;
         }
         else {
             $this->closeDB();

@@ -1,6 +1,6 @@
 {% extends "base.twig" %}
 
-{% block title %}Artikel erstellen - {% endblock %}
+{% block title %}Artikel bearbeiten - {% endblock %}
 
 {% block head %}
     {{ parent() }}
@@ -10,18 +10,19 @@
 
 {% block mainContent %}
     {% if loggedIn %}
-        <h1>Artikel erstellen</h1>
+        <h1>Artikel {{ article.headline }} bearbeiten</h1>
         {% if articleError %}
-            <h4 class="error">Bei der Erstellung des Artikels ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
+            <h4 class="error">Bei der Bearbeitung des Artikels ist ein Fehler aufgetreten! Bitte vergewissere dich, dass alle nötigen Felder korrekt ausgefüllt wurden.</h4>
         {% endif %}
-        <form id="createArticle" method="post" action="/article/save" class="flex-50">
+        <form id="editArticle" method="post" action="/article/update" class="flex-50">
+            <input type="hidden" name="id" value="{{ article.id }}">
             <label>Überschrift des Artikels*
-                <input name="headline" maxlength="300" value="{{ headline }}" required>
+                <input name="headline" maxlength="300" value="{{ article.headline }}">
                 <span class="error exists hide">Ein Artikel mit dieser Überschrift existiert bereits!</span>
                 <span class="maxLength">300</span>
             </label>
             <label>Projekt*
-                <input class="searchselect" name="project" list="projects" value="{{ project }}">
+                <input class="searchselect" name="project" list="projects" value="{{ article.project.name }}">
                 <datalist>
                     <option value="">-</option>
                     {% for project in projects %}
@@ -33,17 +34,21 @@
             </label>
             <fieldset>
                 <label class="fullwidth">Alternative Überschriften
-                    <input name="altHeadlines[]" value="{{ altHeadline1 }}">
-                    <input name="altHeadlines[]" value="{{ altHeadline2 }}">
-                    <input name="altHeadlines[]" value="{{ altHeadline3 }}">
-                    <input name="altHeadlines[]" value="{{ altHeadline4 }}">
+                    <input name="altHeadlines[]" value="{{ article.altHeadlines.0 }}">
+                    <input name="altHeadlines[]" value="{{ article.altHeadlines.1 }}">
+                    <input name="altHeadlines[]" value="{{ article.altHeadlines.2 }}">
+                    <input name="altHeadlines[]" value="{{ article.altHeadlines.3 }}">
                 </label>
             </fieldset>
             <label>Such-Tags
-                <textarea name="tags">{{ tags }}</textarea>
+                <textarea name="tags">{{ article.tags|join(', ') }}</textarea>
                 <span>Tags mit Kommata trennen!</span>
             </label>
             <fieldset class="checkbox required">Kategorien*
+                {% set categoryIds = [] %}
+                {% for category in article.categories.__serialize %}
+                    {% set categoryIds = categoryIds|merge([category.id]) %}
+                {% endfor %}
                 {% for category in categories %}
                     <label>
                         <input type="checkbox" name="category[]"  value="{{ category.id }}" {% if category.id in categoryIds %}checked{% endif %}>
@@ -54,16 +59,16 @@
             </fieldset>
             <fieldset class="checkbox">
                 <label>
-                    <input type="checkbox" name="private" {% if private %}checked{% endif %}>
+                    <input type="checkbox" name="private" {% if article.private %}checked{% endif %}>
                     Dieser Artikel soll privat sein (Private Artikel können nur von dir gesehen und bearbeitet werden.)
                 </label>
                 <label>
-                    <input type="checkbox" name="editable" {% if editable %}checked{% endif %}>
+                    <input type="checkbox" name="editable" {% if article.editable %}checked{% endif %}>
                     Andere sollen diesen Artikel bearbeiten dürfen
                 </label>
             </fieldset>
         </form>
-        <input class="button" type="submit" value="Artikel speichern" name="submit" form="createArticle">
+        <input class="button" type="submit" value="Artikel speichern" name="submit" form="editArticle">
         <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
     {% else %}
         {{ _self.notLoggedIn() }}

@@ -2,6 +2,11 @@
 
 namespace App\Model;
 
+use App\Collection\ArticleInfoContentCollection;
+use App\Collection\ArticleInfoGalleryCollection;
+use App\Repository\ArticleInfoContentRepository;
+use App\Repository\ArticleInfoGalleryRepository;
+
 class ArticleInfo
 {
     private int $id;
@@ -106,4 +111,30 @@ class ArticleInfo
         $this->figcaption = $figcaption;
     }
 
+    public function getContent(): ArticleInfoContentCollection
+    {
+        return (new ArticleInfoContentRepository())->findBy('info', $this->getId(), 'sequence');
+    }
+
+    public function getContentHeadlines(): ?array
+    {
+        $contentHeadlines = array();
+        $contents = $this->getContent();
+        if($contents->count() > 0){
+            for($i = 1; $i < $contents->count(); $i++){
+                $contentHeadlines[] = $contents->current()->getHeadline();
+                $contents->next();
+            }
+            $contents->rewind();
+            return array_unique($contentHeadlines, SORT_REGULAR);
+        }
+        else{
+            return null;
+        }
+    }
+
+    public function getGallery(): ArticleInfoGalleryCollection
+    {
+        return (new ArticleInfoGalleryRepository())->findBy('info', $this->getId(), 'sequence');
+    }
 }
