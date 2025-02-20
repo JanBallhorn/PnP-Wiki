@@ -1,5 +1,5 @@
 function checkDuplicate(el, field, value, table, orig = ''){
-    let ajaxPath = "https://wiki.verplant-durch-aventurien.de/assets/ajax/ajax.php";
+    let ajaxPath = "../../src/Ajax.php";
     $.post(ajaxPath,
         {
             'errorType': 'duplicate',
@@ -32,7 +32,7 @@ function showMaxLength(el){
     el.siblings().each(function (){
         if($(this).hasClass('maxLength')){
             let lengthSpan = $(this);
-            let max = $(this).text()
+            let max = $(el).attr('maxlength')
             $(this).text( i + "/" + max)
             el.keyup(function (){
                 lengthSpan.text(el.val().length + "/" + max);
