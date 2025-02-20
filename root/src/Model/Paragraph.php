@@ -2,7 +2,12 @@
 
 namespace App\Model;
 
+use App\Collection\ParagraphContentCollection;
+use App\Repository\ParagraphContentRepository;
+use App\Collection\ParagraphGalleryCollection;
+use App\Repository\ParagraphGalleryRepository;
 use DateTime;
+use Exception;
 
 class Paragraph
 {
@@ -163,6 +168,22 @@ class Paragraph
     public function setSequence(int $sequence): void
     {
         $this->sequence = $sequence;
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getContents(): ?ParagraphContentCollection
+    {
+        return (new ParagraphContentRepository())->findBy('paragraph', $this->getId(), 'sequence');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getGalleries(): ?ParagraphGalleryCollection
+    {
+        return (new ParagraphGalleryRepository())->findBy('paragraph', $this->getId(), 'sequence');
     }
 
 }
