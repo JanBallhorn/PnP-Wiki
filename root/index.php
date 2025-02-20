@@ -9,4 +9,8 @@ require_once __DIR__ . '/src/Controller/RegisterController.php';
 
 $uri = $_SERVER['REQUEST_URI'];
 $router = new Router($uri);
-$router->execRoute();
+try {
+    $router->execRoute();
+} catch (ReflectionException $e) {
+    echo $e->getMessage();
+}
