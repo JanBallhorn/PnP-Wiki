@@ -100,6 +100,10 @@ p{
     display: block;
     border-radius: 0.3em;
     cursor: pointer;
+    font-size: 1em;
+}
+button{
+    cursor: pointer;
 }
 main .button{
     margin-top: 0.5em;
@@ -261,14 +265,14 @@ main form fieldset.checkbox{
 main form fieldset.checkbox label{
     padding-bottom: 0;
 }
-main form label:has(.tox-tinymce){
+/*main form label:has(.tox-tinymce){
     display: flex;
     flex-flow: column;
     width: 100%;
     margin-bottom: 0.5em;
     padding-bottom: 1.2em;
     position: relative;
-}
+}*/
 input[type='checkbox']{
     font-size: 1rem;
     width: 1.25em;
@@ -339,6 +343,40 @@ input.searchselect ~ i{
     top: 50%;
     transform: translateY(-50%);
     transition: 0.3s;
+}
+.paragraph{
+    margin: 1em 0;
+}
+.paragraph + hr{
+    height: 0.35em;
+    background-color: var(--txt);
+}
+.paragraph:has(.controlButtons), .paragraph .text, .paragraph .gallery, .uploads > div, .upload > div{
+    padding: 1em;
+    background-color: var(--body-bg);
+    border: 2px solid var(--box-bg);
+    display: flex;
+    justify-content: space-between;
+}
+.paragraph:has(.controlButtons) .controlButtons{
+    width: 2.5em;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+}
+.controlButtons button{
+    border: none;
+    background-color: transparent;
+    font-size: 2em;
+}
+.controlButtons button:not(:last-child){
+    margin-bottom: 0.5em;
+}
+.paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child{
+    width: calc(100% - 3.5em);
+}
+.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(4) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown{
+    display: none;
 }
 
 /******************************************
@@ -619,3 +657,7 @@ PROJECT LIST
     filter: var(--svg-filter);
     height: 5em;
 }
+
+/******************************************
+ARTICLES
+******************************************/

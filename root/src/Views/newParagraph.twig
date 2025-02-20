@@ -1,0 +1,14 @@
+<div class='paragraph' data-position="{{ i }}">
+    <div>
+        <label>Überschrift des Abschnitts
+            <input name="headline[]" maxlength="300" value="">
+            <span class="maxLength">300</span>
+        </label>
+        <div class="newButtons">
+            <button type='button' class='newText button'>+<br/>Text hinzufügen</button>
+            <button type='button' class='newGallery button'>+<br/>Bild / Galerie hinzufügen</button>
+        </div>
+    </div>
+    {{ include("controlButtons.twig") }}
+</div>
+<hr>
