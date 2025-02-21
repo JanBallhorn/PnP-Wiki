@@ -7,6 +7,7 @@ use App\Model\Category;
 use App\Repository\CategoryRepository;
 use App\Repository\UserRepository;
 use DateTime;
+use Exception;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -26,6 +27,10 @@ class CategoryController extends Controller
     public function index(): void
     {
         $categories = $this->categoryRepository->findAll('name');
+        foreach ($categories as $category) {
+            $category->setIcon($this->encodeImg($category->getIcon()));
+            $categories->offsetSet($categories->key(), $category);
+        }
         $this->render($this->template, ['categories' => $categories]);
     }
 
@@ -43,6 +48,7 @@ class CategoryController extends Controller
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError
+     * @throws Exception
      */
     public function save(array $categoryData): void
     {
@@ -53,7 +59,7 @@ class CategoryController extends Controller
         $sameCategory = $this->categoryRepository->findOneBy('name', $categoryData['name']);
         if($sameCategory === null && $upload !== false){
             $upload->upload();
-            $icon = $this->encodeImg("categoryIcons/" . $upload->getFileName());
+            $icon = "categoryIcons/" . $upload->getFileName();
             $category = new Category(0, $categoryData['name'], $categoryData['description'], new DateTime(), $user, new DateTime(), $user, $icon);
             $this->categoryRepository->save($category);
             header("Location: /category");
@@ -111,7 +117,7 @@ class CategoryController extends Controller
         }
         if($sameCategory->getId() === $category->getId() && isset($upload) && $upload !== false){
             $upload->upload();
-            $icon = $this->encodeImg("categoryIcons/" . $upload->getFileName());
+            $icon = "categoryIcons/" . $upload->getFileName();
             $category->setIcon($icon);
             $this->categoryRepository->save($category);
             header("Location: /category");
