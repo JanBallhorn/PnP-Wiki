@@ -40,21 +40,38 @@ function showMaxLength(el){
         }
     });
 }
-function checkFileType(el, allowedFileTypes, i = 0){
-    let file = el[0].files[i];
-    if(allowedFileTypes.includes(file['type'])){
+function checkFileType(el, allowedFileTypes){
+    let error = false;
+    let imgName = "";
+    for (const i of el[0].files){
+        if(!allowedFileTypes.includes(i['type'])){
+            error = true;
+            imgName = i['name'];
+            break;
+        }
+    }
+    if(!error){
         el.parent().find(".error.fileType").addClass("hide");
     }
     else{
+        el.parent().find(".error.fileType").text(el.parent().find(".error.fileType").text() + " (" + imgName + ")");
         el.parent().find(".error.fileType").removeClass("hide");
     }
 }
-function checkFileSize(el, allowedFileSize, i = 0){
-    let file = el[0].files[i];
-    if(file['size'] <= allowedFileSize){
+function checkFileSize(el, allowedFileSize){
+    let error = false;
+    let imgName = [];
+    for (const i of el[0].files){
+        if(i['size'] > allowedFileSize){
+            error = true;
+            imgName.push(i['name']);
+        }
+    }
+    if(!error){
         el.parent().find(".error.fileSize").addClass("hide");
     }
     else{
+        el.parent().find(".error.fileSize").text(el.parent().find(".error.fileSize").text() + " (" + imgName.toString() + ")");
         el.parent().find(".error.fileSize").removeClass("hide");
     }
 }
@@ -73,7 +90,6 @@ function checkCheckboxCollectionChecked(el){
     else{
         el.find(".error.notChecked").removeClass("hide");
     }
-    console.log(checked);
 }
 
 export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked};
