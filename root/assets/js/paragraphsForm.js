@@ -158,12 +158,17 @@ function defineContentParams(paragraphPos){
 }
 
 function controlButtons(){
+    let minimizeEl = $(".minimize");
     let deleteEl = $(".delete");
     let mUpEl = $(".moveUp");
     let mDownEl = $(".moveDown");
+    minimizeEl.off("click");
     deleteEl.off("click");
     mUpEl.off("click");
     mDownEl.off("click");
+    minimizeEl.on("click", function (){
+        $(this).toggleClass("minimized");
+    });
     deleteEl.on("click", function (){
         let elToDel = $(this).parent().parent();
         let parNum = elToDel.closest('.paragraph').attr('data-position');

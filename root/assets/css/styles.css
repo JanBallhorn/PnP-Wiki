@@ -357,26 +357,55 @@ input.searchselect ~ i{
     border: 2px solid var(--box-bg);
     display: flex;
     justify-content: space-between;
+    position: relative;
 }
 .paragraph:has(.controlButtons) .controlButtons{
     width: 2.5em;
     display: flex;
     flex-flow: column;
     justify-content: center;
+    padding: 1.25rem 0;
 }
 .controlButtons button{
     border: none;
     background-color: transparent;
     font-size: 2em;
 }
-.controlButtons button:not(:last-child){
+.controlButtons .moveUp{
     margin-bottom: 0.5em;
+}
+.controlButtons .moveDown{
+    margin-top: 0.5em;
 }
 .paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child{
     width: calc(100% - 3.5em);
 }
-.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(4) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown{
+.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(4) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp{
     display: none;
+}
+.controlButtons .minimize{
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-left: 2px solid var(--box-bg);
+    border-bottom: 2px solid var(--box-bg);
+    width: 2rem;
+    height: 2rem;
+    overflow: hidden;
+    line-height: 2rem;
+    background-color: var(--body-bg);
+}
+.contentImage .minimize{
+    display: none;
+}
+.controlButtons .minimize:hover, .controlButtons .minimize.minimized{
+    background-color: var(--txt);
+    color: var(--body-bg);
+    transition: 0.3s;
+}
+.paragraph:has(> .controlButtons .minimized), .contentElement:has(> .controlButtons .minimized){
+    max-height: 150px;
+    overflow: hidden;
 }
 
 /******************************************
