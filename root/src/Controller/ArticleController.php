@@ -67,7 +67,7 @@ class ArticleController extends Controller
             $categories->rewind();
             $project = $this->projectRepository->findOneBy('name', $article['project']);
             $tags = explode(",", $article['tags']);
-            $altHeadlines = array_filter($article['altHeadlines'], function($h){return(!empty($h));});
+            $altHeadlines = explode(",", $article['altHeadlines']);
             $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $project, $categories, $tags, $altHeadlines, isset($article['private']), isset($article['editable']), 0);
             $this->articleRepository->save($article);
             header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
@@ -83,10 +83,7 @@ class ArticleController extends Controller
                 'project' => $article['project'],
                 'categoryIds' => $article['category'],
                 'categoryError' => !isset($article['category']),
-                'altHeadline1' => $article['altHeadline'][0],
-                'altHeadline2' => $article['altHeadline'][1],
-                'altHeadline3' => $article['altHeadline'][2],
-                'altHeadline4' => $article['altHeadline'][3],
+                'altHeadlines' => $article['altHeadlines'],
                 'tags' => $article['tags'],
                 'private' => isset($article['private']),
                 'editable' => isset($article['editable'])
@@ -132,7 +129,7 @@ class ArticleController extends Controller
             $categories->rewind();
             $project = $this->projectRepository->findOneBy('name', $articleData['project']);
             $tags = explode(",", $articleData['tags']);
-            $altHeadlines = array_filter($articleData['altHeadlines'], function($h){return(!empty($h));});
+            $altHeadlines = explode(",", $articleData['altHeadlines']);
             $article->setLastEdit(new DateTime());
             $article->setLastEditBy($user);
             $article->setHeadline($articleData['headline']);

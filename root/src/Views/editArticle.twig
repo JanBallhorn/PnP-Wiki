@@ -32,14 +32,10 @@
                 <i class="fa-solid fa-chevron-down"></i>
                 <span class="error notfound hide">Dieses Projekt existiert nicht!</span>
             </label>
-            <fieldset>
-                <label class="fullwidth">Alternative Überschriften
-                    <input name="altHeadlines[]" value="{{ article.altHeadlines.0 }}">
-                    <input name="altHeadlines[]" value="{{ article.altHeadlines.1 }}">
-                    <input name="altHeadlines[]" value="{{ article.altHeadlines.2 }}">
-                    <input name="altHeadlines[]" value="{{ article.altHeadlines.3 }}">
-                </label>
-            </fieldset>
+            <label>Alternative Überschriften
+                <textarea name="altHeadlines">{{ article.altHeadlines|join(', ') }}</textarea>
+                <span>Überschriften mit Kommata trennen!</span>
+            </label>
             <label>Such-Tags
                 <textarea name="tags">{{ article.tags|join(', ') }}</textarea>
                 <span>Tags mit Kommata trennen!</span>
