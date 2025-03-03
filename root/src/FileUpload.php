@@ -19,8 +19,10 @@ class FileUpload
         $this->maxFileSize = $maxFileSize;
         $this->file = $this->dir . $this->fileName;
         $this->imageFileType = strtolower(pathinfo($this->file,PATHINFO_EXTENSION));
-        $this->tmpFile = $FILES["fileUpload"]["tmp_name"];
-        $this->fileSize = $FILES["fileUpload"]["size"];
+        if(!empty($FILES)){
+            $this->tmpFile = $FILES["fileUpload"]["tmp_name"];
+            $this->fileSize = $FILES["fileUpload"]["size"];
+        }
     }
 
     /**

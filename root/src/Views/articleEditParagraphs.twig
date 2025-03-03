@@ -71,7 +71,7 @@
                                                 </label>
                                                 <div class="uploads">
                                                     {% for gallery in paragraph.galleries.__serialize %}
-                                                        <div data-position="{{ gallery.sequence }}">
+                                                        <div class="contentImage" data-position="{{ gallery.sequence }}">
                                                             <div>
                                                                 <img src="{{ gallery.img }}" alt="Bild{{ gallery.sequence }}" width="100">
                                                                 <label>Bildunterschrift
@@ -102,7 +102,7 @@
                                                     </span>
                                                 </label>
                                                 <div class="upload">
-                                                    <div data-position="1">
+                                                    <div class="contentImage" data-position="1">
                                                         <div>
                                                             <img src="{{ content.img }}" alt="{{ content.figcaption }}" width="100">
                                                             <label>Bildunterschrift
@@ -129,7 +129,7 @@
                             <div class="contentElement" data-position="1">
                                 <div>
                                     <label>Inhalt
-                                        <textarea name="p1c1" class="tinymce"></textarea>
+                                        <textarea name="p1c1text" class="tinymce"></textarea>
                                     </label>
                                 </div>
                             </div>
@@ -143,7 +143,7 @@
                         <div class="contentElement" data-position="1">
                             <div>
                                 <label>Inhalt
-                                    <textarea name="p1c1" class="tinymce"></textarea>
+                                    <textarea name="p1c1text" class="tinymce"></textarea>
                                 </label>
                             </div>
                         </div>
@@ -151,6 +151,8 @@
                     <hr>
                 {% endif %}
                 <button type="button" class="newParagraph button">+<br/>Neuen Abschnitt hinzufügen</button>
+                <input name="name" type="hidden" value="{{ article.headline }}">
+                <input name="images" type="hidden" value="{{ images }}">
                 <input class="button" type="submit" value="Inhalte speichern" name="submit" form="editParagraphs">
             </form>
         </div>

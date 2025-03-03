@@ -63,3 +63,9 @@ if(isset($_POST['type']) && $_POST['type'] === 'render'){
     $result = (new Ajax())->ajaxRender($_POST['template'], $data);
     echo json_encode(['render' => $result]);
 }
+
+if(isset($_POST['type']) && $_POST['type'] === 'submit'){
+    $jsonFile = fopen($_SERVER['DOCUMENT_ROOT'] . "/assets/js/json/" . $_POST['name'] . ".json", "w");
+    fwrite($jsonFile, $_POST['data']);
+    fclose($jsonFile);
+}

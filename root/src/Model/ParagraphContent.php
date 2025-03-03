@@ -155,7 +155,19 @@ class ParagraphContent
      */
     public function getGalleryImages(): ?ParagraphGalleryCollection
     {
-        return (new ParagraphGalleryRepository())->findBy('paragraph_contents', $this->getId(), 'sequence');
+        $galleries = (new ParagraphGalleryRepository())->findBy('paragraph_content', $this->getId(), 'sequence');
+        foreach ($galleries as $gallery) {
+            $image = dirname($_SERVER['DOCUMENT_ROOT']) . "/externalImages/" . $gallery->getImg();
+            if(!exif_imagetype($image)){
+                $imgType = "image/svg+xml";
+            }
+            else{
+                $imgType = image_type_to_mime_type(exif_imagetype($image));
+            }
+            $gallery->setImg("data:" . $imgType . ";base64," . base64_encode(file_get_contents($image)));
+            $galleries->offsetSet($galleries->key(), $gallery);
+        }
+        return $galleries;
     }
 
 }

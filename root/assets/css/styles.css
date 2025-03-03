@@ -232,7 +232,7 @@ main form fieldset{
     width: 100%;
     border: none;
 }
-main form label:has(input:not([type='checkbox'], [type='radio'], [type='submit']), textarea:not(.tinymce)){
+main form label:has(input:not([type='checkbox'], [type='radio'], [type='submit'], [type='hidden']), textarea:not(.tinymce)){
     display: flex;
     flex-flow: column;
     margin-bottom: 0.5em;

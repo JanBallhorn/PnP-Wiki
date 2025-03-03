@@ -7,12 +7,14 @@ $(function () {
     newGallery();
     singleImgUpload();
     galleryImgUpload();
+    //submit();
     const intervalControlButtons = setInterval(function (){
         controlButtons();
         $("main form input, main form textarea").each(function (){
             let input = $(this);
             showMaxLength(input);
         });
+        parseImages();
     }, 500);
 });
 
@@ -102,6 +104,33 @@ function galleryImgUpload(){
     });
 }
 
+function submit(){
+    $("#editParagraphs").on("submit", function (event){
+        let ajaxPath = "../../src/Ajax.php";
+        $.post(ajaxPath,
+            {
+                "type": "submit",
+                "data": JSON.stringify(images),
+                "name": $("h1").text()
+            }
+            );
+        event.preventDefault();
+        let form = $(this);
+        let actionUrl = form.attr('action');
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: form.serialize(),
+            success: function (){
+                window.location.href = actionUrl;
+            }
+        });
+        /*setTimeout(function (){
+            $("#editParagraphs")[0].submit();
+        }, 1000);*/
+    });
+}
+
 function getTemplate(el, template, data = [], append = false){
     let ajaxPath = "../../src/Ajax.php";
     $.post(ajaxPath,
@@ -144,6 +173,10 @@ function initMce(){
             content_css: 'tinymce-5'
         });
     });
+}
+
+function parseImages(){
+    $("input[name='images']").val(JSON.stringify(images));
 }
 
 function defineContentParams(paragraphPos){
@@ -217,7 +250,14 @@ function controlButtons(){
                     elToDel.nextAll(".paragraph").each(function (){
                         $(this).attr('data-position', $(this).attr('data-position') - 1);
                         $(this).find(".contentElement input.galleryUpload, .contentElement textarea.tinymce").each(function (){
-                            $(this).attr("name", "p" + ($(this).attr("name").charAt(1) - 1) + "c" + $(this).attr("name").charAt(3));
+                            let elementName = "";
+                            if($(this).hasClass("galleryUpload")){
+                                elementName = "gallery";
+                            }
+                            else{
+                                elementName = "text";
+                            }
+                            $(this).attr("name", "p" + ($(this).attr("name").charAt(1) - 1) + "c" + $(this).attr("name").charAt(3) + elementName);
                             $(this).closest(".contentElement").find(".contentImage input[type='text']").each(function (){
                                 $(this).attr("name", "p" + ($(this).attr("name").charAt(1) - 1) + "c" + $(this).attr("name").charAt(3) + "figcaption[]");
                             });
@@ -571,7 +611,7 @@ function controlButtons(){
 function changeInputNamesAndVals(el, html, vals, parNum, contentPos){
     el.html(html);
     let i = 0;
-    el.find("input[type='file']").attr("name", "p" + parNum + "c" + contentPos);
+    el.find("input[type='file']").attr("name", "p" + parNum + "c" + contentPos + "gallery");
     el.find("input[type='text']").each(function (){
         $(this).val(vals[i]);
         $(this).attr("name", "p" + parNum + "c" + contentPos + "figcaption[]");
