@@ -53,18 +53,16 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             $id = $entity->getId();
             $article = $entity->getArticle()->getId();
             $headline = $entity->getHeadline();
-            $img = $entity->getImg();
-            $figcaption = $entity->getFigcaption();
         }
         if($id === 0){
-            $query = "INSERT INTO `$this->table` (article, headline, img, figcaption) VALUES(?, ?, ?, ?)";
+            $query = "INSERT INTO `$this->table` (article, headline) VALUES(?, ?, ?, ?)";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("isss", $article, $headline, $img, $figcaption);
+            $stmt->bind_param("is", $article, $headline);
         }
         else{
-            $query = "UPDATE `$this->table` SET `article` = ?, `headline` = ?, `img` = ?, `figcaption` = ? WHERE `id` = ?";
+            $query = "UPDATE `$this->table` SET `article` = ?, `headline` = ? WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("isssi", $article, $headline, $img, $figcaption, $id);
+            $stmt->bind_param("isi", $article, $headline,  $id);
         }
         $stmt->execute();
         $this->closeDB();
@@ -90,7 +88,7 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($info = $result->fetch_object()) {
                 $info = $this->convertDataTypes($info);
-                $info = new ArticleInfo($info->id, $info->article, $info->headline, $info->img, $info->figcaption);
+                $info = new ArticleInfo($info->id, $info->article, $info->headline);
                 $infos->offsetSet($infos->key(), $info);
                 $infos->next();
             }
@@ -112,7 +110,7 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
         $this->closeDB();
         if(!empty($info)){
             $info = $this->convertDataTypes($info);
-            return new ArticleInfo($info->id, $info->article, $info->headline, $info->img, $info->figcaption);
+            return new ArticleInfo($info->id, $info->article, $info->headline);
         }
         else{
             return null;

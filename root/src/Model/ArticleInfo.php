@@ -12,23 +12,17 @@ class ArticleInfo
     private int $id;
     private Article $article;
     private string $headline;
-    private string $img;
-    private string $figcaption;
 
     /**
      * @param int $id
      * @param Article $article
      * @param string $headline
-     * @param string $img
-     * @param string $figcaption
      */
-    public function __construct(int $id, Article $article, string $headline, string $img, string $figcaption)
+    public function __construct(int $id, Article $article, string $headline)
     {
         $this->id = $id;
         $this->article = $article;
         $this->headline = $headline;
-        $this->img = $img;
-        $this->figcaption = $figcaption;
     }
 
     /**
@@ -77,38 +71,6 @@ class ArticleInfo
     public function setHeadline(string $headline): void
     {
         $this->headline = $headline;
-    }
-
-    /**
-     * @return string
-     */
-    public function getImg(): string
-    {
-        return $this->img;
-    }
-
-    /**
-     * @param string $img
-     */
-    public function setImg(string $img): void
-    {
-        $this->img = $img;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFigcaption(): string
-    {
-        return $this->figcaption;
-    }
-
-    /**
-     * @param string $figcaption
-     */
-    public function setFigcaption(string $figcaption): void
-    {
-        $this->figcaption = $figcaption;
     }
 
     public function getContent(): ArticleInfoContentCollection
