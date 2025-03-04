@@ -29,126 +29,130 @@
 {% endblock %}
 
 {% block mainContent %}
-    {% if article.editable or username == article.createdBy.username %}
-        <div class="articleEdit">
-            <a href="/article/editParagraphs?name={{ article.headline }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
-            <a href="/article/editInfo?name={{ article.headline }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
-            <a href="/article/edit?name={{ article.headline }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
-        </div>
-    {% endif %}
-    <h1>{{ article.headline }}</h1>
-    <div class="articleContent">
-        <div class="mainArticleContent">
-            <form id="editParagraphs" method="post" action="/article/saveParagraphs">
-                {% for paragraph in article.paragraphs.__serialize %}
-                    <div class='paragraph' data-position="{{ paragraph.sequence }}">
-                        {% if paragraph.sequence != 1 %}
-                            <div>
-                                <label>Überschrift des Abschnitts
-                                    <input name="headline[]" maxlength="300" value="{{ paragraph.headline }}">
-                                    <span class="maxLength">300</span>
-                                </label>
-                                {% for content in paragraph.contents.__serialize %}
-                                    {% if content.gallery == 1 %}
-                                        <div class="contentElement gallery" data-position="{{ content.sequence }}">
-                                            <div>
-                                                <label class="button">
-                                                    <i class="fa-solid fa-upload"></i>Bild-Upload
-                                                    <input type="file" name="p{{ paragraph.sequence }}c{{ content.sequence }}gallery" class="galleryUpload" multiple accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
-                                                    <span class="info">Die Dateien müssen eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und dürfen jeweils maximal 1 MB groß sein.</span>
-                                                    <span class="errorContainer">
-                                                        <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Die Datei ist zu groß.</span>
-                                                        <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
-                                                    </span>
-                                                </label>
-                                                <div class="uploads">
-                                                    {% for gallery in content.galleryImages.__serialize %}
-                                                        <div class="contentImage">
-                                                            <div>
-                                                                <img src="{{ gallery.img }}" alt="Bild{{ gallery.sequence }}" width="100">
-                                                                <label>Bildunterschrift
-                                                                    <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" value="{{ gallery.figcaption }}" maxlength="500">
-                                                                    <span class="maxLength">500</span>
-                                                                </label>
+    {% if loggedIn %}
+        {% if article.editable or username == article.createdBy.username %}
+            <div class="articleEdit">
+                <a href="/article/editParagraphs?name={{ article.headline }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
+                <a href="/article/editInfo?name={{ article.headline }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
+                <a href="/article/edit?name={{ article.headline }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
+            </div>
+        {% endif %}
+        <h1>{{ article.headline }}</h1>
+        <div class="articleContent">
+            <div class="mainArticleContent">
+                <form id="editParagraphs" method="post" action="/article/saveParagraphs">
+                    {% for paragraph in article.paragraphs.__serialize %}
+                        <div class='paragraph' data-position="{{ paragraph.sequence }}">
+                            {% if paragraph.sequence != 1 %}
+                                <div>
+                                    <label>Überschrift des Abschnitts
+                                        <input name="headline[]" maxlength="300" value="{{ paragraph.headline }}">
+                                        <span class="maxLength">300</span>
+                                    </label>
+                                    {% for content in paragraph.contents.__serialize %}
+                                        {% if content.gallery == 1 %}
+                                            <div class="contentElement gallery" data-position="{{ content.sequence }}">
+                                                <div>
+                                                    <label class="button">
+                                                        <i class="fa-solid fa-upload"></i>Bild-Upload
+                                                        <input type="file" name="p{{ paragraph.sequence }}c{{ content.sequence }}gallery" class="galleryUpload" multiple accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
+                                                        <span class="info">Die Dateien müssen eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und dürfen jeweils maximal 1 MB groß sein.</span>
+                                                        <span class="errorContainer">
+                                                            <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Die Datei ist zu groß.</span>
+                                                            <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
+                                                        </span>
+                                                    </label>
+                                                    <div class="uploads">
+                                                        {% for gallery in content.galleryImages.__serialize %}
+                                                            <div class="contentImage">
+                                                                <div>
+                                                                    <img src="{{ gallery.img }}" alt="Bild{{ gallery.sequence }}" width="100">
+                                                                    <label>Bildunterschrift
+                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" value="{{ gallery.figcaption }}" maxlength="500">
+                                                                        <span class="maxLength">500</span>
+                                                                    </label>
+                                                                </div>
+                                                                {{ include("controlButtons.twig") }}
                                                             </div>
-                                                            {{ include("controlButtons.twig") }}
-                                                        </div>
-                                                    {% endfor %}
+                                                        {% endfor %}
+                                                    </div>
                                                 </div>
+                                                {{ include("controlButtons.twig") }}
                                             </div>
-                                            {{ include("controlButtons.twig") }}
-                                        </div>
-                                    {% else %}
-                                        <div class="contentElement text" data-position="{{ content.sequence }}">
-                                            <div>
-                                                <label>Inhalt
-                                                    <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ content.text }}</textarea>
-                                                </label>
-                                                <label class="button">
-                                                    <i class="fa-solid fa-upload"></i>Bild-Upload
-                                                    <input type="file" name="Img{{ content.sequence }}" class="imgUpload" accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
-                                                    <span class="info">Die Datei muss eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und darf maximal 1 MB groß sein.</span>
-                                                    <span class="errorContainer">
-                                                        <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Die Datei ist zu groß.</span>
-                                                        <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
-                                                    </span>
-                                                </label>
-                                                <div class="upload">
-                                                    {% if content.img != null %}
-                                                        <div class="contentImage">
-                                                            <div>
-                                                                <img src="{{ content.img }}" alt="{{ content.figcaption }}" width="100">
-                                                                <label>Bildunterschrift
-                                                                    <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" maxlength="500" value="{{ content.figcaption }}">
-                                                                    <span class="maxLength">500</span>
-                                                                </label>
+                                        {% else %}
+                                            <div class="contentElement text" data-position="{{ content.sequence }}">
+                                                <div>
+                                                    <label>Inhalt
+                                                        <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ content.text }}</textarea>
+                                                    </label>
+                                                    <label class="button">
+                                                        <i class="fa-solid fa-upload"></i>Bild-Upload
+                                                        <input type="file" name="Img{{ content.sequence }}" class="imgUpload" accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
+                                                        <span class="info">Die Datei muss eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und darf maximal 1 MB groß sein.</span>
+                                                        <span class="errorContainer">
+                                                            <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Die Datei ist zu groß.</span>
+                                                            <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
+                                                        </span>
+                                                    </label>
+                                                    <div class="upload">
+                                                        {% if content.img != null %}
+                                                            <div class="contentImage">
+                                                                <div>
+                                                                    <img src="{{ content.img }}" alt="{{ content.figcaption }}" width="100">
+                                                                    <label>Bildunterschrift
+                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" maxlength="500" value="{{ content.figcaption }}">
+                                                                        <span class="maxLength">500</span>
+                                                                    </label>
+                                                                </div>
+                                                                {{ include("controlButtons.twig") }}
                                                             </div>
-                                                            {{ include("controlButtons.twig") }}
-                                                        </div>
-                                                    {% endif %}
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
+                                                {{ include("controlButtons.twig") }}
                                             </div>
-                                            {{ include("controlButtons.twig") }}
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                                <div class="newButtons">
-                                    <button type='button' class='newText button'>+<br/>Text hinzufügen</button>
-                                    <button type='button' class='newGallery button'>+<br/>Bild / Galerie hinzufügen</button>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <div class="newButtons">
+                                        <button type='button' class='newText button'>+<br/>Text hinzufügen</button>
+                                        <button type='button' class='newGallery button'>+<br/>Bild / Galerie hinzufügen</button>
+                                    </div>
                                 </div>
-                            </div>
-                            {{ include("controlButtons.twig") }}
-                        {% else %}
+                                {{ include("controlButtons.twig") }}
+                            {% else %}
+                                <h3>Einleitung</h3>
+                                <div class="contentElement" data-position="1">
+                                    <div>
+                                        <label>Inhalt
+                                            <textarea name="p1c1text" class="tinymce">{{ paragraph.contents.__serialize[0].text }}</textarea>
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <hr>
+                    {% endfor %}
+                    {% if article.paragraphs.__serialize is empty %}
+                        <div class='paragraph' data-position="1">
                             <h3>Einleitung</h3>
                             <div class="contentElement" data-position="1">
                                 <div>
                                     <label>Inhalt
-                                        <textarea name="p1c1text" class="tinymce">{{ paragraph.contents.__serialize[0].text }}</textarea>
+                                        <textarea name="p1c1text" class="tinymce"></textarea>
                                     </label>
                                 </div>
                             </div>
-                        {% endif %}
-                    </div>
-                    <hr>
-                {% endfor %}
-                {% if article.paragraphs.__serialize is empty %}
-                    <div class='paragraph' data-position="1">
-                        <h3>Einleitung</h3>
-                        <div class="contentElement" data-position="1">
-                            <div>
-                                <label>Inhalt
-                                    <textarea name="p1c1text" class="tinymce"></textarea>
-                                </label>
-                            </div>
                         </div>
-                    </div>
-                    <hr>
-                {% endif %}
-                <button type="button" class="newParagraph button">+<br/>Neuen Abschnitt hinzufügen</button>
-                <input name="name" type="hidden" value="{{ article.headline }}">
-                <input name="images" type="hidden">
-                <input class="button" type="submit" value="Inhalte speichern" name="submit" form="editParagraphs">
-            </form>
+                        <hr>
+                    {% endif %}
+                    <button type="button" class="newParagraph button">+<br/>Neuen Abschnitt hinzufügen</button>
+                    <input name="name" type="hidden" value="{{ article.headline }}">
+                    <input name="images" type="hidden">
+                    <input class="button" type="submit" value="Inhalte speichern" name="submit" form="editParagraphs">
+                </form>
+            </div>
         </div>
-    </div>
+    {% else %}
+        {{ _self.notLoggedIn() }}
+    {% endif %}
 {% endblock %}
