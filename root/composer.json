@@ -1,6 +1,6 @@
 {
     "require": {
-	"twig/twig": "^3.0",
+	"twig/twig": "^3.20",
         "ext-mysqli": "*",
         "lcobucci/jwt": "^5.3",
       "ext-exif": "*",
