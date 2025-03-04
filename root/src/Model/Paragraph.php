@@ -176,16 +176,20 @@ class Paragraph
     public function getContents(): ?ParagraphContentCollection
     {
         $contents = (new ParagraphContentRepository())->findBy('paragraph', $this->getId(), 'sequence');
-        foreach ($contents as $content) {
-            $image = dirname($_SERVER['DOCUMENT_ROOT']) . "/externalImages/" . $content->getImg();
-            if(!exif_imagetype($image)){
-                $imgType = "image/svg+xml";
+        if($contents !== null){
+            foreach ($contents as $content) {
+                if($content->getImg() !== null) {
+                    $image = dirname($_SERVER['DOCUMENT_ROOT']) . "/externalImages/" . $content->getImg();
+                    if(!exif_imagetype($image)){
+                        $imgType = "image/svg+xml";
+                    }
+                    else{
+                        $imgType = image_type_to_mime_type(exif_imagetype($image));
+                    }
+                    $content->setImg("data:" . $imgType . ";base64," . base64_encode(file_get_contents($image)));
+                    $contents->offsetSet($contents->key(), $content);
+                }
             }
-            else{
-                $imgType = image_type_to_mime_type(exif_imagetype($image));
-            }
-            $content->setImg("data:" . $imgType . ";base64," . base64_encode(file_get_contents($image)));
-            $contents->offsetSet($contents->key(), $content);
         }
         return $contents;
     }

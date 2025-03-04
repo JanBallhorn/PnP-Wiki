@@ -2,12 +2,12 @@ import {checkFileSize, checkFileType, showMaxLength} from "./formCheck.js";
 
 const images = {};
 $(function () {
+    getImages();
     newParagraph();
     newText();
     newGallery();
     singleImgUpload();
     galleryImgUpload();
-    //submit();
     const intervalControlButtons = setInterval(function (){
         controlButtons();
         $("main form input, main form textarea").each(function (){
@@ -17,6 +17,25 @@ $(function () {
         parseImages();
     }, 500);
 });
+
+function getImages(){
+    $(".contentImage").each(function (){
+        let paragraphNum = $(this).closest('.paragraph').attr("data-position");
+        let contentClass = $(this).closest('.contentElement').attr("class");
+        let contentNum = $(this).closest('.contentElement').attr("data-position");
+        let data = $(this).find("img").attr("src");
+        let property = "p" + paragraphNum + "c" + contentNum;
+        if(typeof images[property] === "undefined"){
+            images[property] = [];
+        }
+        if(contentClass.includes("text")){
+            images[property] = [data];
+        }
+        else{
+            images[property][images[property].length] = data;
+        }
+    });
+}
 
 function newParagraph(){
     $(".newParagraph").on("click", function () {
@@ -101,33 +120,6 @@ function galleryImgUpload(){
                 }, 100);
             }
         }
-    });
-}
-
-function submit(){
-    $("#editParagraphs").on("submit", function (event){
-        let ajaxPath = "../../src/Ajax.php";
-        $.post(ajaxPath,
-            {
-                "type": "submit",
-                "data": JSON.stringify(images),
-                "name": $("h1").text()
-            }
-            );
-        event.preventDefault();
-        let form = $(this);
-        let actionUrl = form.attr('action');
-        $.ajax({
-            type: "POST",
-            url: actionUrl,
-            data: form.serialize(),
-            success: function (){
-                window.location.href = actionUrl;
-            }
-        });
-        /*setTimeout(function (){
-            $("#editParagraphs")[0].submit();
-        }, 1000);*/
     });
 }
 

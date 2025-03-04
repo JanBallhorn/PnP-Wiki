@@ -171,6 +171,14 @@ class ArticleController extends Controller
         if(!file_exists(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name'])){
             mkdir(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name']);
         }
+        else{
+            $files = glob(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name'] . "/*");
+            foreach($files as $file){
+                if(is_file($file)){
+                    unlink($file);
+                }
+            }
+        }
         $uploads = [];
         foreach ($articleImages as $element => $paragraphImages){
             $i = 1;
@@ -196,13 +204,62 @@ class ArticleController extends Controller
             fclose($file);
         }
         $article = $this->articleRepository->findOneBy('headline', $articleData['name']);
-        $introduction = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, "", 1);
-        $this->paragraphRepository->save($introduction);
-        $i = 2;
-        foreach ($articleData['headline'] as $headline){
-            $paragraph = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, $headline, $i);
-            $this->paragraphRepository->save($paragraph);
-            $i++;
+        $oldParagraphs = $this->paragraphRepository->findBy('article', $article->getId(), 'sequence');
+        if($oldParagraphs !== null){
+            $oldIntroduction = $oldParagraphs->offsetGet(0);
+            $introduction = new Paragraph($oldIntroduction->getId(), $oldIntroduction->getPublished(), $oldIntroduction->getCreatedBy(), new DateTime(), $user, $article, "", 1);
+            $this->paragraphRepository->save($introduction);
+            $contents = $this->paragraphContentRepository->findBy('paragraph', $introduction->getId());
+            foreach ($contents as $content){
+                $this->paragraphContentRepository->delete($content);
+            }
+            $oldParagraphs->offsetUnset(0);
+            $i = 1;
+            if(count($articleData['headline']) > $oldParagraphs->count()){
+                foreach ($articleData['headline'] as $headline){
+                    if($oldParagraphs->count() >= $i){
+                        $oldParagraph = $oldParagraphs->offsetGet($i);
+                        $paragraph = new Paragraph($oldParagraph->getId(), $oldParagraph->getPublished(), $oldParagraph->getCreatedBy(), new DateTime(), $user, $article, $headline, $i + 1);
+                        $contents = $this->paragraphContentRepository->findBy('paragraph', $oldParagraph->getId());
+                        foreach ($contents as $content){
+                            $this->paragraphContentRepository->delete($content);
+                        }
+                    }
+                    else{
+                        $paragraph = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, $headline, $i + 1);
+
+                    }
+                    $this->paragraphRepository->save($paragraph);
+                    $i++;
+                }
+            }
+            else{
+                foreach($oldParagraphs->__serialize() as $oldParagraph){
+                    if(count($articleData['headline']) >= $i){
+                        $headline = $articleData['headline'][$i - 1];
+                        $paragraph = new Paragraph($oldParagraph->getId(), $oldParagraph->getPublished(), $oldParagraph->getCreatedBy(), new DateTime(), $user, $article, $headline, $i + 1);
+                        $this->paragraphRepository->save($paragraph);
+                        $contents = $this->paragraphContentRepository->findBy('paragraph', $oldParagraph->getId());
+                        foreach ($contents as $content){
+                            $this->paragraphContentRepository->delete($content);
+                        }
+                    }
+                    else{
+                        $this->paragraphRepository->delete($oldParagraph);
+                    }
+                    $i++;
+                }
+            }
+        }
+        else{
+            $introduction = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, "", 1);
+            $this->paragraphRepository->save($introduction);
+            $i = 2;
+            foreach ($articleData['headline'] as $headline){
+                $paragraph = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, $headline, $i);
+                $this->paragraphRepository->save($paragraph);
+                $i++;
+            }
         }
         foreach ($articleData as $element => $value){
             if(str_contains($element, 'text') || str_contains($element, 'gallery')){
