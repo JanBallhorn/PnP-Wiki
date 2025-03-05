@@ -79,10 +79,12 @@
                     </tr>
                     <tr>
                         <td>
-                            <figure>
-                                <img src="{{ info.img }}" alt="{{ info.figcaption }}">
-                                <figcaption>{{ info.figcaption }}</figcaption>
-                            </figure>
+                            {% for image in info.Gallery.__serialize %}
+                                <figure>
+                                    <img src="{{ encodeImg(image.img) }}" alt="{{ image.figcaption }}">
+                                    <figcaption>{{ image.figcaption }}</figcaption>
+                                </figure>
+                            {% endfor %}
                         </td>
                     </tr>
                     {% for headline in info.ContentHeadlines %}
@@ -98,16 +100,6 @@
                             {% endif %}
                         {% endfor %}
                     {% endfor %}
-                    <tr>
-                        <td>
-                            {% for image in info.Gallery.__serialize %}
-                                <figure>
-                                    <img src="{{ image.img }}" alt="{{ image.figcaption }}">
-                                    <figcaption>{{ image.figcaption }}</figcaption>
-                                </figure>
-                            {% endfor %}
-                        </td>
-                    </tr>
                 </table>
             </div>
         </div>

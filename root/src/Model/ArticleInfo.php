@@ -117,7 +117,7 @@ class ArticleInfo
         $contents = $this->getContent();
         if($contents->count() > 0){
             $contents->rewind();
-            for($i = 1; $i < $contents->count(); $i++){
+            for($i = 1; $i <= $contents->count(); $i++){
                 $contentHeadlines[] = $contents->current()->getHeadline();
                 $contents->next();
             }

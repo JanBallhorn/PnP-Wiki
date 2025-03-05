@@ -39,12 +39,8 @@ class ArticleController extends Controller
         private readonly ParagraphRepository $paragraphRepository = new ParagraphRepository(),
         private readonly ParagraphContentRepository $paragraphContentRepository = new ParagraphContentRepository(),
         private readonly ParagraphGalleryRepository $paragraphGalleryRepository = new ParagraphGalleryRepository(),
-        private readonly ArticleInfoRepository $articleInfoRepository = new ArticleInfoRepository(),
-        private readonly ArticleInfoContentRepository $articleInfoContentRepository = new ArticleInfoContentRepository(),
-        private readonly ArticleInfoGalleryRepository $articleInfoGalleryRepository = new ArticleInfoGalleryRepository(),
-    ){
-
-    }
+        private readonly ArticleInfoRepository $articleInfoRepository = new ArticleInfoRepository()
+    ){}
 
     /**
      * @throws Exception
@@ -395,12 +391,11 @@ class ArticleController extends Controller
         }
         if($sameInfo !== null){
             $info = new ArticleInfo($sameInfo->getId(), $article, $info['mainHeadline'], $infoContents, $infoGallery);
-            $this->articleInfoRepository->save($info);
         }
         else{
             $info = new ArticleInfo(0, $article, $info['mainHeadline'], $infoContents, $infoGallery);
-            $this->articleInfoRepository->save($info);
         }
+        $this->articleInfoRepository->save($info);
         header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
     }
 

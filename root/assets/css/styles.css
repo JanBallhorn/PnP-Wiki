@@ -380,7 +380,7 @@ input.searchselect ~ i{
 .paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child, .contentImage > div:first-child, .infoTable > div:first-child, .infoTableRow > div:first-child{
     width: calc(100% - 3.5em);
 }
-.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(6) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp, .infoTableRow button:not(.delete){
+.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(6) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp, .infoTableRow button:not(.delete), .infoTable:last-child .moveDown{
     display: none;
 }
 .controlButtons .minimize{

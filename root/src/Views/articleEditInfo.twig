@@ -20,7 +20,7 @@
         <h2>Informationstabelle anlegen</h2>
         <form id="editInfo" method="post" action="/article/saveInfo">
             <label>Überschrift der Informationstabelle
-                <input name="mainHeadline" maxlength="300" value="" required>
+                <input name="mainHeadline" maxlength="300" value="{{ article.info.headline }}" required>
                 <span class="maxLength">300</span>
             </label>
             <div class="infoGallery">
@@ -34,10 +34,62 @@
                             <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
                         </span>
                     </label>
-                    <div class="uploads"></div>
+                    <div class="uploads">
+                        {% for img in article.info.gallery.__serialize %}
+                            <div class="contentImage">
+                                <div>
+                                    <img src="{{ encodeImg(img.img) }}" alt="Bild{{ img.sequence }}" width="100">
+                                    <label>Bildunterschrift
+                                        <input name="pcfigcaption[]" type="text" value="{{ img.figcaption }}" maxlength="500">
+                                        <span class="maxLength">500</span>
+                                    </label>
+                                </div>
+                                {{ include("controlButtons.twig") }}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-            <div class="tables"></div>
+            <div class="tables">
+                {% set i = 1 %}
+                {% for headline in article.info.contentHeadlines %}
+                    <div class="infoTable" data-position="{{ i }}">
+                        <div>
+                            <label>Überschrift des Abschnitts
+                                <input name="tableHeadline[]" maxlength="300" required value="{{ headline }}">
+                                <span class="maxLength">300</span>
+                            </label>
+                            <div class="rows">
+                                {% for infoContent in article.info.content.__serialize %}
+                                    {% if infoContent.headline == headline %}
+                                        <div class="infoTableRow">
+                                            <div>
+                                                <label>
+                                                    <input name="rowTopic{{ i }}[]" maxlength="300" value="{{ infoContent.topic }}">
+                                                    <span class="maxLength">300</span>
+                                                </label>
+                                                <label>
+                                                    <input name="rowInfo{{ i }}[]" maxlength="300" value="{{ infoContent.content }}">
+                                                    <span class="maxLength">300</span>
+                                                </label>
+                                            </div>
+                                            {{ include("controlButtons.twig") }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="rowButtons">
+                                <button type="button" class="newRow button">+<br/>Neue Reihe/n hinzufügen</button>
+                                <label>Anzahl neuer Reihen
+                                    <input type="number" value="1">
+                                </label>
+                            </div>
+                        </div>
+                        {{ include("controlButtons.twig") }}
+                    </div>
+                    {% set i = i + 1 %}
+                {% endfor %}
+            </div>
             <button type="button" class="newTable button">+<br/>Neuen Tabellenabschnitt hinzufügen</button>
             <input name="name" type="hidden" value="{{ article.headline }}">
             <input name="images" type="hidden">

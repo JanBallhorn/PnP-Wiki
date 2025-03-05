@@ -3,6 +3,7 @@ import {checkFileSize, checkFileType, showMaxLength, getTemplate} from "./formCh
 const images = [];
 
 $(function (){
+    getImages();
     newTable();
     newRow();
     ImgUpload();
@@ -15,6 +16,13 @@ $(function (){
         parseImages();
     }, 500);
 });
+
+function getImages(){
+    $(".contentImage").each(function (){
+        let data = $(this).find("img").attr("src");
+        images.push(data);
+    });
+}
 
 function parseImages(){
     $("input[name='images']").val(JSON.stringify(images));
@@ -85,7 +93,7 @@ function controlButtons(){
             }
         }
         else if(elToDel.hasClass("contentImage")){
-            let curPos = elToDel.prevAll().length + 1;
+            let curPos = elToDel.prevAll().length;
             images.splice(curPos, 1);
             elToDel.remove();
         }
