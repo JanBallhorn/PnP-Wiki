@@ -1,0 +1,13 @@
+<div class="infoTableRow">
+    <div>
+        <label>
+            <input name="rowTopic{{ i }}[]" maxlength="300" value="{{ j }}">
+            <span class="maxLength">300</span>
+        </label>
+        <label>
+            <input name="rowInfo{{ i }}[]" maxlength="300" value="{{ k }}">
+            <span class="maxLength">300</span>
+        </label>
+    </div>
+    {{ include("controlButtons.twig") }}
+</div>

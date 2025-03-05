@@ -3,7 +3,11 @@
 namespace App\Repository;
 
 use App\Collection\ArticleInfoCollection;
+use App\Collection\ArticleInfoContentCollection;
+use App\Collection\ArticleInfoGalleryCollection;
 use App\Model\ArticleInfo;
+use App\Model\ArticleInfoContent;
+use App\Model\ArticleInfoGallery;
 use Exception;
 use InvalidArgumentException;
 
@@ -43,6 +47,9 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
         return $this->findOne($this->findOneByFunc($this->table, $column, $value));
     }
 
+    /**
+     * @throws Exception
+     */
     public function save(object $entity): void
     {
         if(!$entity instanceof ArticleInfo){
@@ -53,9 +60,11 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             $id = $entity->getId();
             $article = $entity->getArticle()->getId();
             $headline = $entity->getHeadline();
+            $contents = $entity->getContent();
+            $gallery = $entity->getGallery();
         }
         if($id === 0){
-            $query = "INSERT INTO `$this->table` (article, headline) VALUES(?, ?, ?, ?)";
+            $query = "INSERT INTO `$this->table` (article, headline) VALUES(?, ?)";
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("is", $article, $headline);
         }
@@ -64,7 +73,42 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("isi", $article, $headline,  $id);
         }
-        $stmt->execute();
+        $success = $stmt->execute();
+        if($success){
+            $newArticleInfo = $id === 0;
+            if(!$newArticleInfo){
+                $id = $this->findOneBy('article', $article)->getId();
+                $query = "DELETE FROM `article_info_contents` WHERE `info` = ?";
+                $stmt = $this->db->prepare($query);
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $query = "DELETE FROM `article_info_gallery` WHERE `info` = ?";
+                $stmt = $this->db->prepare($query);
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+            }
+            else{
+                $id = $this->db->insert_id;
+            }
+            $query = "INSERT INTO `article_info_contents` (info, topic, content, headline, sequence) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $this->db->prepare($query);
+            $contents->rewind();
+            for($i = 1; $i <= $contents->count(); $i++){
+                $content = $contents->current();
+                $stmt->bind_param("isssi", $id, $content->getTopic(), $content->getContent(), $content->getHeadline(), $content->getSequence());
+                $stmt->execute();
+                $contents->next();
+            }
+            $query = "INSERT INTO `article_info_gallery` (info, img, figcaption, sequence) VALUES (?, ?, ?, ?)";
+            $stmt = $this->db->prepare($query);
+            $gallery->rewind();
+            for($i = 1; $i <= $gallery->count(); $i++){
+                $image = $gallery->current();
+                $stmt->bind_param("issi", $id, $image->getImg(), $image->getFigcaption(), $i);
+                $stmt->execute();
+                $gallery->next();
+            }
+        }
         $this->closeDB();
     }
 
@@ -88,7 +132,7 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($info = $result->fetch_object()) {
                 $info = $this->convertDataTypes($info);
-                $info = new ArticleInfo($info->id, $info->article, $info->headline);
+                $info = new ArticleInfo($info->id, $info->article, $info->headline, $info->content, $info->gallery);
                 $infos->offsetSet($infos->key(), $info);
                 $infos->next();
             }
@@ -110,7 +154,7 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
         $this->closeDB();
         if(!empty($info)){
             $info = $this->convertDataTypes($info);
-            return new ArticleInfo($info->id, $info->article, $info->headline);
+            return new ArticleInfo($info->id, $info->article, $info->headline, $info->content, $info->gallery);
         }
         else{
             return null;
@@ -122,7 +166,51 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
      */
     private function convertDataTypes(object $info): object{
         $info->article = (new ArticleRepository())->findById($info->article);
+        $info->content = $this->findContentsForInfo($info->id);
+        $info->gallery = $this->findGalleryForInfo($info->id);
         $this->connectDB();
         return $info;
+    }
+
+    private function findContentsForInfo(int $infoId): ?ArticleInfoContentCollection
+    {
+        $this->connectDB();
+        $contentIds = $this->findByFunc('article_info_contents', 'info', $infoId, 'id');
+        $contents = new ArticleInfoContentCollection();
+        $result = $contentIds->get_result();
+        if ($result->num_rows > 0) {
+            while ($content = $result->fetch_object()) {
+                $content = new ArticleInfoContent($content->id, $content->topic, $content->content, $content->headline, $content->sequence);
+                $contents->offsetSet($contents->key(), $content);
+                $contents->next();
+            }
+            $this->closeDB();
+            return $contents;
+        }
+        else {
+            $this->closeDB();
+            return null;
+        }
+    }
+
+    private function findGalleryForInfo(int $infoId): ?ArticleInfoGalleryCollection
+    {
+        $this->connectDB();
+        $galleryIds = $this->findByFunc('article_info_gallery', 'info', $infoId, 'sequence');
+        $gallery = new ArticleInfoGalleryCollection();
+        $result = $galleryIds->get_result();
+        if ($result->num_rows > 0) {
+            while ($img = $result->fetch_object()) {
+                $img = new ArticleInfoGallery($img->id, $img->img, $img->figcaption, $img->sequence);
+                $gallery->offsetSet($gallery->key(), $img);
+                $gallery->next();
+            }
+            $this->closeDB();
+            return $gallery;
+        }
+        else {
+            $this->closeDB();
+            return null;
+        }
     }
 }

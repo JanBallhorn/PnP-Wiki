@@ -74,7 +74,7 @@ class ArticleInfoContentRepository extends Repository implements RepositoryInter
         if ($result->num_rows > 0) {
             while ($infoContent = $result->fetch_object()) {
                 $infoContent = $this->convertDataTypes($infoContent);
-                $infoContent = new ArticleInfoContent($infoContent->id, $infoContent->info, $infoContent->topic, $infoContent->content, $infoContent->headline, $infoContent->sequence);
+                $infoContent = new ArticleInfoContent($infoContent->id, $infoContent->topic, $infoContent->content, $infoContent->headline, $infoContent->sequence);
                 $infoContents->offsetSet($infoContents->key(), $infoContent);
                 $infoContents->next();
             }
@@ -92,7 +92,7 @@ class ArticleInfoContentRepository extends Repository implements RepositoryInter
         $this->closeDB();
         if(!empty($infoContent)){
             $infoContent = $this->convertDataTypes($infoContent);
-            return new ArticleInfoContent($infoContent->id, $infoContent->info, $infoContent->topic, $infoContent->content, $infoContent->headline, $infoContent->sequence);
+            return new ArticleInfoContent($infoContent->id, $infoContent->topic, $infoContent->content, $infoContent->headline, $infoContent->sequence);
         }
         else{
             return null;

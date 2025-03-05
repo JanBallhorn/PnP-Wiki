@@ -2,12 +2,20 @@
 
 namespace App\Controller;
 
+use App\Collection\ArticleInfoContentCollection;
+use App\Collection\ArticleInfoGalleryCollection;
 use App\Collection\CategoryCollection;
 use App\FileUpload;
 use App\Model\Article;
+use App\Model\ArticleInfo;
+use App\Model\ArticleInfoContent;
+use App\Model\ArticleInfoGallery;
 use App\Model\Paragraph;
 use App\Model\ParagraphContent;
 use App\Model\ParagraphGallery;
+use App\Repository\ArticleInfoContentRepository;
+use App\Repository\ArticleInfoGalleryRepository;
+use App\Repository\ArticleInfoRepository;
 use App\Repository\ArticleRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\ParagraphContentRepository;
@@ -23,7 +31,18 @@ use Twig\Error\SyntaxError;
 
 class ArticleController extends Controller
 {
-    public function __construct(private readonly ArticleRepository $articleRepository = new ArticleRepository(), private readonly CategoryRepository $categoryRepository = new CategoryRepository(), private readonly ProjectRepository $projectRepository = new ProjectRepository(), private readonly UserRepository $userRepository = new UserRepository(), private readonly ParagraphRepository $paragraphRepository = new ParagraphRepository(), private readonly ParagraphContentRepository $paragraphContentRepository = new ParagraphContentRepository(), private readonly ParagraphGalleryRepository $paragraphGalleryRepository = new ParagraphGalleryRepository()){
+    public function __construct(
+        private readonly ArticleRepository $articleRepository = new ArticleRepository(),
+        private readonly CategoryRepository $categoryRepository = new CategoryRepository(),
+        private readonly ProjectRepository $projectRepository = new ProjectRepository(),
+        private readonly UserRepository $userRepository = new UserRepository(),
+        private readonly ParagraphRepository $paragraphRepository = new ParagraphRepository(),
+        private readonly ParagraphContentRepository $paragraphContentRepository = new ParagraphContentRepository(),
+        private readonly ParagraphGalleryRepository $paragraphGalleryRepository = new ParagraphGalleryRepository(),
+        private readonly ArticleInfoRepository $articleInfoRepository = new ArticleInfoRepository(),
+        private readonly ArticleInfoContentRepository $articleInfoContentRepository = new ArticleInfoContentRepository(),
+        private readonly ArticleInfoGalleryRepository $articleInfoGalleryRepository = new ArticleInfoGalleryRepository(),
+    ){
 
     }
 
@@ -306,6 +325,85 @@ class ArticleController extends Controller
         }
         header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
     }
+
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError
+     * @throws Exception
+     */
+    public function editInfo(array $article): void
+    {
+        $article = $this->articleRepository->findOneBy('headline', $article['name']);
+        $this->render('articleEditInfo.twig', ['article' => $article]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function saveInfo(array $info): void
+    {
+        $infoImages = json_decode($info['images'], true);
+        if(!file_exists(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'])){
+            mkdir(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name']);
+        }
+        else{
+            $files = glob(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'] . "/*");
+            foreach($files as $file){
+                if(is_file($file)){
+                    unlink($file);
+                }
+            }
+        }
+        $uploads = [];
+        $i = 1;
+        foreach ($infoImages as $img){
+            $imgData = base64_decode(str_replace(' ', '+', substr($img, strpos($img, ",")+1)));
+            $fileExtension = explode('/', mime_content_type($img))[1];
+            $fileSize = strlen($imgData);
+            $uploader = new FileUpload(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'] . '/', str_replace('/', '-', $i) . '.' . $fileExtension, ['svg', 'jpeg', 'png', 'webp', 'gif'], 1000000, []);
+            $uploader->setFileSize($fileSize);
+            $uploader->setTmpFile($imgData);
+            $upload = $this->prepareUpload($uploader);
+            if($upload !== false){
+                $uploads[] = $upload;
+            }
+            $i++;
+        }
+        foreach ($uploads as $upload){
+            $file = fopen($upload->getFile(), 'w');
+            fwrite($file, $upload->getTmpFile());
+            fclose($file);
+        }
+        $article = $this->articleRepository->findOneBy('headline', $info['name']);
+        $sameInfo = $this->articleInfoRepository->findOneBy('article', $article->getId());
+        $infoContents = new ArticleInfoContentCollection();
+        $infoGallery = new ArticleInfoGalleryCollection();
+        foreach ($info['tableHeadline'] as $number => $headline){
+            $topics = $info['rowTopic' . ($number + 1)];
+            $infos = $info['rowInfo' . ($number + 1)];
+            foreach ($topics as $topicNumber => $topic){
+                $infoContent = new ArticleInfoContent(0, $topic, $infos[$topicNumber], $headline, $topicNumber + 1);
+                $infoContents->offsetSet($infoContents->key(), $infoContent);
+                $infoContents->next();
+            }
+        }
+        foreach ($uploads as $number => $upload){
+            $infoImg = new ArticleInfoGallery(0, 'articleInfo/' . $info['name'] . '/' . $upload->getFileName(), $info['pcfigcaption'][$number], $number + 1);
+            $infoGallery->offsetSet($infoGallery->key(), $infoImg);
+            $infoGallery->next();
+        }
+        if($sameInfo !== null){
+            $info = new ArticleInfo($sameInfo->getId(), $article, $info['mainHeadline'], $infoContents, $infoGallery);
+            $this->articleInfoRepository->save($info);
+        }
+        else{
+            $info = new ArticleInfo(0, $article, $info['mainHeadline'], $infoContents, $infoGallery);
+            $this->articleInfoRepository->save($info);
+        }
+        header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+    }
+
     /**
      * @throws SyntaxError
      * @throws RuntimeError

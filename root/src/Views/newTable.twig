@@ -1,0 +1,30 @@
+<div class="infoTable" data-position="{{ i }}">
+    <div>
+        <label>Überschrift des Abschnitts
+            <input name="tableHeadline[]" maxlength="300" required>
+            <span class="maxLength">300</span>
+        </label>
+        <div class="rows">
+            <div class="infoTableRow">
+                <div>
+                    <label>
+                        <input name="rowTopic{{ i }}[]" maxlength="300">
+                        <span class="maxLength">300</span>
+                    </label>
+                    <label>
+                        <input name="rowInfo{{ i }}[]" maxlength="300">
+                        <span class="maxLength">300</span>
+                    </label>
+                </div>
+                {{ include("controlButtons.twig") }}
+            </div>
+        </div>
+        <div class="rowButtons">
+            <button type="button" class="newRow button">+<br/>Neue Reihe/n hinzufügen</button>
+            <label>Anzahl neuer Reihen
+                <input type="number" value="1">
+            </label>
+        </div>
+    </div>
+    {{ include("controlButtons.twig") }}
+</div>

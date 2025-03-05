@@ -1,0 +1,49 @@
+{% extends "base.twig" %}
+
+{% block title %}{{ article.headline }} - {% endblock %}
+
+{% block head %}
+    {{ parent() }}
+    <script src="../../assets/js/infoForm.js" type="module"></script>
+{% endblock %}
+
+{% block mainContent %}
+    {% if loggedIn %}
+        {% if article.editable or username == article.createdBy.username %}
+            <div class="articleEdit">
+                <a href="/article/editParagraphs?name={{ article.headline }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
+                <a href="/article/editInfo?name={{ article.headline }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
+                <a href="/article/edit?name={{ article.headline }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
+            </div>
+        {% endif %}
+        <h1>{{ article.headline }}</h1>
+        <h2>Informationstabelle anlegen</h2>
+        <form id="editInfo" method="post" action="/article/saveInfo">
+            <label>Überschrift der Informationstabelle
+                <input name="mainHeadline" maxlength="300" value="" required>
+                <span class="maxLength">300</span>
+            </label>
+            <div class="infoGallery">
+                <div>
+                    <label class="button">
+                        <i class="fa-solid fa-upload"></i>Bild-Upload
+                        <input type="file" name="gallery" class="galleryUpload" multiple accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
+                        <span class="info">Die Dateien müssen eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und dürfen jeweils maximal 1 MB groß sein.</span>
+                        <span class="errorContainer">
+                            <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Diese Dateien sind zu groß.</span>
+                            <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
+                        </span>
+                    </label>
+                    <div class="uploads"></div>
+                </div>
+            </div>
+            <div class="tables"></div>
+            <button type="button" class="newTable button">+<br/>Neuen Tabellenabschnitt hinzufügen</button>
+            <input name="name" type="hidden" value="{{ article.headline }}">
+            <input name="images" type="hidden">
+            <input class="button" type="submit" value="Inhalte speichern" name="submit" form="editInfo">
+        </form>
+    {% else %}
+        {{ _self.notLoggedIn() }}
+    {% endif %}
+{% endblock %}

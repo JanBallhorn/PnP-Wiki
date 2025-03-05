@@ -344,14 +344,14 @@ input.searchselect ~ i{
     transform: translateY(-50%);
     transition: 0.3s;
 }
-.paragraph{
+.paragraph, .infoGallery{
     margin: 1em 0;
 }
 .paragraph + hr{
     height: 0.35em;
     background-color: var(--txt);
 }
-.paragraph:has(.controlButtons), .paragraph .text, .paragraph .gallery, .uploads > div, .upload > div{
+.paragraph:has(.controlButtons), .paragraph .text, .paragraph .gallery, .uploads > div, .upload > div, .infoGallery, .infoTable, .rows{
     padding: 1em;
     background-color: var(--body-bg);
     border: 2px solid var(--box-bg);
@@ -359,7 +359,7 @@ input.searchselect ~ i{
     justify-content: space-between;
     position: relative;
 }
-.paragraph:has(.controlButtons) .controlButtons{
+.controlButtons{
     width: 2.5em;
     display: flex;
     flex-flow: column;
@@ -377,10 +377,10 @@ input.searchselect ~ i{
 .controlButtons .moveDown{
     margin-top: 0.5em;
 }
-.paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child{
+.paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child, .contentImage > div:first-child, .infoTable > div:first-child, .infoTableRow > div:first-child{
     width: calc(100% - 3.5em);
 }
-.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(4) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp{
+.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(6) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp, .infoTableRow button:not(.delete){
     display: none;
 }
 .controlButtons .minimize{
@@ -403,9 +403,44 @@ input.searchselect ~ i{
     color: var(--body-bg);
     transition: 0.3s;
 }
-.paragraph:has(> .controlButtons .minimized), .contentElement:has(> .controlButtons .minimized){
+.paragraph:has(> .controlButtons .minimized), .contentElement:has(> .controlButtons .minimized), .infoTable:has(> .controlButtons .minimized){
     max-height: 150px;
     overflow: hidden;
+}
+.infoGallery > div, .infoTableRow{
+    width: 100%;
+}
+.rows{
+    flex-flow: column;
+}
+.infoTableRow{
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+.infoTableRow > div:first-child{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.infoTableRow label{
+    width: calc(50% - 0.25rem);
+}
+.infoTableRow .controlButtons{
+    padding: 0;
+}
+.rowButtons{
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    margin-top: 0.5rem;
+}
+.rowButtons button{
+    margin-right: 1.5rem;
+}
+.rowButtons label{
+    margin: 0!important;
+    padding: 0!important;
 }
 
 /******************************************

@@ -12,17 +12,23 @@ class ArticleInfo
     private int $id;
     private Article $article;
     private string $headline;
+    private ?ArticleInfoContentCollection $content;
+    private ?ArticleInfoGalleryCollection $gallery;
 
     /**
      * @param int $id
      * @param Article $article
      * @param string $headline
+     * @param ArticleInfoContentCollection|null $content
+     * @param ArticleInfoGalleryCollection|null $gallery
      */
-    public function __construct(int $id, Article $article, string $headline)
+    public function __construct(int $id, Article $article, string $headline, ?ArticleInfoContentCollection $content, ?ArticleInfoGalleryCollection $gallery)
     {
         $this->id = $id;
         $this->article = $article;
         $this->headline = $headline;
+        $this->content = $content;
+        $this->gallery = $gallery;
     }
 
     /**
@@ -73,9 +79,36 @@ class ArticleInfo
         $this->headline = $headline;
     }
 
-    public function getContent(): ArticleInfoContentCollection
+    /**
+     * @return ArticleInfoContentCollection|null
+     */
+    public function getContent(): ?ArticleInfoContentCollection
     {
-        return (new ArticleInfoContentRepository())->findBy('info', $this->getId(), 'sequence');
+        return $this->content;
+    }
+
+    /**
+     * @param ArticleInfoContentCollection|null $content
+     */
+    public function setContent(?ArticleInfoContentCollection $content): void
+    {
+        $this->content = $content;
+    }
+
+    /**
+     * @return ArticleInfoGalleryCollection|null
+     */
+    public function getGallery(): ?ArticleInfoGalleryCollection
+    {
+        return $this->gallery;
+    }
+
+    /**
+     * @param ArticleInfoGalleryCollection|null $gallery
+     */
+    public function setGallery(?ArticleInfoGalleryCollection $gallery): void
+    {
+        $this->gallery = $gallery;
     }
 
     public function getContentHeadlines(): ?array
@@ -83,6 +116,7 @@ class ArticleInfo
         $contentHeadlines = array();
         $contents = $this->getContent();
         if($contents->count() > 0){
+            $contents->rewind();
             for($i = 1; $i < $contents->count(); $i++){
                 $contentHeadlines[] = $contents->current()->getHeadline();
                 $contents->next();
@@ -93,10 +127,5 @@ class ArticleInfo
         else{
             return null;
         }
-    }
-
-    public function getGallery(): ArticleInfoGalleryCollection
-    {
-        return (new ArticleInfoGalleryRepository())->findBy('info', $this->getId(), 'sequence');
     }
 }

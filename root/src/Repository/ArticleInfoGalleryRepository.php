@@ -72,7 +72,7 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
         if ($result->num_rows > 0) {
             while ($infoGallery = $result->fetch_object()) {
                 $infoGallery = $this->convertDataTypes($infoGallery);
-                $infoGallery = new ArticleInfoGallery($infoGallery->id, $infoGallery->info, $infoGallery->img, $infoGallery->figcaption, $infoGallery->sequence);
+                $infoGallery = new ArticleInfoGallery($infoGallery->id, $infoGallery->img, $infoGallery->figcaption, $infoGallery->sequence);
                 $infoGalleries->offsetSet($infoGalleries->key(), $infoGallery);
                 $infoGalleries->next();
             }
@@ -90,7 +90,7 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
         $this->closeDB();
         if(!empty($infoGallery)){
             $infoGallery = $this->convertDataTypes($infoGallery);
-            return new ArticleInfoGallery($infoGallery->id, $infoGallery->info, $infoGallery->img, $infoGallery->figcaption, $infoGallery->sequence);
+            return new ArticleInfoGallery($infoGallery->id, $infoGallery->img, $infoGallery->figcaption, $infoGallery->sequence);
         }
         else{
             return null;

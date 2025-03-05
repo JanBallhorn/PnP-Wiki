@@ -5,7 +5,6 @@ namespace App\Model;
 class ArticleInfoContent
 {
     private int $id;
-    private ArticleInfo $info;
     private string $topic;
     private string $content;
     private string $headline;
@@ -13,16 +12,14 @@ class ArticleInfoContent
 
     /**
      * @param int $id
-     * @param ArticleInfo $info
      * @param string $topic
      * @param string $content
      * @param string $headline
      * @param int $sequence
      */
-    public function __construct(int $id, ArticleInfo $info, string $topic, string $content, string $headline, int $sequence)
+    public function __construct(int $id, string $topic, string $content, string $headline, int $sequence)
     {
         $this->id = $id;
-        $this->info = $info;
         $this->topic = $topic;
         $this->content = $content;
         $this->headline = $headline;
@@ -43,22 +40,6 @@ class ArticleInfoContent
     public function setId(int $id): void
     {
         $this->id = $id;
-    }
-
-    /**
-     * @return ArticleInfo
-     */
-    public function getInfo(): ArticleInfo
-    {
-        return $this->info;
-    }
-
-    /**
-     * @param ArticleInfo $info
-     */
-    public function setInfo(ArticleInfo $info): void
-    {
-        $this->info = $info;
     }
 
     /**
