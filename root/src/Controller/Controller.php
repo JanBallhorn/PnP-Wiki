@@ -16,6 +16,7 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFunction;
 
 abstract class Controller
 {
@@ -30,6 +31,8 @@ abstract class Controller
         $loader = new FilesystemLoader(__DIR__ . '/../Views');
         $twig = new Environment($loader, ['debug' => true]);
         $twig->addExtension(new DebugExtension());
+        $function = new TwigFunction('encodeImg', [$this, 'encodeImg']);
+        $twig->addFunction($function);
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
         if($twigParams["loggedIn"] === true) {
@@ -100,7 +103,7 @@ abstract class Controller
             setcookie("login", "", time() - 3600, "/", "wiki.verplant-durch-aventurien.de", true);
         }
     }
-    protected function encodeImg(string $img): string
+    public function encodeImg(string $img): string
     {
         $location = dirname($_SERVER['DOCUMENT_ROOT']);
         $image = $location . "/externalImages/" . $img;
