@@ -92,4 +92,25 @@ function checkCheckboxCollectionChecked(el){
     }
 }
 
-export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked};
+function getTemplate(el, template, data = [], append = false){
+    let ajaxPath = "../../src/Ajax.php";
+    $.post(ajaxPath,
+        {
+            'type': 'render',
+            'template': template,
+            'data': data
+        },
+        function(data) {
+            let result = JSON.parse(data);
+            let finalResult = result.render;
+            if(append === true){
+                el.append($(finalResult));
+            }
+            else{
+                $(finalResult).insertBefore(el);
+            }
+        }
+    );
+}
+
+export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked, getTemplate};

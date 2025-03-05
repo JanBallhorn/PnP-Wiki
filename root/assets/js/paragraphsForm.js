@@ -1,4 +1,4 @@
-import {checkFileSize, checkFileType, showMaxLength} from "./formCheck.js";
+import {checkFileSize, checkFileType, showMaxLength, getTemplate} from "./formCheck.js";
 
 const images = {};
 $(function () {
@@ -121,27 +121,6 @@ function galleryImgUpload(){
             }
         }
     });
-}
-
-function getTemplate(el, template, data = [], append = false){
-    let ajaxPath = "../../src/Ajax.php";
-    $.post(ajaxPath,
-        {
-            'type': 'render',
-            'template': template,
-            'data': data
-        },
-        function(data) {
-            let result = JSON.parse(data);
-            let finalResult = result.render;
-            if(append === true){
-                el.append($(finalResult));
-            }
-            else{
-                $(finalResult).insertBefore(el);
-            }
-        }
-    );
 }
 
 function initMce(){
