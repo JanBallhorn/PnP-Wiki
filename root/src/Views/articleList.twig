@@ -1,0 +1,33 @@
+{% extends "base.twig" %}
+
+{% block title %}Artikel - {% endblock %}
+
+{% block mainContent %}
+    {% if loggedIn %}
+        <h1>Artikel</h1>
+        <p>Hier findest du alle Artikel des Wikis!</p>
+        <form id="articleFilter" method="get" action="/article/list">
+            <label>Sortieren nach:
+                <select name="filter" onchange="this.form.submit()">
+                    <option value="called" {% if filter == "called" %}selected{% endif %}>Beliebtheit</option>
+                    <option value="headline" {% if filter == "headline" %}selected{% endif %}>Name, aufsteigend</option>
+                    <option value="headline_down" {% if filter == "headline_down" %}selected{% endif %}>Name, absteigend</option>
+                    <option value="published_new" {% if filter == "published_new" %}selected{% endif %}>Veröffentlichung, neuste</option>
+                    <option value="published" {% if filter == "published" %}selected{% endif %}>Veröffentlichung, älteste</option>
+                </select>
+            </label>
+            <input type="hidden" name="page" value="{{ page }}">
+        </form>
+        <div>
+            {% for article in articles.__serialize %}
+                <a href="/article?name={{ article.headline }}" class="article">
+                    <h3>{{ article.headline }}</h3>
+                    <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                    <p>{{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}</p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        {{ _self.notLoggedIn() }}
+    {% endif %}
+{% endblock %}

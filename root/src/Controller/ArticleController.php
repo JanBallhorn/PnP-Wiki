@@ -415,8 +415,11 @@ class ArticleController extends Controller
         elseif($filter === 'published_new'){
             $filter = 'published DESC';
         }
+        elseif($filter === 'called'){
+            $filter = 'called DESC';
+        }
         $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $filter);
-        $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filter]);
+        $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filter, 'page' => $page]);
     }
     private function prepareUpload(FileUpload $uploader): FileUpload|false
     {
