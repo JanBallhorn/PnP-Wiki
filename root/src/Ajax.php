@@ -46,6 +46,16 @@ class Ajax
         $twig = new Environment($loader, ['debug' => true]);
         return $twig->render($template, $data);
     }
+
+    function trackVisits(string $article): void
+    {
+        $this->connectDB();
+        $query = "UPDATE `articles` SET `called` = `called` + 1 WHERE `headline` = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("s", $article);
+        $stmt->execute();
+        $this->closeDB();
+    }
 }
 
 
@@ -64,8 +74,6 @@ if(isset($_POST['type']) && $_POST['type'] === 'render'){
     echo json_encode(['render' => $result]);
 }
 
-if(isset($_POST['type']) && $_POST['type'] === 'submit'){
-    $jsonFile = fopen($_SERVER['DOCUMENT_ROOT'] . "/assets/js/json/" . $_POST['name'] . ".json", "w");
-    fwrite($jsonFile, $_POST['data']);
-    fclose($jsonFile);
+if(isset($_POST['type']) && $_POST['type'] === 'track'){
+    (new Ajax())->trackVisits($_POST['article']);
 }
