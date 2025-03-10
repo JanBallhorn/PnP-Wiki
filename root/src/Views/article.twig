@@ -4,7 +4,15 @@
 
 {% block head %}
     {{ parent() }}
+    <link href="../../assets/css/lightbox.css" rel="stylesheet"/>
     <script src="../../assets/js/trackVisits.js" type="text/javascript"></script>
+    <script src="../../assets/js/lightbox.js" type="text/javascript"></script>
+    <script>
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true
+        })
+    </script>
 {% endblock %}
 
 {% block mainContent %}
@@ -36,21 +44,25 @@
                     {% set infoContents = info.Content %}
                     <table>
                         <tr>
-                            <th>{{ info.headline }}</th>
+                            <th colspan="2"><h3>{{ info.headline }}</h3></th>
                         </tr>
                         <tr>
-                            <td>
-                                {% for image in info.Gallery.__serialize %}
-                                    <figure>
-                                        <img src="{{ encodeImg(image.img) }}" alt="{{ image.figcaption }}">
-                                        <figcaption>{{ image.figcaption }}</figcaption>
-                                    </figure>
-                                {% endfor %}
+                            <td colspan="2">
+                                <div class="gallery">
+                                    {% for image in info.Gallery.__serialize %}
+                                        <figure {% if info.Gallery.__serialize|length == 1 %}class="solo"{% endif %}>
+                                            <a href="{{ encodeImg(image.img) }}" data-lightbox="articleInfo" data-title="{{ image.figcaption }}">
+                                                <img src="{{ encodeImg(image.img) }}" alt="{{ image.figcaption }}">
+                                            </a>
+                                            <figcaption>{{ image.figcaption }}</figcaption>
+                                        </figure>
+                                    {% endfor %}
+                                </div>
                             </td>
                         </tr>
                         {% for headline in info.ContentHeadlines %}
                             <tr>
-                                <td><h4>{{ headline }}</h4></td>
+                                <td colspan="2"><h4>{{ headline }}</h4></td>
                             </tr>
                             {% for content in infoContents.__serialize %}
                                 {% if content.headline == headline %}
@@ -75,32 +87,46 @@
                                 <div class="contentGallery">
                                 {% for img in content.galleryImages.__serialize %}
                                     <figure>
-                                        <img src="{{ img.img }}" alt="{{ img.figcaption }}">
-                                        <figcaption>{{ img.figcaption }}</figcaption>
+                                        <a href="{{ img.img }}" data-lightbox="gallery{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ img.figcaption }}">
+                                            <img src="{{ img.img }}" alt="{{ img.figcaption }}">
+                                        </a>
+                                        {% if img.figcaption != '' %}
+                                            <figcaption>{{ img.figcaption }}</figcaption>
+                                        {% endif %}
                                     </figure>
                                 {% endfor %}
                                 </div>
                             {% else %}
                                 <div class="contentText">
                                     {{ content.text|raw }}
+                                    {% if content.img != null %}
+                                        <figure>
+                                            <a href="{{ content.img }}" data-lightbox="img{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ content.figcaption }}">
+                                                <img src="{{ content.img }}" alt="{{ content.figcaption }}">
+                                            </a>
+                                            {% if content.figcaption != '' %}
+                                                <figcaption>{{ content.figcaption }}</figcaption>
+                                            {% endif %}
+                                        </figure>
+                                    {% endif %}
                                 </div>
-                                {% if content.img != null %}
-                                    <figure>
-                                        <img src="{{ content.img }}" alt="{{ content.figcaption }}">
-                                        <figcaption>{{ content.figcaption }}</figcaption>
-                                    </figure>
-                                {% endif %}
                             {% endif %}
                         </div>
                     {% endfor %}
                 </div>
                 {% if paragraph.sequence == 1 %}
                     <div class="register">
+                        {% set i = 0 %}
+                        {% set j = 1 %}
                         {% for paragraph in article.paragraphs.__serialize %}
-                            <a class="level1" href="#{{ paragraph.headline }}">{{ paragraph.headline }}</a>
+                            {% if paragraph.headline != "" %}
+                            <a class="level1" href="#{{ paragraph.headline }}">{{ i }}. {{ paragraph.headline }}</a>
+                            {% endif %}
                             {% for headline in contentHeadlines %}
-                                <a class="level2" href="#{{ headline }}">{{ headline }}</a>
+                                <a class="level2" href="#{{ headline }}">{{ i }}.{{ j }}. {{ headline }}</a>
+                                {% set j = j + 1 %}
                             {% endfor %}
+                            {% set i = i + 1 %}
                         {% endfor %}
                     </div>
                 {% endif %}
