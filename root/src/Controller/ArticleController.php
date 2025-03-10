@@ -13,8 +13,6 @@ use App\Model\ArticleInfoGallery;
 use App\Model\Paragraph;
 use App\Model\ParagraphContent;
 use App\Model\ParagraphGallery;
-use App\Repository\ArticleInfoContentRepository;
-use App\Repository\ArticleInfoGalleryRepository;
 use App\Repository\ArticleInfoRepository;
 use App\Repository\ArticleRepository;
 use App\Repository\CategoryRepository;
@@ -72,6 +70,32 @@ class ArticleController extends Controller
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $sameHeadline = $this->articleRepository->findOneBy('headline', $article['headline']);
+        $altHeadlines = explode(",", $article['altHeadlines']);
+        if($sameHeadline === null){
+            $articles = $this->articleRepository->findAll();
+            $allOtherAltHeadlines = [];
+            foreach ($articles as $Article) {
+                $otherAltHeadlines = $Article->getAltHeadlines();
+                if($otherAltHeadlines !== null){
+                    foreach ($otherAltHeadlines as $altHeadline) {
+                        $allOtherAltHeadlines[] = $altHeadline;
+                    }
+                }
+            }
+            foreach ($altHeadlines as $altHeadline) {
+                $sameHeadline = $this->articleRepository->findOneBy('headline', $altHeadline);
+                if($sameHeadline !== null){
+                    break;
+                }
+                if($allOtherAltHeadlines !== null){
+                    if(in_array($altHeadline, $allOtherAltHeadlines)){
+                        $sameHeadline = true;
+                        break;
+                    }
+                }
+                $allOtherAltHeadlines[] = $altHeadline;
+            }
+        }
         if($sameHeadline === null && !empty($article['project']) && isset($article['category'])){
             $categories = new CategoryCollection();
             foreach ($article['category'] as $category){
@@ -82,7 +106,6 @@ class ArticleController extends Controller
             $categories->rewind();
             $project = $this->projectRepository->findOneBy('name', $article['project']);
             $tags = explode(",", $article['tags']);
-            $altHeadlines = explode(",", $article['altHeadlines']);
             $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $project, $categories, $tags, $altHeadlines, isset($article['private']), isset($article['editable']), 0);
             $this->articleRepository->save($article);
             header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
@@ -128,13 +151,49 @@ class ArticleController extends Controller
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $sameHeadline = $this->articleRepository->findOneBy('headline', $articleData['headline']);
+        $sameAltHeadline = false;
+        $altHeadlines = explode(",", $articleData['altHeadlines']);
         if($sameHeadline !== null){
             $sameHeadline = $sameHeadline->getId() !== $article->getId();
         }
         else{
             $sameHeadline = false;
         }
-        if($sameHeadline === false && !empty($articleData['project']) && isset($articleData['category'])){
+        if($sameHeadline === false){
+            $articles = $this->articleRepository->findAll();
+            $allOtherAltHeadlines = [];
+            foreach ($articles as $Article) {
+                if($Article->getId() !== $article->getId()){
+                    $otherAltHeadlines = $Article->getAltHeadlines();
+                    if($otherAltHeadlines !== null){
+                        foreach ($otherAltHeadlines as $altHeadline) {
+                            $allOtherAltHeadlines[] = $altHeadline;
+                        }
+                    }
+                }
+            }
+            foreach ($altHeadlines as $altHeadline) {
+                $sameAltHeadline = $this->articleRepository->findOneBy('headline', $altHeadline);
+                if($sameAltHeadline !== null){
+                    if($sameAltHeadline->getId() === $article->getId() && $article->getHeadline() === $articleData['headline']){
+                        $sameAltHeadline = true;
+                        break;
+                    }
+                    elseif ($sameAltHeadline->getId() !== $article->getId()){
+                        $sameAltHeadline = true;
+                        break;
+                    }
+                }
+                if($allOtherAltHeadlines !== null){
+                    if(in_array($altHeadline, $allOtherAltHeadlines)){
+                        $sameAltHeadline = true;
+                        break;
+                    }
+                }
+                $allOtherAltHeadlines[] = $altHeadline;
+            }
+        }
+        if($sameHeadline === false && $sameAltHeadline !== true && !empty($articleData['project']) && isset($articleData['category'])){
             $categories = new CategoryCollection();
             foreach ($articleData['category'] as $category){
                 $category = $this->categoryRepository->findById(intval($category));
@@ -144,7 +203,6 @@ class ArticleController extends Controller
             $categories->rewind();
             $project = $this->projectRepository->findOneBy('name', $articleData['project']);
             $tags = explode(",", $articleData['tags']);
-            $altHeadlines = explode(",", $articleData['altHeadlines']);
             $article->setLastEdit(new DateTime());
             $article->setLastEditBy($user);
             $article->setHeadline($articleData['headline']);
@@ -405,10 +463,10 @@ class ArticleController extends Controller
      * @throws LoaderError
      * @throws Exception
      */
-    public function list(array $filter): void
+    public function list(array $filterData): void
     {
-        $page = $filter['page'];
-        $filter = $filter['filter'];
+        $page = $filterData['page'];
+        $filter = $filterData['filter'];
         if($filter === 'headline_down'){
             $filter = 'headline DESC';
         }
@@ -419,7 +477,7 @@ class ArticleController extends Controller
             $filter = 'called DESC';
         }
         $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $filter);
-        $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filter, 'page' => $page]);
+        $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filterData['filter'], 'page' => $page]);
     }
     private function prepareUpload(FileUpload $uploader): FileUpload|false
     {

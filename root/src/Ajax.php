@@ -1,7 +1,7 @@
 <?php
 
 namespace App;
-use App\Database;
+use App\Repository\ArticleRepository;
 use mysqli;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -62,6 +62,25 @@ class Ajax
 if(isset($_POST['errorType']) && $_POST['errorType'] === 'duplicate'){
     $result = (new Ajax())->checkDuplicate($_POST['field'], $_POST['value'], $_POST['table']);
     echo json_encode(['duplicate' => $result]);
+}
+
+if(isset($_POST['errorType']) && $_POST['errorType'] === 'altHeadlineDuplicate'){
+    $result = array();
+    $origAlts = [];
+    foreach ($_POST['value'] as $value) {
+        $result[trim($value)] = array();
+        $result[trim($value)][] = (new Ajax())->checkDuplicate('headline', trim($value), 'article_alt_headline');
+        $result[trim($value)][] = (new Ajax())->checkDuplicate('headline', trim($value), 'articles');
+    }
+    if(!empty($_POST['orig'])){
+        try {
+            $article = (new ArticleRepository())->findOneBy('headline', $_POST['orig']);
+            $origAlts = $article->getAltHeadlines();
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
+    }
+    echo json_encode(['duplicate' => $result, 'origAlts' => $origAlts]);
 }
 
 if(isset($_POST['type']) && $_POST['type'] === 'render'){

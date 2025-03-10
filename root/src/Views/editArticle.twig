@@ -34,7 +34,10 @@
             </label>
             <label>Alternative Überschriften
                 <textarea name="altHeadlines">{{ article.altHeadlines|join(', ') }}</textarea>
-                <span>Überschriften mit Kommata trennen!</span>
+                <span class="errorContainer">
+                    <span>Überschriften mit Kommata trennen!</span>
+                    <span class="error exists hide">Diese Überschrift existiert bereits!</span>
+                </span>
             </label>
             <label>Such-Tags
                 <textarea name="tags">{{ article.tags|join(', ') }}</textarea>

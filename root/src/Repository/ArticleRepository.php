@@ -120,19 +120,23 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $stmt->execute();
                 $categories->next();
             }
-            $query = "INSERT INTO `article_tags` (article, tag) VALUES (?, ?)";
-            $stmt = $this->db->prepare($query);
-            for($i = 0; $i < count($tags); $i++){
-                $tag = strval($tags[$i]);
-                $stmt->bind_param("is", $id, $tag);
-                $stmt->execute();
+            if(!empty($tags[0])){
+                $query = "INSERT INTO `article_tags` (article, tag) VALUES (?, ?)";
+                $stmt = $this->db->prepare($query);
+                for($i = 0; $i < count($tags); $i++){
+                    $tag = strval($tags[$i]);
+                    $stmt->bind_param("is", $id, $tag);
+                    $stmt->execute();
+                }
             }
-            $query = "INSERT INTO `article_alt_headline` (headline, article) VALUES (?, ?)";
-            $stmt = $this->db->prepare($query);
-            for($i = 0; $i < count($altHeadlines); $i++){
-                $altHeadline = strval($altHeadlines[$i]);
-                $stmt->bind_param("si", $altHeadline, $id);
-                $stmt->execute();
+            if(!empty($altHeadlines[0])){
+                $query = "INSERT INTO `article_alt_headline` (headline, article) VALUES (?, ?)";
+                $stmt = $this->db->prepare($query);
+                for($i = 0; $i < count($altHeadlines); $i++){
+                    $altHeadline = strval($altHeadlines[$i]);
+                    $stmt->bind_param("si", $altHeadline, $id);
+                    $stmt->execute();
+                }
             }
         }
         $this->closeDB();
