@@ -39,42 +39,44 @@
                         </div>
                     {% endfor %}
                 </div>
-                <div class="info">
-                    {% set info = article.info %}
-                    {% set infoContents = info.Content %}
-                    <table>
-                        <tr>
-                            <th colspan="2"><h3>{{ info.headline }}</h3></th>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-                                <div class="gallery">
-                                    {% for image in info.Gallery.__serialize %}
-                                        <figure {% if info.Gallery.__serialize|length == 1 %}class="solo"{% endif %}>
-                                            <a href="{{ encodeImg(image.img) }}" data-lightbox="articleInfo" data-title="{{ image.figcaption }}">
-                                                <img src="{{ encodeImg(image.img) }}" alt="{{ image.figcaption }}">
-                                            </a>
-                                            <figcaption>{{ image.figcaption }}</figcaption>
-                                        </figure>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% for headline in info.ContentHeadlines %}
+                {% set info = article.info %}
+                {% if info != null %}
+                    <div class="info">
+                        {% set infoContents = info.Content %}
+                        <table>
                             <tr>
-                                <td colspan="2"><h4>{{ headline }}</h4></td>
+                                <th colspan="2"><h3>{{ info.headline }}</h3></th>
                             </tr>
-                            {% for content in infoContents.__serialize %}
-                                {% if content.headline == headline %}
-                                    <tr>
-                                        <td>{{ content.topic }}</td>
-                                        <td>{{ content.content }}</td>
-                                    </tr>
-                                {% endif %}
+                            <tr>
+                                <td colspan="2">
+                                    <div class="gallery">
+                                        {% for image in info.Gallery.__serialize %}
+                                            <figure {% if info.Gallery.__serialize|length == 1 %}class="solo"{% endif %}>
+                                                <a href="{{ encodeImg(image.img) }}" data-lightbox="articleInfo" data-title="{{ image.figcaption }}">
+                                                    <img src="{{ encodeImg(image.img) }}" alt="{{ image.figcaption }}">
+                                                </a>
+                                                <figcaption>{{ image.figcaption }}</figcaption>
+                                            </figure>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% for headline in info.ContentHeadlines %}
+                                <tr>
+                                    <td colspan="2"><h4>{{ headline }}</h4></td>
+                                </tr>
+                                {% for content in infoContents.__serialize %}
+                                    {% if content.headline == headline %}
+                                        <tr>
+                                            <td>{{ content.topic }}</td>
+                                            <td>{{ content.content }}</td>
+                                        </tr>
+                                    {% endif %}
+                                {% endfor %}
                             {% endfor %}
-                        {% endfor %}
-                    </table>
-                </div>
+                        </table>
+                    </div>
+                {% endif %}
             </div>
             {% for paragraph in article.paragraphs.__serialize %}
                 <div id="{{ paragraph.headline }}" class="paragraph {% if paragraph.sequence == 1 %}introduction{% endif %}">

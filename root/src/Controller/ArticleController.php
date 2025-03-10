@@ -489,4 +489,16 @@ class ArticleController extends Controller
             return false;
         }
     }
+
+    /**
+     * @throws Exception
+     */
+    public function random(): void
+    {
+        $articles = $this->articleRepository->findAll();
+        $numberOfArticles = count($articles);
+        $randomNumber = random_int(0, $numberOfArticles - 1);
+        $article = $articles->offsetGet($randomNumber);
+        header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+    }
 }
