@@ -265,14 +265,6 @@ main form fieldset.checkbox{
 main form fieldset.checkbox label{
     padding-bottom: 0;
 }
-/*main form label:has(.tox-tinymce){
-    display: flex;
-    flex-flow: column;
-    width: 100%;
-    margin-bottom: 0.5em;
-    padding-bottom: 1.2em;
-    position: relative;
-}*/
 input[type='checkbox']{
     font-size: 1rem;
     width: 1.25em;
@@ -344,10 +336,10 @@ input.searchselect ~ i{
     transform: translateY(-50%);
     transition: 0.3s;
 }
-.paragraph, .infoGallery{
+form .paragraph, .infoGallery{
     margin: 1em 0;
 }
-.paragraph + hr{
+form .paragraph + hr{
     height: 0.35em;
     background-color: var(--txt);
 }
@@ -583,6 +575,7 @@ main > aside#left{
 }
 main > .content{
     width: calc(100% - 25em);
+    position: relative;
 }
 main #right li{
     display: flex;
@@ -725,3 +718,114 @@ PROJECT LIST
 /******************************************
 ARTICLES
 ******************************************/
+.articleEdit{
+    position: absolute;
+    right: 1.25rem;
+    top: 1rem;
+    font-size: 1.5rem;
+}
+.articleEdit a{
+    margin-left: 0.25rem;
+}
+.articleEdit a:hover i{
+    transition: 0.3s;
+    color: var(--link);
+}
+.mainArticleContent .articleInfo{
+    float: right;
+    width: 30%;
+    max-width: 37.5rem;
+    background-color: var(--box-bg);
+    border-left: 1rem solid var(--main-bg);
+    border-bottom: 1rem solid var(--main-bg);
+}
+.mainArticleContent .articleInfo .info{
+    border: 1px solid var(--txt);
+}
+.mainArticleContent .articleInfo table{
+    width: 100%;
+    border-collapse: collapse;
+}
+.mainArticleContent .articleInfo h3{
+    margin: 0.5rem 0;
+}
+.mainArticleContent .articleInfo .gallery{
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+.mainArticleContent .articleInfo .gallery figure{
+    width: calc(50% - 2rem);
+    margin-bottom: 0.25rem;
+}
+.mainArticleContent .articleInfo .gallery figure.solo{
+    width: calc(100% - 2rem);
+    text-align: center;
+}
+.mainArticleContent .articleInfo .gallery img{
+    max-width: 100%;
+    margin-bottom: 0.25rem;
+}
+.mainArticleContent .articleInfo h4{
+    text-align: center;
+}
+.mainArticleContent .articleInfo tr:not(:last-child){
+    border-bottom: 1px solid var(--txt);
+}
+.mainArticleContent .articleInfo td{
+    padding: 0.25rem 0.5rem;
+}
+.mainArticleContent .articleInfo td:nth-child(2){
+    border-left: 1px solid var(--txt);
+}
+.mainArticleContent .paragraph:not(.introduction){
+    clear: both;
+}
+.mainArticleContent .register{
+    background-color: var(--box-bg);
+    display: flex;
+    flex-flow: column;
+    padding: 0.3rem 0.75rem;
+    width: fit-content;
+    max-width: 50%;
+    min-width: 20%;
+    clear: left;
+    margin: 1rem 0;
+}
+.mainArticleContent .register a{
+    margin: 0.3rem 0;
+}
+.mainArticleContent .paragraphContent{
+    clear: left;
+}
+.mainArticleContent .paragraph:not(.introduction) .contentText > *:not(figure){
+    float: left;
+}
+.mainArticleContent .contentText figure{
+    float: right;
+    max-width: 20rem;
+    clear: right;
+    margin-bottom: 1rem;
+}
+.mainArticleContent .contentText figure:has(figcaption), .mainArticleContent .contentGallery figure:has(figcaption){
+    background-color: var(--box-bg);
+    border: 1px solid var(--txt);
+    padding: 0.5rem;
+}
+.mainArticleContent .contentText figure img, .mainArticleContent .contentGallery figure img{
+    max-width: 100%;
+    max-height: 18rem;
+}
+.mainArticleContent .contentGallery{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    clear: both;
+}
+.mainArticleContent .contentGallery figure{
+    max-width: calc((100% - 8rem) / 5);
+    margin-right: 2rem;
+    height: fit-content;
+}
