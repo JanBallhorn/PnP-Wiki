@@ -10,16 +10,35 @@
 {% block mainContent %}
     {% if loggedIn %}
         <h1>{{ project.name }}</h1>
+        {% if deleteError %}
+            <h4 class="error delete">Das Projekt kann nicht gelöscht werden, weil noch Projekte existieren die diesem untergeordnet sind! Bitte Lösche diese zuerst!</h4>
+        {% endif %}
         <p>{{ project.description }}</p>
-        <form id="searchInProject" class="search" method="post" action="">
+        <form id="searchInProject" class="search" method="post" action="/search/search">
             <label>
                 <input type="search" name="search" placeholder="{{ project.name }} durchsuchen">
             </label>
+            <input type="hidden" name="project" value="{{ project.id }}">
             <label>
                 <input type="submit" name="submit">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </label>
         </form>
+        {% if searched == true %}
+            <div class="searchResults">
+                {% if articles is empty %}
+                    <p>Zu deiner Suchanfrage wurden keine Ergebnisse gefunden.</p>
+                {% else %}
+                    {% for article in articles.__serialize %}
+                        <a href="/article?name={{ article.headline }}" class="article">
+                            <h3>{{ article.headline }}</h3>
+                            <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                            {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
         <a class="button" href="/project/edit?name={{ project.name }}">Projekt bearbeiten</a>
         <a class="button" onclick="deleteAlert('{{ project.name }}')">Projekt löschen</a>
     {% else %}

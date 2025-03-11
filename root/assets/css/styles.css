@@ -578,7 +578,7 @@ main > .content{
     width: calc(100% - 25em);
     position: relative;
 }
-main #right li{
+main #right > ul > li{
     display: flex;
     flex-flow: column;
     margin-bottom: 1em;
@@ -652,7 +652,7 @@ PROJECT LIST
 }
 .content ul > li > ul{
     margin-left: 2rem;
-    font-size: calc(1em - 0.1rem);
+    font-size: calc(1em - 0.05rem);
 }
 .content ul li a{
     display: block;

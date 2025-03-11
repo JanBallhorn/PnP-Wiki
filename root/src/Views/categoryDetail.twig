@@ -11,15 +11,31 @@
     {% if loggedIn %}
         <h1>{{ category.name }}</h1>
         <p>{{ category.description }}</p>
-        <form id="searchInCategory" class="search" method="post" action="">
+        <form id="searchInCategory" class="search" method="post" action="/search/search">
             <label>
                 <input type="search" name="search" placeholder="{{ category.name }} durchsuchen">
             </label>
+            <input type="hidden" name="category" value="{{ category.id }}">
             <label>
                 <input type="submit" name="submit">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </label>
         </form>
+        {% if searched == true %}
+            <div class="searchResults">
+                {% if articles is empty %}
+                    <p>Zu deiner Suchanfrage wurden keine Ergebnisse gefunden.</p>
+                {% else %}
+                    {% for article in articles.__serialize %}
+                        <a href="/article?name={{ article.headline }}" class="article">
+                            <h3>{{ article.headline }}</h3>
+                            <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                            {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                        </a>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endif %}
         <a class="button" href="/category/edit?name={{ category.name }}">Kategorie bearbeiten</a>
         <a class="button" onclick="deleteAlert('{{ category.name }}')">Kategorie löschen</a>
     {% else %}

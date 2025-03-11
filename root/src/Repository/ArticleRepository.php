@@ -5,7 +5,10 @@ namespace App\Repository;
 
 use App\Collection\ArticleCollection;
 use App\Collection\CategoryCollection;
+use App\Collection\ProjectCollection;
 use App\Model\Article;
+use App\Model\Category;
+use App\Model\Project;
 use DateTime;
 use Exception;
 use InvalidArgumentException;
@@ -61,16 +64,50 @@ class ArticleRepository extends Repository implements RepositoryInterface
     /**
      * @throws Exception
      */
-    public function search(string $search): ArticleCollection
+    public function search(string $search, Category $category = null, Project $project = null): ArticleCollection
     {
+        $projects = new ProjectCollection();
+        $projectIds = array();
+        if($project !== null){
+            $projects->rewind();
+            $projects->offsetSet(0, $project);
+            $projects->next();
+            $projects = $this->findAllChildProjects($project, $projects);
+            $projects->rewind();
+            for($i = 0; $i < count($projects); $i++){
+                $projectIds[] = $projects->current()->getId();
+                $projects->next();
+            }
+        }
         $this->connectDB();
         $articles = new ArticleCollection();
         $article= $this->findOneBy('headline', $search);
         if($article !== null){
-            $articles->offsetSet($articles->current(), $article);
-            $articles->next();
+            if($category !== null){
+                $categories = $article->getCategories();
+                for($i = 1; $i <= $categories->count(); $i++){
+                    if($categories->current()->getId() === $category->getId()){
+                        $articles->offsetSet($articles->current(), $article);
+                        $articles->next();
+                    }
+                }
+            }
+            elseif(in_array($article->getProject()->getId(), $projectIds)){
+                $articles->offsetSet($articles->current(), $article);
+                $articles->next();
+            }
+            else{
+                $articles->offsetSet($articles->current(), $article);
+                $articles->next();
+            }
         }
         $query = "SELECT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline = '$search'";
+        if($category !== null){
+            $query = "SELECT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id INNER JOIN article_categories ON articles.id = article_categories.article WHERE article_alt_headline.headline = '$search' AND category = " . $category->getId();
+        }
+        elseif ($project !== null){
+            $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
+        }
         $this->connectDB();
         $stmt = $this->db->prepare($query);
         $stmt->execute();
@@ -81,25 +118,63 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $articles->next();
         }
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article WHERE tag = '$search'";
+        if($category !== null){
+            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article INNER JOIN article_categories ON articles.id = article_categories.article WHERE tag = '$search' AND category = " . $category->getId();
+        }
+        elseif ($project !== null){
+            $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
+        }
         $this->findArticlesById($articles, $query);
-        $query = "SELECT * FROM `articles` WHERE headline LIKE '%$search%'";
+        $query = "SELECT * FROM articles WHERE headline LIKE '%$search%'";
+        if($category !== null){
+            $query = "SELECT * FROM articles INNER JOIN article_categories ON articles.id = article_categories.article WHERE headline LIKE '%$search%' AND category = " . $category->getId();
+        }
+        elseif ($project !== null){
+            $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
+        }
         $this->connectDB();
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $result = $this->findCollection($stmt);
         if($result !== null){
-            foreach($result as $article){
-                $articles->offsetSet($articles->current(), $article);
+            $result->rewind();
+            for($i = 0; $i < $result->count(); $i++){
+                $articles->offsetSet($articles->key(), $result->current());
                 $articles->next();
+                $result->next();
             }
         }
-        $query = "SELECT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline LIKE '%$search%'";
+        $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline LIKE '%$search%'";
+        if($category !== null){
+            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id INNER JOIN article_categories ON articles.id = article_categories.article WHERE article_alt_headline.headline LIKE '%$search%' AND category = " . $category->getId();
+        }
+        elseif ($project !== null){
+            $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
+        }
         $this->findArticlesById($articles, $query);
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article WHERE tag LIKE '%$search%'";
+        if($category !== null){
+            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article INNER JOIN article_categories ON articles.id = article_categories.article WHERE tag LIKE '%$search%' AND category = " . $category->getId();
+        }
+        elseif ($project !== null){
+            $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
+        }
         $this->findArticlesById($articles, $query);
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN paragraphs ON articles.id = paragraphs.article INNER JOIN paragraph_contents ON paragraphs.id = paragraph_contents.paragraph WHERE paragraph_contents.text LIKE '%$search%'";
+        if($category !== null){
+            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN paragraphs ON articles.id = paragraphs.article INNER JOIN paragraph_contents ON paragraphs.id = paragraph_contents.paragraph INNER JOIN article_categories ON articles.id = article_categories.article WHERE paragraph_contents.text LIKE '%$search%' AND category = " . $category->getId();
+        }
+        elseif ($project !== null){
+            $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
+        }
         $this->findArticlesById($articles, $query);
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_info ON articles.id = article_info.article INNER JOIN article_info_contents ON article_info.id = article_info_contents.info WHERE article_info.headline LIKE '%$search%' OR article_info_contents.headline LIKE '%$search%' OR article_info_contents.content LIKE '%$search%'";
+        if($category !== null){
+            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_info ON articles.id = article_info.article INNER JOIN article_info_contents ON article_info.id = article_info_contents.info INNER JOIN article_categories ON articles.id = article_categories.article WHERE (article_info.headline LIKE '%$search%' OR article_info_contents.headline LIKE '%$search%' OR article_info_contents.content LIKE '%$search%') AND category = " . $category->getId();
+        }
+        elseif ($project !== null){
+            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_info ON articles.id = article_info.article INNER JOIN article_info_contents ON article_info.id = article_info_contents.info WHERE (article_info.headline LIKE '%$search%' OR article_info_contents.headline LIKE '%$search%' OR article_info_contents.content LIKE '%$search%') AND articles.project  IN (" . implode(',', $projectIds) . ")";
+        }
         $this->findArticlesById($articles, $query);
         $articles->rewind();
         return $articles;
@@ -329,5 +404,25 @@ class ArticleRepository extends Repository implements RepositoryInterface
             }
             $this->closeDB();
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function findAllChildProjects(Project $project, ProjectCollection $projects): ProjectCollection
+    {
+        $childProjects = $project->getChildren();
+        if($childProjects !== null){
+            $childProjects->rewind();
+            for($i = 1; $i <= $childProjects->count(); $i++){
+                $projects->offsetSet($projects->key(), $childProjects->current());
+                $projects->next();
+                if($childProjects->current()->getChildren() !== null){
+                    $projects = $this->findAllChildProjects($childProjects->current(), $projects);
+                }
+                $childProjects->next();
+            }
+        }
+        return $projects;
     }
 }
