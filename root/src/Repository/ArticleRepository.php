@@ -61,6 +61,53 @@ class ArticleRepository extends Repository implements RepositoryInterface
     /**
      * @throws Exception
      */
+    public function search(string $search): ArticleCollection
+    {
+        $this->connectDB();
+        $articles = new ArticleCollection();
+        $article= $this->findOneBy('headline', $search);
+        if($article !== null){
+            $articles->offsetSet($articles->current(), $article);
+            $articles->next();
+        }
+        $query = "SELECT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline = '$search'";
+        $this->connectDB();
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_object();
+        if(!empty($result)){
+            $article = $this->findOneBy('id', $result->id);
+            $articles->offsetSet($articles->current(), $article);
+            $articles->next();
+        }
+        $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article WHERE tag = '$search'";
+        $this->findArticlesById($articles, $query);
+        $query = "SELECT * FROM `articles` WHERE headline LIKE '%$search%'";
+        $this->connectDB();
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $this->findCollection($stmt);
+        if($result !== null){
+            foreach($result as $article){
+                $articles->offsetSet($articles->current(), $article);
+                $articles->next();
+            }
+        }
+        $query = "SELECT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline LIKE '%$search%'";
+        $this->findArticlesById($articles, $query);
+        $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article WHERE tag LIKE '%$search%'";
+        $this->findArticlesById($articles, $query);
+        $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN paragraphs ON articles.id = paragraphs.article INNER JOIN paragraph_contents ON paragraphs.id = paragraph_contents.paragraph WHERE paragraph_contents.text LIKE '%$search%'";
+        $this->findArticlesById($articles, $query);
+        $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_info ON articles.id = article_info.article INNER JOIN article_info_contents ON article_info.id = article_info_contents.info WHERE article_info.headline LIKE '%$search%' OR article_info_contents.headline LIKE '%$search%' OR article_info_contents.content LIKE '%$search%'";
+        $this->findArticlesById($articles, $query);
+        $articles->rewind();
+        return $articles;
+    }
+
+    /**
+     * @throws Exception
+     */
     public function save(object $entity): void
     {
         if(!$entity instanceof Article){
@@ -262,6 +309,25 @@ class ArticleRepository extends Repository implements RepositoryInterface
         else {
             $this->closeDB();
             return null;
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function findArticlesById(ArticleCollection $articles, string $query): void
+    {
+        $this->connectDB();
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            while ($id = $result->fetch_object()) {
+                $article = $this->findOneBy('id', $id->id);
+                $articles->offsetSet($articles->key(), $article);
+                $articles->next();
+            }
+            $this->closeDB();
         }
     }
 }

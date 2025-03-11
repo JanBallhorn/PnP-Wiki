@@ -479,7 +479,7 @@ input[type='search']{
     height: 2em;
     width: 100%;
 }
-.search input[type="submit"]{
+.search input[type="submit"]:not(.button){
     display: none;
 }
 .search input[type="submit"] + i{
@@ -487,6 +487,7 @@ input[type='search']{
     right: 0.5em;
     top: 50%;
     transform: translateY(-50%);
+    cursor: pointer;
 }
 .darkmode-switch{
     display: flex;
