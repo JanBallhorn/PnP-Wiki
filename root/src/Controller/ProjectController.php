@@ -75,8 +75,12 @@ class ProjectController extends Controller
      */
     public function detail(array $project): void
     {
+        $error = false;
+        if(isset($project['error'])){
+            $error = $project['error'];
+        }
         $project = $this->projectRepository->findOneBy('name', $project['name']);
-        $this->render("projectDetail.twig", ['project' => $project]);
+        $this->render("projectDetail.twig", ['project' => $project, 'deleteError' => $error]);
     }
 
     /**
@@ -120,7 +124,12 @@ class ProjectController extends Controller
     public function delete(array $projectName): void
     {
         $project = $this->projectRepository->findOneBy('name', $projectName['name']);
-        $this->projectRepository->delete($project);
-        header("Location: /project");
+        if($project->getChildren() === null){
+            $this->projectRepository->delete($project);
+            header("Location: /project");
+        }
+        else{
+            header("Location: /project/detail?" . http_build_query(['name'=>$project->getName(), 'error'=>true]));
+        }
     }
 }
