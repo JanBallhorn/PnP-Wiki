@@ -136,3 +136,27 @@
         </div>
     </div>
 {% endblock %}
+
+{% block asideRight %}
+    {% if loggedIn %}
+        <ul>
+            <li><b>Aufrufe:</b>{{ article.called }}</li>
+            <li><b>Projekt:</b><a href="/project/detail?name={{ article.project.name }}">{{ article.project.name }}</a></li>
+            <li><b>Kategorien:</b>
+                <ul>
+                    {% for category in article.categories.__serialize %}
+                        <li><a href="/category/detail?name={{ category.name }}">{{ category.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <li><b>Veröffentlicht:</b> {{ article.published|date("d.m.Y - H:i:s") }} Uhr</li>
+            <li><b>Ersteller:</b> <a href="/profile?user={{ article.createdBy.username }}">{{ article.createdBy.username }}</a></li>
+            {% if article.published|date("d.m.Y - H:i:s") != article.lastEdit|date("d.m.Y - H:i:s") %}
+                <li><b>Letzte Änderung am Artikel:</b> {{ article.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
+                <li><b>Letzte Änderung am Artikel von:</b> <a href="/profile?user={{ article.lastEditBy.username }}">{{ article.lastEditBy.username }}</a></li>
+            {% endif %}
+            <li><b>Letzte Änderung am Inhalt:</b> {{ article.paragraphs.__serialize[0].lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
+            <li><b>Letzte Änderung am Inhalt von:</b> <a href="/profile?user={{ article.paragraphs.__serialize[0].lastEditBy.username }}">{{ article.paragraphs.__serialize[0].lastEditBy.username }}</a></li>
+        </ul>
+    {% endif %}
+{% endblock %}
