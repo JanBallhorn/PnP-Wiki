@@ -465,6 +465,8 @@ class ArticleController extends Controller
      */
     public function list(array $filterData): void
     {
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
         $page = $filterData['page'];
         $filter = $filterData['filter'];
         if($filter === 'headline_down'){
@@ -476,18 +478,8 @@ class ArticleController extends Controller
         elseif($filter === 'called'){
             $filter = 'called DESC';
         }
-        $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $filter);
+        $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $user->getId(), $filter);
         $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filterData['filter'], 'page' => $page]);
-    }
-    private function prepareUpload(FileUpload $uploader): FileUpload|false
-    {
-        $uploader->setFile($uploader->getFileName());
-        if($uploader->checkFileSize() && $uploader->checkIfCorrectFileType()){
-            return $uploader;
-        }
-        else{
-            return false;
-        }
     }
 
     /**
@@ -500,5 +492,16 @@ class ArticleController extends Controller
         $randomNumber = random_int(0, $numberOfArticles - 1);
         $article = $articles->offsetGet($randomNumber);
         header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+    }
+
+    private function prepareUpload(FileUpload $uploader): FileUpload|false
+    {
+        $uploader->setFile($uploader->getFileName());
+        if($uploader->checkFileSize() && $uploader->checkIfCorrectFileType()){
+            return $uploader;
+        }
+        else{
+            return false;
+        }
     }
 }

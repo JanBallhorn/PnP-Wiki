@@ -31,6 +31,38 @@ class CategoryRepository extends Repository implements RepositoryInterface
         return $this->findOne($this->findOneByFunc($this->table, $column, $value));
     }
 
+    public function findAllBetween(int $start, int $end, string $order = 'id'): ?CategoryCollection
+    {
+        $this->connectDB();
+        $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table`) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        return $this->findCollection($stmt);
+    }
+
+    public function findPopularCategories(): ?CategoryCollection
+    {
+        $this->connectDB();
+        $query = "SELECT COUNT(category) AS Sum, category FROM `article_categories` GROUP BY category  ORDER BY Sum DESC LIMIT 5";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $categories = new CategoryCollection();
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            while ($category = $result->fetch_object()) {
+                $category = $this->findOneBy("id", $category->category);
+                $categories->offsetSet($categories->key(), $category);
+                $categories->next();
+            }
+            $this->closeDB();
+            return $categories;
+        }
+        else {
+            $this->closeDB();
+            return null;
+        }
+    }
+
     public function save(object $entity): void
     {
         if(!$entity instanceof Category){

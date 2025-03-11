@@ -2,6 +2,11 @@
 
 namespace App\Controller;
 
+use App\Repository\ArticleRepository;
+use App\Repository\CategoryRepository;
+use App\Repository\ProjectRepository;
+use App\Repository\UserRepository;
+use Exception;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
@@ -21,10 +26,12 @@ use Twig\TwigFunction;
 abstract class Controller
 {
     protected string $url = "https://wiki.verplant-durch-aventurien.de";
+
     /**
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws LoaderError
+     * @throws Exception
      */
     protected function render(string $view, array $params = []): void
     {
@@ -35,8 +42,16 @@ abstract class Controller
         $twig->addFunction($function);
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
+        $twigParams["baseCategories"] = (new CategoryRepository())->findPopularCategories();
         if($twigParams["loggedIn"] === true) {
             $twigParams["user"] = http_build_query(['user' => $this->getUsernameFromToken($this->getCookie())]);
+            $user = (new UserRepository())->findOneBy("username", $this->getUsernameFromToken($this->getCookie()));
+            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, $user->getId(), "searched");
+            $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), "called DESC");
+        }
+        else{
+            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, 0, "searched");
+            $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(1, 5, 0, "called DESC");
         }
         foreach ($params as $key => $value) {
             $twigParams[$key] = $value;

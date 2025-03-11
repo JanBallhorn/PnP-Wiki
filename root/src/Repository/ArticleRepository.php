@@ -52,10 +52,10 @@ class ArticleRepository extends Repository implements RepositoryInterface
     /**
      * @throws Exception
      */
-    public function findAllBetween(int $start, int $end, string $order = 'id'): ?ArticleCollection
+    public function findAllBetween(int $start, int $end, int $userId, string $order = 'id'): ?ArticleCollection
     {
         $this->connectDB();
-        $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table`) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
+        $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         return $this->findCollection($stmt);
