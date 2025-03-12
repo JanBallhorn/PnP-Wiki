@@ -155,8 +155,10 @@
                 <li><b>Letzte Änderung am Artikel:</b> {{ article.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
                 <li><b>Letzte Änderung am Artikel von:</b> <a href="/profile?user={{ article.lastEditBy.username }}">{{ article.lastEditBy.username }}</a></li>
             {% endif %}
-            <li><b>Letzte Änderung am Inhalt:</b> {{ article.paragraphs.__serialize[0].lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
-            <li><b>Letzte Änderung am Inhalt von:</b> <a href="/profile?user={{ article.paragraphs.__serialize[0].lastEditBy.username }}">{{ article.paragraphs.__serialize[0].lastEditBy.username }}</a></li>
+            {% if article.paragraphs.__serialize[0] != null %}
+                <li><b>Letzte Änderung am Inhalt:</b> {{ article.paragraphs.__serialize[0].lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
+                <li><b>Letzte Änderung am Inhalt von:</b> <a href="/profile?user={{ article.paragraphs.__serialize[0].lastEditBy.username }}">{{ article.paragraphs.__serialize[0].lastEditBy.username }}</a></li>
+            {% endif %}
         </ul>
     {% endif %}
 {% endblock %}
