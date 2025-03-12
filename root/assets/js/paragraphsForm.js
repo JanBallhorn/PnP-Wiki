@@ -171,7 +171,7 @@ function controlButtons(){
     mUpEl.off("click");
     mDownEl.off("click");
     minimizeEl.on("click", function (){
-        $(this).toggleClass("minimized");
+        $(this).parent().parent().toggleClass("minimized");
     });
     deleteEl.on("click", function (){
         let elToDel = $(this).parent().parent();
