@@ -10,8 +10,14 @@
             <div class="popularProjects">
                 <h2>Projekte</h2>
                 <ul>
-                    {% for project in projects %}
-                        <li><a href="/project?project={{ project }}">{{ project }}</a></li>
+                    {% for project in projects.__serialize %}
+                        <li>
+                            <a href="/project?project={{ project.name }}">
+                                <h3>{{ project.name }}</h3>
+                                <p>Erstellt am {{ project.published|date("d.m.Y - H:i:s") }} von {{ project.createdBy.username }}</p>
+                                <p>{{ project.description }}</p>
+                            </a>
+                        </li>
                     {% endfor %}
                 </ul>
                 <a href="/project">Alle Projekte</a>
@@ -19,8 +25,14 @@
             <div class="popularCategories">
                 <h2>Kategorien</h2>
                 <ul>
-                    {% for category in categories %}
-                        <li><a href="/category?category={{ category }}">{{ category }}</a></li>
+                    {% for category in categories.__serialize %}
+                        <li>
+                            <a href="/category?category={{ category.name }}">
+                                <h3>{{ category.name }}</h3>
+                                <p>Erstellt am {{ category.published|date("d.m.Y - H:i:s") }} von {{ category.createdBy.username }}</p>
+                                <p>{{ category.description }}</p>
+                            </a>
+                        </li>
                     {% endfor %}
                 </ul>
                 <a href="/categories">Alle Kategorien</a>
@@ -28,8 +40,14 @@
             <div class="popularArticles">
                 <h2>Beliebte Artikel</h2>
                 <ul>
-                    {% for article in popularArticles %}
-                        <li><a href="/article?name={{ article }}">{{ article }}</a></li>
+                    {% for article in popularArticles.__serialize %}
+                        <li>
+                            <a href="/article?name={{ article.headline }}">
+                                <h3>{{ article.headline }}</h3>
+                                <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                                {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                            </a>
+                        </li>
                     {% endfor %}
                 </ul>
                 <a href="/article?filter=popular">Mehr beliebte Artikel</a>
@@ -37,8 +55,14 @@
             <div class="newArticles">
                 <h2>Neue Artikel</h2>
                 <ul>
-                    {% for article in newArticles %}
-                        <li><a href="/article?name={{ article }}">{{ article }}</a></li>
+                    {% for article in newArticles.__serialize %}
+                        <li>
+                            <a href="/article?name={{ article.headline }}">
+                                <h3>{{ article.headline }}</h3>
+                                <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                                {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                            </a>
+                        </li>
                     {% endfor %}
                 </ul>
                 <a href="/article?filter=new">Mehr Artikel</a>

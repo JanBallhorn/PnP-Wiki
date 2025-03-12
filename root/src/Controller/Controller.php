@@ -46,11 +46,11 @@ abstract class Controller
         if($twigParams["loggedIn"] === true) {
             $twigParams["user"] = http_build_query(['user' => $this->getUsernameFromToken($this->getCookie())]);
             $user = (new UserRepository())->findOneBy("username", $this->getUsernameFromToken($this->getCookie()));
-            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, $user->getId(), "searched");
+            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, $user->getId(), "searched DESC");
             $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), "called DESC");
         }
         else{
-            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, 0, "searched");
+            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, 0, "searched DESC");
             $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(1, 5, 0, "called DESC");
         }
         foreach ($params as $key => $value) {
