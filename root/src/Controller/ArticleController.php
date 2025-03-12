@@ -345,6 +345,21 @@ class ArticleController extends Controller
                 $figcaption = null;
                 $gallery = false;
                 if(str_contains($element, 'text')){
+                    $value = explode("||", $value);
+                    $j = 0;
+                    for ($i = 1; $i <= count($value); $i++){
+                        $replace = "";
+                        if($i === 4 * $j + 1 && $i !== count($value)){
+                            $replace = "<span class='spoiler'>";
+                        }
+                        elseif($i === 4 * $j + 3){
+                            $replace = "</span>";
+                            $j++;
+                        }
+                        array_splice($value, $i, 0, $replace);
+                        $i++;
+                    }
+                    $value = implode("", $value);
                     $text = $value;
                     foreach ($uploads as $upload){
                         if(str_contains($upload->getFileName(), substr($element, 0, strpos($element,'text')))){

@@ -83,7 +83,7 @@
                                             <div class="contentElement text" data-position="{{ content.sequence }}">
                                                 <div>
                                                     <label>Inhalt
-                                                        <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ content.text }}</textarea>
+                                                        <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ replaceSpoiler(content.text) }}</textarea>
                                                     </label>
                                                     <label class="button">
                                                         <i class="fa-solid fa-upload"></i>Bild-Upload
@@ -124,7 +124,7 @@
                                 <div class="contentElement" data-position="1">
                                     <div>
                                         <label>Inhalt
-                                            <textarea name="p1c1text" class="tinymce">{{ paragraph.contents.__serialize[0].text }}</textarea>
+                                            <textarea name="p1c1text" class="tinymce">{{ replaceSpoiler(paragraph.contents.__serialize[0].text) }}</textarea>
                                         </label>
                                     </div>
                                 </div>

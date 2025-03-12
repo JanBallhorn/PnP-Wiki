@@ -40,6 +40,10 @@ abstract class Controller
         $twig->addExtension(new DebugExtension());
         $function = new TwigFunction('encodeImg', [$this, 'encodeImg']);
         $twig->addFunction($function);
+        $function = new TwigFunction('replaceSpoiler', function($string){
+            return str_replace('<span class="spoiler">', "||", str_replace("</span>", "||", $string));
+        });
+        $twig->addFunction($function);
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
         $twigParams["baseCategories"] = (new CategoryRepository())->findPopularCategories();

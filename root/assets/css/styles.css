@@ -390,12 +390,12 @@ form .paragraph + hr{
 .contentImage .minimize{
     display: none;
 }
-.controlButtons .minimize:hover, .controlButtons .minimize.minimized{
+.controlButtons .minimize:hover, .minimized > .controlButtons .minimize{
     background-color: var(--txt);
     color: var(--body-bg);
     transition: 0.3s;
 }
-.paragraph:has(> .controlButtons .minimized), .contentElement:has(> .controlButtons .minimized), .infoTable:has(> .controlButtons .minimized){
+.paragraph.minimized, .contentElement.minimized, .infoTable:has(> .controlButtons .minimized){
     max-height: 150px;
     overflow: hidden;
 }
@@ -433,6 +433,9 @@ form .paragraph + hr{
 .rowButtons label{
     margin: 0!important;
     padding: 0!important;
+}
+.tox-menu .tox-collection__item[aria-label="Überschrift 1"], .tox-menu .tox-collection__item[aria-label="Überschrift 2"]{
+    display: none;
 }
 
 /******************************************
@@ -829,4 +832,14 @@ ARTICLES
     max-width: calc((100% - 8rem) / 5);
     margin-right: 2rem;
     height: fit-content;
+}
+.mainArticleContent .spoiler{
+    background-color: var(--box-bg);
+    padding: 0.15rem 0.25rem;
+    border-radius: 3px;
+    color: transparent;
+}
+.mainArticleContent .spoiler.shown{
+    background-color: var(--body-bg);
+    color: var(--txt);
 }
