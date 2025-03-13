@@ -64,7 +64,7 @@
                             </tr>
                             {% for headline in info.ContentHeadlines %}
                                 <tr>
-                                    <td colspan="2"><h4>{{ headline }}</h4></td>
+                                    <td colspan="2"><h5>{{ headline }}</h5></td>
                                 </tr>
                                 {% for content in infoContents.__serialize %}
                                     {% if content.headline == headline %}
@@ -101,7 +101,6 @@
                                 </div>
                             {% else %}
                                 <div class="contentText">
-                                    {{ content.text|raw }}
                                     {% if content.img != null %}
                                         <figure>
                                             <a href="{{ content.img }}" data-lightbox="img{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ content.figcaption }}">
@@ -112,6 +111,7 @@
                                             {% endif %}
                                         </figure>
                                     {% endif %}
+                                    {{ content.text|raw }}
                                 </div>
                             {% endif %}
                         </div>

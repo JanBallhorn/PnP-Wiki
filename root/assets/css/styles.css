@@ -770,8 +770,9 @@ ARTICLES
 .mainArticleContent .articleInfo .gallery img{
     max-width: 100%;
     margin-bottom: 0.25rem;
+    max-height: 15rem;
 }
-.mainArticleContent .articleInfo h4{
+.mainArticleContent .articleInfo h5{
     text-align: center;
 }
 .mainArticleContent .articleInfo tr:not(:last-child){
@@ -783,9 +784,6 @@ ARTICLES
 .mainArticleContent .articleInfo td:nth-child(2){
     border-left: 1px solid var(--txt);
 }
-.mainArticleContent .paragraph:not(.introduction){
-    clear: both;
-}
 .mainArticleContent .register{
     background-color: var(--box-bg);
     display: flex;
@@ -796,42 +794,63 @@ ARTICLES
     min-width: 20%;
     clear: left;
     margin: 1rem 0;
+    border: 1px solid var(--txt);
 }
 .mainArticleContent .register a{
     margin: 0.3rem 0;
 }
-.mainArticleContent .paragraphContent{
-    clear: left;
+.mainArticleContent .register a.level2{
+    margin-left: 2rem;
 }
-.mainArticleContent .paragraph:not(.introduction) .contentText > *:not(figure){
-    float: left;
+.mainArticleContent .register a.level3{
+    margin-left: 4rem;
 }
 .mainArticleContent .contentText figure{
     float: right;
-    max-width: 20rem;
+    max-width: 13rem;
     clear: right;
     margin-bottom: 1rem;
+    position: relative;
+    z-index: 10;
+}
+.mainArticleContent .contentText figure:after{
+    content: "";
+    position: absolute;
+    border-left: 1rem solid var(--main-bg);
+    border-bottom: 1rem solid var(--main-bg);;
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+    top: -1px;
+    right: -1px;
 }
 .mainArticleContent .contentText figure:has(figcaption), .mainArticleContent .contentGallery figure:has(figcaption){
     background-color: var(--box-bg);
     border: 1px solid var(--txt);
     padding: 0.5rem;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
 }
 .mainArticleContent .contentText figure img, .mainArticleContent .contentGallery figure img{
     max-width: 100%;
     max-height: 18rem;
 }
+.mainArticleContent figcaption{
+    width: 100%;
+}
 .mainArticleContent .contentGallery{
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-    width: 100%;
-    clear: both;
 }
 .mainArticleContent .contentGallery figure{
-    max-width: calc((100% - 8rem) / 5);
-    margin-right: 2rem;
+    margin-right: 1rem;
     height: fit-content;
+    margin-bottom: 1rem;
+}
+.mainArticleContent .contentGallery img{
+    max-width: 25rem;
+    max-height: 20rem;
 }
 .mainArticleContent .spoiler{
     background-color: var(--box-bg);
