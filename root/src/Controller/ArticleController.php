@@ -360,6 +360,24 @@ class ArticleController extends Controller
                         $i++;
                     }
                     $value = implode("", $value);
+                    $value = preg_split('/<h3[A-Za-z0-9="\\s]*>/', $value);
+                    for ($i = 0; $i < count($value); $i++){
+                        if($i !== 0){
+                            $curStr = preg_split('/<h4[A-Za-z0-9="\\s]*>/', $value[$i]);
+                            for ($j = 0; $j < count($curStr); $j++){
+                                if($j !== 0){
+                                    $replace = '<h4 id="headline' . $parNum . "-" . round($i / 2) . "-" . round($j / 2) .'">';
+                                    array_splice($curStr, $j, 0, $replace);
+                                    $j++;
+                                }
+                            }
+                            $value[$i] = implode("", $curStr);
+                            $replace = '<h3 id="headline' . $parNum . "-" . round($i / 2) .'">';
+                            array_splice($value, $i, 0, $replace);
+                            $i++;
+                        }
+                    }
+                    $value = implode("", $value);
                     $text = $value;
                     foreach ($uploads as $upload){
                         if(str_contains($upload->getFileName(), substr($element, 0, strpos($element,'text')))){

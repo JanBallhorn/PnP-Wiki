@@ -41,7 +41,26 @@ abstract class Controller
         $function = new TwigFunction('encodeImg', [$this, 'encodeImg']);
         $twig->addFunction($function);
         $function = new TwigFunction('replaceSpoiler', function($string){
-            return str_replace('<span class="spoiler">', "||", str_replace("</span>", "||", $string));
+            $string = str_replace("<span class='spoiler'>", "||", $string);
+            return str_replace("</span>", "||", $string);
+        });
+        $twig->addFunction($function);
+        $function = new TwigFunction('getContentHeadlines', function($string){
+            $headlines = array();
+            preg_match_all('|<h[3-4]\\sid="headline[0-9-]*">.*</h[3-4]>|', $string, $matches);
+            $i = -1;
+            foreach($matches[0] as $match){
+                preg_match_all('|<h[3-4]\\sid="(headline[0-9-]*)">.*</h[3-4]>|', $match, $idMatches);
+                preg_match_all('|<h[3-4]\\sid="headline[0-9-]*">(.*)</h[3-4]>|', $match, $headlineMatches);
+                if($match[2] === "3"){
+                    $headlines[] = ["id" => $idMatches[1][0], "headline" => $headlineMatches[1][0], "h4s" => []];
+                    $i++;
+                }
+                elseif($match[2] === "4"){
+                    $headlines[$i]["h4s"][] = ["id" => $idMatches[1][0], "headline" => $headlineMatches[1][0]];
+                }
+            }
+            return $headlines;
         });
         $twig->addFunction($function);
         $twigParams = [];
