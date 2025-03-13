@@ -63,6 +63,8 @@ abstract class Controller
             return $headlines;
         });
         $twig->addFunction($function);
+        $function = new TwigFunction('getNonPrivate', [$this, 'getNonPrivate']);
+        $twig->addFunction($function);
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
         $twigParams["baseCategories"] = (new CategoryRepository())->findPopularCategories();
@@ -152,5 +154,22 @@ abstract class Controller
             $imgType = image_type_to_mime_type(exif_imagetype($image));
         }
         return "data:" . $imgType . ";base64," . base64_encode(file_get_contents($image));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getNonPrivate($collection){
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = (new UserRepository())->findOneBy('username', $username);
+        $collection->rewind();
+        for($i = 0; $i < $collection->count(); $i++){
+            $cur = $collection->current();
+            if($cur->getPrivate() === true && $cur->getLastEditBy()->getId() !== $user->getId()){
+                $collection->offsetUnset($collection->key());
+            }
+            $collection->next();
+        }
+        return $collection;
     }
 }

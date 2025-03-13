@@ -68,7 +68,7 @@
                         <li class="submenu"><a href="/project">Projekte<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for baseProject in baseProjects.__serialize %}
-                                    <li><a href="/project/detail?name{{ baseProject.name }}">{{ baseProject.name }}</a></li>
+                                    <li><a href="/project/detail?name={{ baseProject.name }}">{{ baseProject.name }}</a></li>
                                 {% endfor %}
                                 <li><a href="/project">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>
@@ -76,7 +76,7 @@
                         <li class="submenu"><a href="/category">Kategorien<i class="fa-solid fa-arrow-right"></i></a>
                             <ul class="level2">
                                 {% for baseCategory in baseCategories.__serialize %}
-                                    <li><a href="/category/detail?name{{ baseCategory.name }}">{{ baseCategory.name }}</a></li>
+                                    <li><a href="/category/detail?name={{ baseCategory.name }}">{{ baseCategory.name }}</a></li>
                                 {% endfor %}
                                 <li><a href="/category">weitere<i class="fa-solid fa-arrow-right"></i></a></li>
                             </ul>

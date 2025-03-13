@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Collection\ArticleCollection;
 use App\Collection\ArticleInfoContentCollection;
 use App\Collection\ArticleInfoGalleryCollection;
 use App\Collection\CategoryCollection;
+use App\Collection\ProjectCollection;
 use App\FileUpload;
 use App\Model\Article;
 use App\Model\ArticleInfo;
@@ -57,7 +59,7 @@ class ArticleController extends Controller
      */
     public function create(): void
     {
-        $projects = $this->projectRepository->findAll('name');
+        $projects = $this->getNonPrivate($this->projectRepository->findAll('name'));
         $categories = $this->categoryRepository->findAll('name');
         $this->render('createArticle.twig', ['projects' => $projects->__serialize(), 'categories' => $categories->__serialize()]);
     }
@@ -106,7 +108,11 @@ class ArticleController extends Controller
             $categories->rewind();
             $project = $this->projectRepository->findOneBy('name', $article['project']);
             $tags = explode(",", $article['tags']);
-            $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $project, $categories, $tags, $altHeadlines, isset($article['private']), isset($article['editable']), 0);
+            $private = false;
+            if($project->getPrivate() || isset($article['private'])){
+                $private = true;
+            }
+            $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $project, $categories, $tags, $altHeadlines, $private, isset($article['editable']), 0);
             $this->articleRepository->save($article);
             header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
         }
@@ -135,9 +141,10 @@ class ArticleController extends Controller
     public function edit(array $article): void
     {
         $article = $this->articleRepository->findOneBy('headline', $article['name']);
+        $projects = $this->getNonPrivate($this->projectRepository->findAll('name'));
         $this->render('editArticle.twig', [
             'article' => $article,
-            'projects' => $this->projectRepository->findAll('name')->__serialize(),
+            'projects' => $projects->__serialize(),
             'categories' => $this->categoryRepository->findAll('name')->__serialize()
         ]);
     }
@@ -203,6 +210,10 @@ class ArticleController extends Controller
             $categories->rewind();
             $project = $this->projectRepository->findOneBy('name', $articleData['project']);
             $tags = explode(",", $articleData['tags']);
+            $private = false;
+            if($project->getPrivate() || isset($article['private'])){
+                $private = true;
+            }
             $article->setLastEdit(new DateTime());
             $article->setLastEditBy($user);
             $article->setHeadline($articleData['headline']);
@@ -210,7 +221,7 @@ class ArticleController extends Controller
             $article->setCategories($categories);
             $article->setTags($tags);
             $article->setAltHeadlines($altHeadlines);
-            $article->setPrivate(isset($articleData['private']));
+            $article->setPrivate($private);
             $article->setEditable(isset($articleData['editable']));
             $this->articleRepository->save($article);
             header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
@@ -520,9 +531,19 @@ class ArticleController extends Controller
      */
     public function random(): void
     {
-        $articles = $this->articleRepository->findAll();
-        $numberOfArticles = count($articles);
-        $randomNumber = random_int(0, $numberOfArticles - 1);
+        $articles = $this->getNonPrivate($this->articleRepository->findAll());
+        $articles->rewind();
+        $offsets = array();
+        for($i = 0; $i < $articles->count(); $i++){
+            if($articles->offsetExists($articles->key())){
+                $offsets[] = $articles->key();
+            }
+            else{
+                $i--;
+            }
+            $articles->next();
+        }
+        $randomNumber = $offsets[array_rand($offsets)];
         $article = $articles->offsetGet($randomNumber);
         header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
     }

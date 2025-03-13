@@ -22,17 +22,22 @@ class HomeController extends Controller
      * @throws Exception
      */
     public function __construct(){
-        $username = $this->getUsernameFromToken($this->getCookie());
-        $user = (new UserRepository())->findOneBy('username', $username);
-        $projects = (new ProjectRepository())->findAllBetween(1, 5, $user->getId(), 'searched DESC');
-        $categories = (new CategoryRepository())->findPopularCategories();
-        $popularArticles = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), 'called DESC');
-        $newArticles = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), 'published DESC');
-        $this->render($this->template, [
-            'projects' => $projects,
-            'categories' => $categories,
-            'popularArticles' => $popularArticles,
-            'newArticles' => $newArticles
-        ]);
+        if($this->getCookie() !== null){
+            $username = $this->getUsernameFromToken($this->getCookie());
+            $user = (new UserRepository())->findOneBy('username', $username);
+            $projects = (new ProjectRepository())->findAllBetween(1, 5, $user->getId(), 'searched DESC');
+            $categories = (new CategoryRepository())->findPopularCategories();
+            $popularArticles = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), 'called DESC');
+            $newArticles = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), 'published DESC');
+            $this->render($this->template, [
+                'projects' => $projects,
+                'categories' => $categories,
+                'popularArticles' => $popularArticles,
+                'newArticles' => $newArticles
+            ]);
+        }
+        else{
+            $this->render($this->template);
+        }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Model\Project;
+use App\Repository\ArticleRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use DateTime;
@@ -14,7 +15,10 @@ use Twig\Error\SyntaxError;
 class ProjectController extends Controller
 {
     private string $template = 'project.twig';
-    public function __construct(private readonly ProjectRepository $projectRepository = new ProjectRepository(), private readonly UserRepository $userRepository = new UserRepository())
+    public function __construct(
+        private readonly ProjectRepository $projectRepository = new ProjectRepository(),
+        private readonly UserRepository $userRepository = new UserRepository(),
+        private readonly ArticleRepository $articleRepository = new ArticleRepository())
     {
 
     }
@@ -27,8 +31,10 @@ class ProjectController extends Controller
      */
     public function index(): void
     {
-        $projects = $this->projectRepository->findBy('parent_project', null, 'name');
-        $this->render($this->template, ['mainProjects' => $projects->__serialize()]);
+        $projects = $this->getNonPrivate($this->projectRepository->findBy('parent_project', null, 'name'));
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        $this->render($this->template, ['mainProjects' => $projects->__serialize(), 'userId' => $user->getId()]);
     }
 
     /**
@@ -39,7 +45,7 @@ class ProjectController extends Controller
      */
     public function create(): void
     {
-        $projects = $this->projectRepository->findAll('name');
+        $projects = $this->getNonPrivate($this->projectRepository->findAll('name'));
         $this->render('createProject.twig', ['projects' => $projects->__serialize()]);
     }
 
@@ -52,8 +58,12 @@ class ProjectController extends Controller
         $user = $this->userRepository->findOneBy('username', $username);
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
+        $private = false;
+        if($parentProject->getPrivate() || isset($projectData['private'])){
+            $private = true;
+        }
         if($sameProject === null && ($parentProject !== null || $projectData['parentProject'] === '')) {
-            $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, isset($projectData['private']), 0);
+            $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, $private, 0);
             $this->projectRepository->save($project);
             header("Location: /project");
         }
@@ -91,7 +101,7 @@ class ProjectController extends Controller
      */
     public function edit(array $project): void
     {
-        $projects = $this->projectRepository->findAll();
+        $projects = $this->getNonPrivate($this->projectRepository->findAll());
         $project = $this->projectRepository->findOneBy('name', $project['name']);
         $this->render("editProject.twig", ['projects' => $projects->__serialize(), 'project' => $project]);
     }
@@ -104,10 +114,14 @@ class ProjectController extends Controller
         $project = $this->projectRepository->findById($projectData['id']);
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
+        $private = false;
+        if($parentProject->getPrivate() || isset($projectData['private'])){
+            $private = true;
+        }
         $project->setName($projectData['name']);
         $project->setDescription($projectData['description']);
         $project->setParentProject($parentProject);
-        $project->setPrivate(isset($projectData['private']));
+        $project->setPrivate($private);
         if($sameProject->getId() === $project->getId() && ($parentProject !== null || $projectData['parentProject'] === '')) {
             $this->projectRepository->save($project);
             header("Location: /project/detail?" . http_build_query(['name'=>$project->getName()]));

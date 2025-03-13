@@ -54,7 +54,7 @@ a{
     color: var(--link);
     text-decoration: none;
 }
-.content a:not(.button):hover, footer a:not(.button):hover{
+.content a:not(.button, .category, .noUnderline, .article):hover, footer a:not(.button):hover{
     text-decoration: underline;
 }
 h1{
@@ -218,7 +218,6 @@ main form, main form fieldset{
     margin-top: 1em;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
 }
 main form:not(.flex-50){
     flex-flow: column;
@@ -662,6 +661,16 @@ PROJECT LIST
     padding: 0.5em;
     transition: 0.3s;
 }
+.content ul li a.privateProject{
+    pointer-events: none;
+    cursor: default;
+    background-color: var(--box-bg);
+    color: var(--txt);
+}
+.content ul li a.privateProject span{
+    font-size: 1rem;
+    margin-left: 2rem;
+}
 .content ul li a:hover{
     background-color: var(--box-bg);
 }
@@ -813,6 +822,10 @@ ARTICLES
     position: relative;
     z-index: 10;
 }
+.mainArticleContent .contentText figure a{
+    position: relative;
+    z-index: 10;
+}
 .mainArticleContent .contentText figure:after{
     content: "";
     position: absolute;
@@ -852,7 +865,7 @@ ARTICLES
     max-width: 25rem;
     max-height: 20rem;
 }
-.mainArticleContent .spoiler{
+.spoiler{
     background-color: var(--box-bg);
     padding: 0.15rem 0.25rem;
     border-radius: 3px;

@@ -1,15 +1,20 @@
-{% macro recursiveProject(project) %}
+{% macro recursiveProject(project, userId) %}
     {% import _self as self %}
     <li>
         <div class="project-link">
-            <a href="/project/detail?name={{ project.name }}">{{ project.name }}</a>
+            <a class="{% if project.private and project.lastEditBy.id != userId %}privateProject{% endif %} noUnderline" href="/project/detail?name={{ project.name }}">
+                {{ project.name }}
+                {% if project.private and project.lastEditBy.id != userId %}
+                    <span>Privates Projekt von {{ project.lastEditBy.username }}</span>
+                {% endif %}
+            </a>
             <i class="fa-solid fa-chevron-up"></i>
         </div>
         {% if project.children|length %}
             {% set children = project.children.__serialize %}
             <ul class="level{{ children|first.level }}">
                 {% for child in children %}
-                    {{ self.recursiveProject(child) }}
+                    {{ self.recursiveProject(child, userId) }}
                 {% endfor %}
             </ul>
         {% endif %}
@@ -34,7 +39,7 @@
         <p>Hier findest du alle Projekte und Subprojekte, in denen du nach Artikeln suchen kannst.</p><a class="button" href="/project/create">Neues Projekt anlegen</a>
         <ul class="level1">
         {% for project in mainProjects %}
-                {{ recursiveProject(project) }}
+                {{ recursiveProject(project, userId) }}
         {% endfor %}
         </ul>
     {% else %}

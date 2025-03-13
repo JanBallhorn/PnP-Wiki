@@ -23,13 +23,17 @@
                 {% if articles is empty %}
                     <p>Zu deiner Suchanfrage wurden keine Ergebnisse gefunden.</p>
                 {% else %}
-                    {% for article in articles.__serialize %}
-                        <a href="/article?name={{ article.headline }}" class="article">
-                            <h3>{{ article.headline }}</h3>
-                            <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
-                            {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
-                        </a>
-                    {% endfor %}
+                    <ul>
+                        {% for article in articles.__serialize %}
+                            <li>
+                                <a href="/article?name={{ article.headline }}" class="article">
+                                    <h3>{{ article.headline }}</h3>
+                                    <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                                    {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
                 {% endif %}
             </div>
         {% endif %}

@@ -12,7 +12,7 @@
                 <ul>
                     {% for project in projects.__serialize %}
                         <li>
-                            <a href="/project?project={{ project.name }}">
+                            <a class="noUnderline" href="/project?project={{ project.name }}">
                                 <h3>{{ project.name }}</h3>
                                 <p>Erstellt am {{ project.published|date("d.m.Y - H:i:s") }} von {{ project.createdBy.username }}</p>
                                 <p>{{ project.description }}</p>
@@ -27,7 +27,7 @@
                 <ul>
                     {% for category in categories.__serialize %}
                         <li>
-                            <a href="/category?category={{ category.name }}">
+                            <a class="noUnderline" href="/category?category={{ category.name }}">
                                 <h3>{{ category.name }}</h3>
                                 <p>Erstellt am {{ category.published|date("d.m.Y - H:i:s") }} von {{ category.createdBy.username }}</p>
                                 <p>{{ category.description }}</p>
@@ -35,14 +35,14 @@
                         </li>
                     {% endfor %}
                 </ul>
-                <a href="/categories">Alle Kategorien</a>
+                <a href="/category">Alle Kategorien</a>
             </div>
             <div class="popularArticles">
                 <h2>Beliebte Artikel</h2>
                 <ul>
                     {% for article in popularArticles.__serialize %}
                         <li>
-                            <a href="/article?name={{ article.headline }}">
+                            <a class="noUnderline" href="/article?name={{ article.headline }}">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
                                 {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
@@ -50,14 +50,14 @@
                         </li>
                     {% endfor %}
                 </ul>
-                <a href="/article?filter=popular">Mehr beliebte Artikel</a>
+                <a href="/article/list?filter=called&page=1">Mehr beliebte Artikel</a>
             </div>
             <div class="newArticles">
                 <h2>Neue Artikel</h2>
                 <ul>
                     {% for article in newArticles.__serialize %}
                         <li>
-                            <a href="/article?name={{ article.headline }}">
+                            <a class="noUnderline" href="/article?name={{ article.headline }}">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
                                 {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
@@ -65,7 +65,7 @@
                         </li>
                     {% endfor %}
                 </ul>
-                <a href="/article?filter=new">Mehr Artikel</a>
+                <a href="/article/list?filter=published_new&page=1">Mehr Artikel</a>
             </div>
         </div>
     {% endif %}
