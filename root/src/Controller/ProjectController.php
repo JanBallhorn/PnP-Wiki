@@ -17,7 +17,9 @@ class ProjectController extends Controller
     private string $template = 'project.twig';
     public function __construct(
         private readonly ProjectRepository $projectRepository = new ProjectRepository(),
-        private readonly UserRepository $userRepository = new UserRepository())
+        private readonly UserRepository $userRepository = new UserRepository(),
+        private readonly ArticleRepository $articleRepository = new ArticleRepository()
+    )
     {
 
     }
@@ -111,8 +113,9 @@ class ProjectController extends Controller
         $project = $this->projectRepository->findById($projectData['id']);
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
+        $oldPrivateState = $project->getPrivate();
         $private = false;
-        if(($parentProject !== null && $parentProject->getPrivate()) || isset($projectData['private'])){
+        if(($parentProject !== null && $parentProject->getPrivate()) || (isset($projectData['private']) && ($projectData['private'] === true || $projectData['private'] === "private"))){
             $private = true;
         }
         $project->setName($projectData['name']);
@@ -121,6 +124,31 @@ class ProjectController extends Controller
         $project->setPrivate($private);
         if($sameProject->getId() === $project->getId() && ($parentProject !== null || $projectData['parentProject'] === '')) {
             $this->projectRepository->save($project);
+            if($oldPrivateState !== $private){
+                $articles = $this->articleRepository->findBy('project', $project->getId());
+                $articles->rewind();
+                for($i = 0; $i < $articles->count(); $i++){
+                    $article = $articles->current();
+                    $article->setPrivate($private);
+                    $this->articleRepository->save($article);
+                    $articles->next();
+                }
+                $childProjects = $project->getChildren();
+                if($childProjects !== null){
+                    $childProjects->rewind();
+                    for($i = 0; $i < $childProjects->count(); $i++){
+                        $childProject = $childProjects->current();
+                        $this->update([
+                            'id' => $childProject->getId(),
+                            'name' => $childProject->getName(),
+                            'description' => $childProject->getDescription(),
+                            'parentProject' => $childProject->getParentProject()->getName(),
+                            'private' => $private
+                        ]);
+                        $childProjects->next();
+                    }
+                }
+            }
             header("Location: /project/detail?" . http_build_query(['name'=>$project->getName()]));
         }
         else{

@@ -251,6 +251,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
             }
             $query = "INSERT INTO `article_categories` (article, category) VALUES (?, ?)";
             $stmt = $this->db->prepare($query);
+            $categories->rewind();
             for($i = 1; $i <= $categories->count(); $i++){
                 $stmt->bind_param("ii", $id, $categories->current()->getId());
                 $stmt->execute();
