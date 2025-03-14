@@ -526,11 +526,14 @@ class ArticleController extends Controller
         }
         if($user !== null){
             $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $user->getId(), $filter);
+            $articleNum = $this->articleRepository->getNumberOfArticles($user->getId());
+            $pages = ceil($articleNum / 50);
         }
         else{
             $articles = null;
+            $pages = null;
         }
-        $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filterData['filter'], 'page' => $page]);
+        $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filterData['filter'], 'page' => $page, 'pages' => $pages]);
     }
 
     /**

@@ -176,8 +176,22 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_info ON articles.id = article_info.article INNER JOIN article_info_contents ON article_info.id = article_info_contents.info WHERE (article_info.headline LIKE '%$search%' OR article_info_contents.headline LIKE '%$search%' OR article_info_contents.content LIKE '%$search%') AND articles.project  IN (" . implode(',', $projectIds) . ")";
         }
         $this->findArticlesById($articles, $query);
+        $this->closeDB();
         $articles->rewind();
         return $articles;
+    }
+
+    public function getNumberOfArticles(int $userId): ?int{
+        $query = "SELECT COUNT(id) as num FROM articles WHERE private = 0 OR (private = 1 AND last_edit = '$userId')";
+        $this->connectDB();
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_object();
+        $this->closeDB();
+        if(!empty($result)){
+            return $result->num;
+        }
+        return null;
     }
 
     /**
