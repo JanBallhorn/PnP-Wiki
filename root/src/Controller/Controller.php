@@ -69,8 +69,8 @@ abstract class Controller
         $twigParams["loggedIn"] = $this->checkLogin();
         $twigParams["baseCategories"] = (new CategoryRepository())->findPopularCategories();
         if($twigParams["loggedIn"] === true) {
-            $twigParams["user"] = http_build_query(['user' => $this->getUsernameFromToken($this->getCookie())]);
             $user = (new UserRepository())->findOneBy("username", $this->getUsernameFromToken($this->getCookie()));
+            $twigParams["wikiUser"] = $user;
             $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, $user->getId(), "searched DESC");
             $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), "called DESC");
         }

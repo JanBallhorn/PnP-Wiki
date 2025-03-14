@@ -17,7 +17,7 @@
 {% endblock %}
 
 {% block mainContent %}
-    {% if article.editable or username == article.createdBy.username %}
+    {% if article.editable or wikiUser.id == article.lastEditBy.id %}
         <div class="articleEdit">
             <a href="/article/editParagraphs?name={{ article.headline }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
             <a href="/article/editInfo?name={{ article.headline }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>

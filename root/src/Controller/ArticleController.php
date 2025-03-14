@@ -211,7 +211,7 @@ class ArticleController extends Controller
             $project = $this->projectRepository->findOneBy('name', $articleData['project']);
             $tags = explode(",", $articleData['tags']);
             $private = false;
-            if($project->getPrivate() || isset($article['private'])){
+            if($project->getPrivate() || isset($articleData['private'])){
                 $private = true;
             }
             $article->setLastEdit(new DateTime());

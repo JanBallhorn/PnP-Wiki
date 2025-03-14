@@ -17,8 +17,7 @@ class ProjectController extends Controller
     private string $template = 'project.twig';
     public function __construct(
         private readonly ProjectRepository $projectRepository = new ProjectRepository(),
-        private readonly UserRepository $userRepository = new UserRepository(),
-        private readonly ArticleRepository $articleRepository = new ArticleRepository())
+        private readonly UserRepository $userRepository = new UserRepository())
     {
 
     }
@@ -32,9 +31,7 @@ class ProjectController extends Controller
     public function index(): void
     {
         $projects = $this->getNonPrivate($this->projectRepository->findBy('parent_project', null, 'name'));
-        $username = $this->getUsernameFromToken($this->getCookie());
-        $user = $this->userRepository->findOneBy('username', $username);
-        $this->render($this->template, ['mainProjects' => $projects->__serialize(), 'userId' => $user->getId()]);
+        $this->render($this->template, ['mainProjects' => $projects->__serialize()]);
     }
 
     /**
