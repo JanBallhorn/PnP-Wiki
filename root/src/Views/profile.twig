@@ -62,7 +62,7 @@
         <h5>Statistiken:</h5>
         <ul>
             <li>Erstellte Artikel:<br> {{ createdArticles }}</li>
-            <li>Neuster Artikel:<br> {{ newestArticle }}</li>
+            <li>Neuster Artikel:<br> <a href="/article?name={{ newestArticle.headline }}">{{ newestArticle.headline }}</a></li>
         </ul>
     {% endif %}
 {% endblock %}

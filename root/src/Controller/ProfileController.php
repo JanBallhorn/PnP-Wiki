@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Repository\ArticleRepository;
 use App\Repository\UserRepository;
+use Exception;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -10,7 +12,7 @@ use Twig\Error\SyntaxError;
 class ProfileController extends Controller
 {
     private string $template = 'profile.twig';
-    public function __construct(private readonly UserRepository $userRepository = new UserRepository())
+    public function __construct(private readonly UserRepository $userRepository = new UserRepository(), private readonly ArticleRepository $articleRepository = new ArticleRepository())
     {
 
     }
@@ -19,12 +21,15 @@ class ProfileController extends Controller
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws LoaderError
+     * @throws Exception
      */
     public function index(array $username): void
     {
         $username = $username['user'];
         $user = $this->userRepository->findOneBy('username', $username);
         $profileTextExists = !empty($user->getProfileText());
+        $articles = $this->articleRepository->findBy('created_by', $user->getId(), "published DESC");
+        $articles->rewind();
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
             'username'=>$user->getUsername(),
@@ -34,7 +39,9 @@ class ProfileController extends Controller
             'lastname'=>$user->getLastname(),
             'profileTextExists'=>$profileTextExists,
             'profileText'=>$user->getProfileText(),
-            'user_query'=>http_build_query(['user'=>$user->getUsername()])
+            'user_query'=>http_build_query(['user'=>$user->getUsername()]),
+            'createdArticles'=>$articles->count(),
+            'newestArticle'=>$articles->current()
         ];
         $this->render($this->template, $templateData);
     }
@@ -43,19 +50,29 @@ class ProfileController extends Controller
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws LoaderError
+     * @throws Exception
      */
     public function edit(array $username): void{
         $username = $username['user'];
         $user = $this->userRepository->findOneBy('username', $username);
+        $articles = $this->articleRepository->findBy('created_by', $user->getId(), "published DESC");
+        $articles->rewind();
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
             'editMode'=>true,
             'username'=>$user->getUsername(),
             'firstnamePublic'=>$user->getFirstnamePublic(),
-            'lastnamePublic'=>$user->getLastnamePublic()
+            'lastnamePublic'=>$user->getLastnamePublic(),
+            'profileText'=>$user->getProfileText(),
+            'createdArticles'=>$articles->count(),
+            'newestArticle'=>$articles->current()
         ];
         $this->render($this->template, $templateData);
     }
+
+    /**
+     * @throws Exception
+     */
     public function save(array $profileData): void{
         $user = $this->userRepository->findOneBy('username', $profileData['username']);
         $user->setFirstnamePublic(isset($profileData['firstnamePublic']));

@@ -22,7 +22,7 @@ abstract class Repository
     {
         $this->connectDB();
         if(!empty($order)){
-            $query = "SELECT * FROM `$table` ORDER BY `$order`";
+            $query = "SELECT * FROM `$table` ORDER BY ". $order;
         }
         else{
             $query = "SELECT * FROM `$table`";
@@ -43,10 +43,10 @@ abstract class Repository
     {
         $this->connectDB();
         if(!empty($order) && $value !== null){
-            $query = "SELECT * FROM `$table` WHERE `$column` = ? ORDER BY `$order`";
+            $query = "SELECT * FROM `$table` WHERE `$column` = ? ORDER BY ". $order;
         }
         elseif(!empty($order) && $value === null){
-            $query = "SELECT * FROM `$table` WHERE `$column` IS null ORDER BY `$order`";
+            $query = "SELECT * FROM `$table` WHERE `$column` IS null ORDER BY " . $order;
         }
         elseif(empty($order) && $value === null){
             $query = "SELECT * FROM `$table` WHERE `$column` IS NULL";
