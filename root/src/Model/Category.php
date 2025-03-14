@@ -13,7 +13,7 @@ class Category
     private User $createdBy;
     private DateTime $lastEdit;
     private User $lastEditBy;
-    private string $icon;
+    private ?string $icon;
 
     /**
      * @param int $id
@@ -23,9 +23,9 @@ class Category
      * @param User $createdBy
      * @param DateTime $lastEdit
      * @param User $lastEditBy
-     * @param string $icon
+     * @param string|null $icon
      */
-    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $icon)
+    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, ?string $icon)
     {
         $this->id = $id;
         $this->name = $name;
@@ -150,17 +150,17 @@ class Category
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getIcon(): string
+    public function getIcon(): ?string
     {
         return $this->icon;
     }
 
     /**
-     * @param string $icon
+     * @param string|null $icon
      */
-    public function setIcon(string $icon): void
+    public function setIcon(?string $icon): void
     {
         $this->icon = $icon;
     }

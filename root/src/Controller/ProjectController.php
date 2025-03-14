@@ -59,7 +59,7 @@ class ProjectController extends Controller
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
         $private = false;
-        if($parentProject->getPrivate() || isset($projectData['private'])){
+        if(($parentProject !== null && $parentProject->getPrivate()) || isset($projectData['private'])){
             $private = true;
         }
         if($sameProject === null && ($parentProject !== null || $projectData['parentProject'] === '')) {
@@ -115,7 +115,7 @@ class ProjectController extends Controller
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
         $private = false;
-        if($parentProject->getPrivate() || isset($projectData['private'])){
+        if(($parentProject !== null && $parentProject->getPrivate()) || isset($projectData['private'])){
             $private = true;
         }
         $project->setName($projectData['name']);

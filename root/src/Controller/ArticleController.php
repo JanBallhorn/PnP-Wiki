@@ -481,9 +481,11 @@ class ArticleController extends Controller
             $topics = $info['rowTopic' . ($number + 1)];
             $infos = $info['rowInfo' . ($number + 1)];
             foreach ($topics as $topicNumber => $topic){
-                $infoContent = new ArticleInfoContent(0, $topic, $infos[$topicNumber], $headline, $topicNumber + 1);
-                $infoContents->offsetSet($infoContents->key(), $infoContent);
-                $infoContents->next();
+                if(!empty($topic) || !empty($infos[$topicNumber])){
+                    $infoContent = new ArticleInfoContent(0, $topic, $infos[$topicNumber], $headline, $topicNumber + 1);
+                    $infoContents->offsetSet($infoContents->key(), $infoContent);
+                    $infoContents->next();
+                }
             }
         }
         foreach ($uploads as $number => $upload){

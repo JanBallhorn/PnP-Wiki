@@ -43,14 +43,14 @@ class CategoryRepository extends Repository implements RepositoryInterface
     public function findPopularCategories(): ?CategoryCollection
     {
         $this->connectDB();
-        $query = "SELECT COUNT(category) AS Sum, category FROM `article_categories` GROUP BY category  ORDER BY Sum DESC LIMIT 5";
+        $query = "SELECT COUNT(category) AS Sum, categories.id FROM `article_categories` RIGHT JOIN categories ON article_categories.category = categories.id GROUP BY categories.id ORDER BY Sum DESC, name LIMIT 5";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $categories = new CategoryCollection();
         $result = $stmt->get_result();
         if ($result->num_rows > 0) {
             while ($category = $result->fetch_object()) {
-                $category = $this->findOneBy("id", $category->category);
+                $category = $this->findOneBy("id", $category->id);
                 $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
