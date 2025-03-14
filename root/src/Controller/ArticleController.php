@@ -524,7 +524,12 @@ class ArticleController extends Controller
         elseif($filter === 'called'){
             $filter = 'called DESC';
         }
-        $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $user->getId(), $filter);
+        if($user !== null){
+            $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $user->getId(), $filter);
+        }
+        else{
+            $articles = null;
+        }
         $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filterData['filter'], 'page' => $page]);
     }
 

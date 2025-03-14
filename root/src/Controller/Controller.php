@@ -116,11 +116,16 @@ abstract class Controller
         $validator = new Validator();
         return $validator->validate($token, new RelatedTo($username));
     }
-    protected function getUsernameFromToken(string $token): string
+    protected function getUsernameFromToken(?string $token): string
     {
-        $parser = new Parser(new JoseEncoder());
-        $token = $parser->parse($token);
-        return $token->claims()->get('username');
+        if($token === null){
+            return "";
+        }
+        else{
+            $parser = new Parser(new JoseEncoder());
+            $token = $parser->parse($token);
+            return $token->claims()->get('username');
+        }
     }
 
     protected function createCookie(string $token, bool $remember): void
@@ -160,15 +165,17 @@ abstract class Controller
      * @throws Exception
      */
     public function getNonPrivate($collection){
-        $username = $this->getUsernameFromToken($this->getCookie());
-        $user = (new UserRepository())->findOneBy('username', $username);
-        $collection->rewind();
-        for($i = 0; $i < $collection->count(); $i++){
-            $cur = $collection->current();
-            if($cur->getPrivate() === true && $cur->getLastEditBy()->getId() !== $user->getId()){
-                $collection->offsetUnset($collection->key());
+        if($this->checkLogin()){
+            $username = $this->getUsernameFromToken($this->getCookie());
+            $user = (new UserRepository())->findOneBy('username', $username);
+            $collection->rewind();
+            for($i = 0; $i < $collection->count(); $i++){
+                $cur = $collection->current();
+                if($cur->getPrivate() === true && $cur->getLastEditBy()->getId() !== $user->getId()){
+                    $collection->offsetUnset($collection->key());
+                }
+                $collection->next();
             }
-            $collection->next();
         }
         return $collection;
     }
