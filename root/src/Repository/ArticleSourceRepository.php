@@ -4,26 +4,45 @@ namespace App\Repository;
 
 use App\Collection\ArticleSourceCollection;
 use App\Model\ArticleSource;
+use Exception;
 use InvalidArgumentException;
 
 class ArticleSourceRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'article_sources';
+
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
+    /**
+     * @throws Exception
+     */
     public function findAll(string $order = ''): ?ArticleSourceCollection
     {
         return $this->findCollection($this->findAllFunc($this->table, $order));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findById(int $id): ?ArticleSource
     {
         return $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findBy(string $column, mixed $value, string $order = ''): ?ArticleSourceCollection
     {
         return $this->findCollection($this->findByFunc($this->table, $column, $value, $order));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findOneBy(string $column, mixed $value): ?ArticleSource
     {
         return $this->findOne($this->findOneByFunc($this->table, $column, $value));
@@ -35,7 +54,6 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", ArticleSource::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $article = $entity->getArticle()->getId();
             $source = $entity->getSource()->getId();
@@ -43,7 +61,7 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
             $link = $entity->getLink();
         }
         if($id === 0){
-            $query = "INSERT INTO `$this->table` (article, source, page, link) VALUES(?, ?)";
+            $query = "INSERT INTO `$this->table` (article, source, page, link) VALUES(?, ?, ?, ?)";
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("iiss", $article, $source, $page, $link);
         }
@@ -53,7 +71,6 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("iissi", $article, $source, $page, $link, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -66,6 +83,9 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
         }
     }
 
+    /**
+     * @throws Exception
+     */
     private function findCollection(false|\mysqli_stmt $stmt): ?ArticleSourceCollection
     {
         $articleSources = new ArticleSourceCollection();
@@ -77,18 +97,19 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
                 $articleSources->offsetSet($articleSources->key(), $articleSource);
                 $articleSources->next();
             }
-            $this->closeDB();
             return $articleSources;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function findOne(false|\mysqli_result $result): ?ArticleSource
     {
         $articleSource = $result->fetch_object();
-        $this->closeDB();
         if(!empty($articleSource)){
             $articleSource = $this->convertDataTypes($articleSource);
             return new ArticleSource($articleSource->id, $articleSource->article, $articleSource->source, $articleSource->page, $articleSource->link);
@@ -97,10 +118,13 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
             return null;
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function convertDataTypes(object $articleSource): object{
         $articleSource->article = (new ArticleRepository())->findById($articleSource->article);
         $articleSource->source = (new SourceRepository())->findById($articleSource->source);
-        $this->connectDB();
         return $articleSource;
     }
 }

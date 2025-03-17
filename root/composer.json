@@ -4,7 +4,8 @@
         "ext-mysqli": "*",
         "lcobucci/jwt": "^5.3",
       "ext-exif": "*",
-      "ext-fileinfo": "*"
+      "ext-fileinfo": "*",
+      "ext-http": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.3"

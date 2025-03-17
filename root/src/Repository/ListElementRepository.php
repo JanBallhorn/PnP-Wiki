@@ -11,6 +11,11 @@ class ListElementRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'list_elements';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -49,7 +54,6 @@ class ListElementRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", ListElement::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $list = $entity->getList()->getId();
             $article = $entity->getArticle()->getId();
@@ -66,7 +70,6 @@ class ListElementRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("iisi", $list, $article, $name, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -93,7 +96,6 @@ class ListElementRepository extends Repository implements RepositoryInterface
                 $elements->offsetSet($elements->key(), $element);
                 $elements->next();
             }
-            $this->closeDB();
             return $elements;
         }
         else {
@@ -107,7 +109,6 @@ class ListElementRepository extends Repository implements RepositoryInterface
     private function findOne(false|\mysqli_result $result): ?ListElement
     {
         $element = $result->fetch_object();
-        $this->closeDB();
         if(!empty($element)){
             $element = $this->convertDataTypes($element);
             return new ListElement($element->id, $element->list, $element->article, $element->name);
@@ -124,7 +125,6 @@ class ListElementRepository extends Repository implements RepositoryInterface
     {
         $element->list = (new ArticleListRepository())->findById($element->list);
         $element->article = (new ArticleRepository())->findById($element->article);
-        $this->connectDB();
         return $element;
     }
 }

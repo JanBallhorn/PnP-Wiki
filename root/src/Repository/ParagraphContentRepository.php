@@ -13,6 +13,11 @@ class ParagraphContentRepository extends Repository implements RepositoryInterfa
 {
     private string $table = 'paragraph_contents';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -51,7 +56,6 @@ class ParagraphContentRepository extends Repository implements RepositoryInterfa
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", ParagraphContent::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $paragraph = $entity->getParagraph()->getId();
             $text = $entity->getText();
@@ -71,7 +75,6 @@ class ParagraphContentRepository extends Repository implements RepositoryInterfa
             $stmt->bind_param("isssiii", $paragraph, $text, $img, $figcaption, $gallery, $sequence, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -92,7 +95,6 @@ class ParagraphContentRepository extends Repository implements RepositoryInterfa
     private function findOne(false|mysqli_result $result): ?ParagraphContent
     {
         $paragraphContent = $result->fetch_object();
-        $this->closeDB();
         if (!empty($paragraphContent)) {
             $paragraphContent = $this->convertDataTypes($paragraphContent);
             return new ParagraphContent($paragraphContent->id, $paragraphContent->paragraph, $paragraphContent->text, $paragraphContent->img, $paragraphContent->figcaption, $paragraphContent->gallery, $paragraphContent->sequence);
@@ -117,11 +119,9 @@ class ParagraphContentRepository extends Repository implements RepositoryInterfa
                 $paragraphContents->offsetSet($paragraphContents->key(), $paragraphContent);
                 $paragraphContents->next();
             }
-            $this->closeDB();
             return $paragraphContents;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -132,7 +132,6 @@ class ParagraphContentRepository extends Repository implements RepositoryInterfa
     private function convertDataTypes(object $paragraphContent): object{
         $paragraphContent->paragraph = (new ParagraphRepository())->findById($paragraphContent->paragraph);
         $paragraphContent->gallery = $paragraphContent->gallery === 1;
-        $this->connectDB();
         return $paragraphContent;
     }
 }

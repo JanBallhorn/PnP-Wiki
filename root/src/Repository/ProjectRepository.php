@@ -14,6 +14,11 @@ class ProjectRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'projects';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -51,7 +56,6 @@ class ProjectRepository extends Repository implements RepositoryInterface
      */
     public function findAllBetween(int $start, int $end, int $userId, string $order = 'id'): ?ProjectCollection
     {
-        $this->connectDB();
         $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
@@ -64,7 +68,6 @@ class ProjectRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Project::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $name = $entity->getName();
             $description = $entity->getDescription();
@@ -87,7 +90,6 @@ class ProjectRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("sssisiiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $searched, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -108,7 +110,6 @@ class ProjectRepository extends Repository implements RepositoryInterface
     private function findOne(false|mysqli_result $result): ?Project
     {
         $project = $result->fetch_object();
-        $this->closeDB();
         if (!empty($project)) {
             $project = $this->convertDataTypes($project);
             return new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private, $project->searched);
@@ -133,11 +134,9 @@ class ProjectRepository extends Repository implements RepositoryInterface
                 $projects->offsetSet($projects->key(), $project);
                 $projects->next();
             }
-            $this->closeDB();
             return $projects;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -154,7 +153,6 @@ class ProjectRepository extends Repository implements RepositoryInterface
             $project->parent_project = $this->findById($project->parent_project);
         }
         $project->private = $project->private === 1;
-        $this->connectDB();
         return $project;
     }
 }

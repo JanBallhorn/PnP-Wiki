@@ -4,36 +4,57 @@ namespace App\Repository;
 
 use App\Collection\CategoryCollection;
 use App\Model\Category;
+use DateMalformedStringException;
 use DateTime;
+use Exception;
 use InvalidArgumentException;
 
 class CategoryRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'categories';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
+    /**
+     * @throws DateMalformedStringException
+     */
     public function findAll(string $order = ''): ?CategoryCollection
     {
         return $this->findCollection($this->findAllFunc($this->table, $order));
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     public function findById(int $id): ?Category
     {
         return $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     public function findBy(string $column, mixed $value, string $order = ''): ?CategoryCollection
     {
         return $this->findCollection($this->findByFunc($this->table, $column, $value, $order));
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     public function findOneBy(string $column, mixed $value): ?Category
     {
         return $this->findOne($this->findOneByFunc($this->table, $column, $value));
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     public function findAllBetween(int $start, int $end, string $order = 'id'): ?CategoryCollection
     {
-        $this->connectDB();
         $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table`) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
@@ -42,7 +63,6 @@ class CategoryRepository extends Repository implements RepositoryInterface
 
     public function findPopularCategories(): ?CategoryCollection
     {
-        $this->connectDB();
         $query = "SELECT COUNT(category) AS Sum, categories.id FROM `article_categories` RIGHT JOIN categories ON article_categories.category = categories.id GROUP BY categories.id ORDER BY Sum DESC, name LIMIT 5";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
@@ -54,11 +74,9 @@ class CategoryRepository extends Repository implements RepositoryInterface
                 $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
-            $this->closeDB();
             return $categories;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -69,7 +87,6 @@ class CategoryRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Category::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $name = $entity->getName();
             $description = $entity->getDescription();
@@ -90,7 +107,6 @@ class CategoryRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("sssisisi", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $icon, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -103,6 +119,9 @@ class CategoryRepository extends Repository implements RepositoryInterface
         }
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     private function findCollection(false|\mysqli_stmt $stmt): ?CategoryCollection
     {
         $categories = new CategoryCollection();
@@ -114,19 +133,19 @@ class CategoryRepository extends Repository implements RepositoryInterface
                 $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
-            $this->closeDB();
             return $categories;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     private function findOne(false|\mysqli_result $result): ?Category
     {
         $category = $result->fetch_object();
-        $this->closeDB();
         if(!empty($category)){
             $category = $this->convertDataTypes($category);
             return new Category($category->id, $category->name, $category->description, $category->published, $category->created_by, $category->last_edit, $category->last_edit_by, $category->icon);
@@ -135,12 +154,16 @@ class CategoryRepository extends Repository implements RepositoryInterface
             return null;
         }
     }
+
+    /**
+     * @throws DateMalformedStringException
+     * @throws Exception
+     */
     private function convertDataTypes(object $category): object{
         $category->published = (new DateTime($category->published));
         $category->created_by = (new UserRepository())->findById($category->created_by);
         $category->last_edit = (new DateTime($category->last_edit));
         $category->last_edit_by = (new UserRepository())->findById($category->last_edit_by);
-        $this->connectDB();
         return $category;
     }
 }

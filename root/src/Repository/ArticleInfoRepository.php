@@ -15,6 +15,11 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'article_info';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -56,7 +61,6 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", ArticleInfo::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $article = $entity->getArticle()->getId();
             $headline = $entity->getHeadline();
@@ -109,7 +113,6 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
                 $gallery->next();
             }
         }
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -136,11 +139,9 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
                 $infos->offsetSet($infos->key(), $info);
                 $infos->next();
             }
-            $this->closeDB();
             return $info;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -151,7 +152,6 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
     private function findOne(false|\mysqli_result $result): ?ArticleInfo
     {
         $info = $result->fetch_object();
-        $this->closeDB();
         if(!empty($info)){
             $info = $this->convertDataTypes($info);
             return new ArticleInfo($info->id, $info->article, $info->headline, $info->content, $info->gallery);
@@ -168,13 +168,11 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
         $info->article = (new ArticleRepository())->findById($info->article);
         $info->content = $this->findContentsForInfo($info->id);
         $info->gallery = $this->findGalleryForInfo($info->id);
-        $this->connectDB();
         return $info;
     }
 
     private function findContentsForInfo(int $infoId): ?ArticleInfoContentCollection
     {
-        $this->connectDB();
         $contentIds = $this->findByFunc('article_info_contents', 'info', $infoId, 'id');
         $contents = new ArticleInfoContentCollection();
         $result = $contentIds->get_result();
@@ -184,18 +182,15 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
                 $contents->offsetSet($contents->key(), $content);
                 $contents->next();
             }
-            $this->closeDB();
             return $contents;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
 
     private function findGalleryForInfo(int $infoId): ?ArticleInfoGalleryCollection
     {
-        $this->connectDB();
         $galleryIds = $this->findByFunc('article_info_gallery', 'info', $infoId, 'sequence');
         $gallery = new ArticleInfoGalleryCollection();
         $result = $galleryIds->get_result();
@@ -205,11 +200,9 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
                 $gallery->offsetSet($gallery->key(), $img);
                 $gallery->next();
             }
-            $this->closeDB();
             return $gallery;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }

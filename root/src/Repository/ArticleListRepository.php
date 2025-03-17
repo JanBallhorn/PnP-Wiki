@@ -12,6 +12,11 @@ class ArticleListRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'lists';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -50,7 +55,6 @@ class ArticleListRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", ArticleList::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $category = $entity->getCategory()->getId();
             $published  = date("Y-m-d H:i:s", $entity->getPublished()->getTimestamp());
@@ -60,7 +64,7 @@ class ArticleListRepository extends Repository implements RepositoryInterface
             $name = $entity->getName();
         }
         if($id === 0){
-            $query = "INSERT INTO `$this->table` (category, created_by, last_edit_by, name) VALUES(?, ?, ?, ?, ?)";
+            $query = "INSERT INTO `$this->table` (category, created_by, last_edit_by, name) VALUES(?, ?, ?, ?)";
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("ssiis", $category, $createdBy, $lastEditBy, $name);
 
@@ -71,7 +75,6 @@ class ArticleListRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("sssisisi", $category, $published, $createdBy, $lastEdit, $lastEditBy, $name, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -98,7 +101,6 @@ class ArticleListRepository extends Repository implements RepositoryInterface
                 $lists->offsetSet($lists->key(), $list);
                 $lists->next();
             }
-            $this->closeDB();
             return $lists;
         }
         else {
@@ -112,7 +114,6 @@ class ArticleListRepository extends Repository implements RepositoryInterface
     private function findOne(false|\mysqli_result $result): ?ArticleList
     {
         $list = $result->fetch_object();
-        $this->closeDB();
         if(!empty($list)){
             $list = $this->convertDataTypes($list);
             return new ArticleList($list->id, $list->category, $list->published, $list->created_by, $list->last_edit, $list->last_edit_by, $list->name);
@@ -132,7 +133,6 @@ class ArticleListRepository extends Repository implements RepositoryInterface
         $list->created_by = (new UserRepository())->findById($list->created_by);
         $list->last_edit = (new DateTime($list->last_edit));
         $list->last_edit_by = (new UserRepository())->findById($list->last_edit_by);
-        $this->connectDB();
         return $list;
     }
 }

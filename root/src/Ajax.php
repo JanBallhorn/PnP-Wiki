@@ -1,7 +1,9 @@
 <?php
 
 namespace App;
+use App\Collection\SourceCollection;
 use App\Repository\ArticleRepository;
+use App\Repository\SourceRepository;
 use mysqli;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -14,9 +16,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
 class Ajax
 {
     protected mysqli $db;
-    protected function connectDB(): void
+
+    public function __construct()
     {
-        $this->db = Database::dbConnect();
+        $this->db = Database::dbConnect()->getConnection();
     }
     protected function closeDB(): void
     {
@@ -25,13 +28,11 @@ class Ajax
 
     function checkDuplicate(string $field, string $value, string $table): bool
     {
-        $this->connectDB();
         $query = "SELECT COUNT(`$field`) FROM `$table` WHERE `$field` = ?";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("s", $value);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_row();
-        $this->closeDB();
         return (bool)$result[0];
     }
 
@@ -49,12 +50,15 @@ class Ajax
 
     function trackVisits(string $article): void
     {
-        $this->connectDB();
         $query = "UPDATE `articles` SET `called` = `called` + 1 WHERE `headline` = ?";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("s", $article);
         $stmt->execute();
-        $this->closeDB();
+    }
+
+    function getSources(): ?SourceCollection
+    {
+        return (new SourceRepository())->findAll('name');
     }
 }
 
@@ -84,12 +88,18 @@ if(isset($_POST['errorType']) && $_POST['errorType'] === 'altHeadlineDuplicate')
 }
 
 if(isset($_POST['type']) && $_POST['type'] === 'render'){
-    $data = [];
-    $letter = 'h';
-    foreach ($_POST['data'] as $entry){
-        $data[++$letter] = $entry;
+    $ajax = new Ajax();
+    if($_POST['template'] === 'newSource.twig'){
+        $data['sources'] = $ajax->getSources()->__serialize();
     }
-    $result = (new Ajax())->ajaxRender($_POST['template'], $data);
+    else{
+        $data = [];
+        $letter = 'h';
+        foreach ($_POST['data'] as $entry){
+            $data[++$letter] = $entry;
+        }
+    }
+    $result = $ajax->ajaxRender($_POST['template'], $data);
     echo json_encode(['render' => $result]);
 }
 

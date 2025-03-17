@@ -9,6 +9,12 @@ use InvalidArgumentException;
 class SourceRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'sources';
+
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     public function findAll(string $order = ''): ?SourceCollection
     {
         return $this->findCollection($this->findAllFunc($this->table, $order));
@@ -35,7 +41,6 @@ class SourceRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Source::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $name = $entity->getName();
             $type = $entity->getType();
@@ -51,7 +56,6 @@ class SourceRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("ssi", $name, $type, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -73,18 +77,15 @@ class SourceRepository extends Repository implements RepositoryInterface
                 $sources->offsetSet($sources->key(), $source);
                 $sources->next();
             }
-            $this->closeDB();
             return $sources;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
     private function findOne(false|\mysqli_result $result): ?Source
     {
         $source = $result->fetch_object();
-        $this->closeDB();
         if(!empty($source)){
             return new Source($source->id, $source->name, $source->type);
         }

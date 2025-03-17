@@ -9,6 +9,7 @@ use App\Collection\ProjectCollection;
 use App\Model\Article;
 use App\Model\Category;
 use App\Model\Project;
+use DateMalformedStringException;
 use DateTime;
 use Exception;
 use InvalidArgumentException;
@@ -16,6 +17,11 @@ use InvalidArgumentException;
 class ArticleRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'articles';
+
+    public function __construct()
+    {
+        $this->connectDB();
+    }
 
     /**
      * @throws Exception
@@ -54,7 +60,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
      */
     public function findAllBetween(int $start, int $end, int $userId, string $order = 'id'): ?ArticleCollection
     {
-        $this->connectDB();
         $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
         $stmt = $this->db->prepare($query);
         $stmt->execute();
@@ -79,7 +84,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $projects->next();
             }
         }
-        $this->connectDB();
         $articles = new ArticleCollection();
         $article= $this->findOneBy('headline', $search);
         if($article !== null){
@@ -108,7 +112,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
         elseif ($project !== null){
             $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
         }
-        $this->connectDB();
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_object();
@@ -132,7 +135,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
         elseif ($project !== null){
             $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
         }
-        $this->connectDB();
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $result = $this->findCollection($stmt);
@@ -176,18 +178,15 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_info ON articles.id = article_info.article INNER JOIN article_info_contents ON article_info.id = article_info_contents.info WHERE (article_info.headline LIKE '%$search%' OR article_info_contents.headline LIKE '%$search%' OR article_info_contents.content LIKE '%$search%') AND articles.project  IN (" . implode(',', $projectIds) . ")";
         }
         $this->findArticlesById($articles, $query);
-        $this->closeDB();
         $articles->rewind();
         return $articles;
     }
 
     public function getNumberOfArticles(int $userId): ?int{
         $query = "SELECT COUNT(id) as num FROM articles WHERE private = 0 OR (private = 1 AND last_edit = '$userId')";
-        $this->connectDB();
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_object();
-        $this->closeDB();
         if(!empty($result)){
             return $result->num;
         }
@@ -203,7 +202,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Article::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $published = date("Y-m-d H:i:s", $entity->getPublished()->getTimestamp());
             $createdBy = $entity->getCreatedBy()->getId();
@@ -276,7 +274,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 }
             }
         }
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -303,11 +300,9 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $articles->offsetSet($articles->key(), $article);
                 $articles->next();
             }
-            $this->closeDB();
             return $articles;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -318,7 +313,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
     private function findOne(false|\mysqli_result $result): ?Article
     {
         $article = $result->fetch_object();
-        $this->closeDB();
         if(!empty($article)){
             $article = $this->convertDataTypes($article);
             return new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->editable, $article->called);
@@ -335,39 +329,39 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $article->published = (new DateTime($article->published));
         $article->created_by = (new UserRepository())->findById($article->created_by);
         $article->last_edit = (new DateTime($article->last_edit));
-        $article->last_edit_by = (new UserRepository())->findById($article->last_edit_by);
+        $article->last_edit_by = (new UserRepository(0))->findById($article->last_edit_by);
         $article->project = (new ProjectRepository())->findById($article->project);
         $article->categories = $this->findCategoriesForArticle($article->id);
         $article->tags = $this->findTagsForArticle($article->id);
         $article->altHeadlines = $this->findAltHeadlinesForArticle($article->id);
         $article->private = $article->private === 1;
         $article->editable = $article->editable === 1;
-        $this->connectDB();
         return $article;
     }
+
+    /**
+     * @throws DateMalformedStringException
+     */
     private function findCategoriesForArticle(int $articleId): ?CategoryCollection
     {
-        $this->connectDB();
         $categoryIds = $this->findByFunc('article_categories', 'article', $articleId, '');
         $categories = new CategoryCollection();
         $result = $categoryIds->get_result();
         if ($result->num_rows > 0) {
             while ($category = $result->fetch_object()) {
-                $category = (new CategoryRepository())->findById($category->category);
+                $category = (new CategoryRepository(0))->findById($category->category);
                 $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
-            $this->closeDB();
             return $categories;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
+
     private function findTagsForArticle(int $articleId): ?array
     {
-        $this->connectDB();
         $tagQuery = $this->findByFunc('article_tags', 'article', $articleId, '');
         $result = $tagQuery->get_result();
         if ($result->num_rows > 0) {
@@ -375,17 +369,15 @@ class ArticleRepository extends Repository implements RepositoryInterface
             while ($tag = $result->fetch_object()) {
                 $tags[] = $tag->tag;
             }
-            $this->closeDB();
             return $tags;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
+
     private function findAltHeadlinesForArticle(int $articleId): ?array
     {
-        $this->connectDB();
         $altHeadlineQuery = $this->findByFunc('article_alt_headline', 'article', $articleId, '');
         $result = $altHeadlineQuery->get_result();
         if ($result->num_rows > 0) {
@@ -393,11 +385,9 @@ class ArticleRepository extends Repository implements RepositoryInterface
             while ($altHeadline = $result->fetch_object()) {
                 $altHeadlines[] = $altHeadline->headline;
             }
-            $this->closeDB();
             return $altHeadlines;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -407,7 +397,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
      */
     private function findArticlesById(ArticleCollection $articles, string $query): void
     {
-        $this->connectDB();
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -417,7 +406,6 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $articles->offsetSet($articles->key(), $article);
                 $articles->next();
             }
-            $this->closeDB();
         }
     }
 

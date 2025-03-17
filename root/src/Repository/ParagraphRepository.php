@@ -14,6 +14,11 @@ class ParagraphRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'paragraphs';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -52,7 +57,6 @@ class ParagraphRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Paragraph::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $published  = date("Y-m-d H:i:s", $entity->getPublished()->getTimestamp());
             $createdBy = $entity->getCreatedBy()->getId();
@@ -73,7 +77,6 @@ class ParagraphRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("sisiisii", $published, $createdBy, $lastEdit, $lastEditBy, $article, $headline, $sequence, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -85,6 +88,7 @@ class ParagraphRepository extends Repository implements RepositoryInterface
             $this->deleteFunc($this->table, $entity);
         }
     }
+
     /**
      * @param false|mysqli_result $result
      * @return Paragraph|null
@@ -93,7 +97,6 @@ class ParagraphRepository extends Repository implements RepositoryInterface
     private function findOne(false|mysqli_result $result): ?Paragraph
     {
         $paragraph = $result->fetch_object();
-        $this->closeDB();
         if (!empty($paragraph)) {
             $paragraph = $this->convertDataTypes($paragraph);
             return new Paragraph($paragraph->id, $paragraph->published, $paragraph->created_by, $paragraph->last_edit, $paragraph->last_edit_by, $paragraph->article, $paragraph->headline, $paragraph->sequence);
@@ -118,11 +121,9 @@ class ParagraphRepository extends Repository implements RepositoryInterface
                 $paragraphs->offsetSet($paragraphs->key(), $paragraph);
                 $paragraphs->next();
             }
-            $this->closeDB();
             return $paragraphs;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -136,7 +137,6 @@ class ParagraphRepository extends Repository implements RepositoryInterface
         $paragraph->last_edit = (new DateTime($paragraph->last_edit));
         $paragraph->last_edit_by = (new UserRepository())->findById($paragraph->last_edit_by);
         $paragraph->article = (new ArticleRepository())->findById($paragraph->article);
-        $this->connectDB();
         return $paragraph;
     }
 }

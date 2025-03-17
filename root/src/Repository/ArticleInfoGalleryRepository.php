@@ -4,26 +4,45 @@ namespace App\Repository;
 
 use App\Collection\ArticleInfoGalleryCollection;
 use App\Model\ArticleInfoGallery;
+use Exception;
 use InvalidArgumentException;
 
 class ArticleInfoGalleryRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'article_info_gallery';
+
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
+    /**
+     * @throws Exception
+     */
     public function findAll(string $order = ''): ?ArticleInfoGalleryCollection
     {
         return $this->findCollection($this->findAllFunc($this->table, $order));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findById(int $id): ?ArticleInfoGallery
     {
         return $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findBy(string $column, mixed $value, string $order = ''): ?ArticleInfoGalleryCollection
     {
         return $this->findCollection($this->findByFunc($this->table, $column, $value, $order));
     }
 
+    /**
+     * @throws Exception
+     */
     public function findOneBy(string $column, mixed $value): ?ArticleInfoGallery
     {
         return $this->findOne($this->findOneByFunc($this->table, $column, $value));
@@ -35,9 +54,7 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", ArticleInfoGallery::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
-            $info = $entity->getInfo()->getId();
             $img = $entity->getImg();
             $figcaption = $entity->getFigcaption();
             $sequence = $entity->getSequence();
@@ -53,7 +70,6 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
             $stmt->bind_param("issii", $info, $img, $figcaption, $sequence, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -65,6 +81,10 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
             $this->deleteFunc($this->table, $entity);
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function findCollection(false|\mysqli_stmt $stmt): ?ArticleInfoGalleryCollection
     {
         $infoGalleries = new ArticleInfoGalleryCollection();
@@ -76,18 +96,19 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
                 $infoGalleries->offsetSet($infoGalleries->key(), $infoGallery);
                 $infoGalleries->next();
             }
-            $this->closeDB();
             return $infoGalleries;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function findOne(false|\mysqli_result $result): ?ArticleInfoGallery
     {
         $infoGallery = $result->fetch_object();
-        $this->closeDB();
         if(!empty($infoGallery)){
             $infoGallery = $this->convertDataTypes($infoGallery);
             return new ArticleInfoGallery($infoGallery->id, $infoGallery->img, $infoGallery->figcaption, $infoGallery->sequence);
@@ -96,9 +117,12 @@ class ArticleInfoGalleryRepository extends Repository implements RepositoryInter
             return null;
         }
     }
+
+    /**
+     * @throws Exception
+     */
     private function convertDataTypes(object $infoGallery): object{
         $infoGallery->info = (new ArticleInfoRepository())->findById($infoGallery->info);
-        $this->connectDB();
         return $infoGallery;
     }
 }

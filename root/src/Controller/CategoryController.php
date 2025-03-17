@@ -6,6 +6,7 @@ use App\FileUpload;
 use App\Model\Category;
 use App\Repository\CategoryRepository;
 use App\Repository\UserRepository;
+use DateMalformedStringException;
 use DateTime;
 use Exception;
 use Twig\Error\LoaderError;
@@ -15,14 +16,16 @@ use Twig\Error\SyntaxError;
 class CategoryController extends Controller
 {
     private string $template = 'category.twig';
-    public function __construct(private readonly CategoryRepository $categoryRepository = new CategoryRepository(), private readonly UserRepository $userRepository = new UserRepository()){
 
-    }
+    public function __construct(
+        private readonly CategoryRepository $categoryRepository = new CategoryRepository(),
+        private readonly UserRepository $userRepository = new UserRepository()
+    ){}
 
     /**
      * @throws RuntimeError
      * @throws SyntaxError
-     * @throws LoaderError
+     * @throws LoaderError|DateMalformedStringException
      */
     public function index(): void
     {
@@ -93,7 +96,7 @@ class CategoryController extends Controller
     /**
      * @throws SyntaxError
      * @throws RuntimeError
-     * @throws LoaderError
+     * @throws LoaderError|DateMalformedStringException
      */
     public function detail(array $categoryName): void
     {
@@ -105,7 +108,7 @@ class CategoryController extends Controller
     /**
      * @throws RuntimeError
      * @throws SyntaxError
-     * @throws LoaderError
+     * @throws LoaderError|DateMalformedStringException
      */
     public function edit(array $categoryName): void
     {
@@ -116,7 +119,7 @@ class CategoryController extends Controller
     /**
      * @throws SyntaxError
      * @throws RuntimeError
-     * @throws LoaderError
+     * @throws LoaderError|DateMalformedStringException
      */
     public function update(array $categoryData): void
     {
@@ -157,6 +160,10 @@ class CategoryController extends Controller
             ]);
         }
     }
+
+    /**
+     * @throws DateMalformedStringException
+     */
     public function delete(array $categoryName): void
     {
         $category = $this->categoryRepository->findOneBy('name', $categoryName['name']);

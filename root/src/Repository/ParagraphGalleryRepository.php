@@ -13,6 +13,11 @@ class ParagraphGalleryRepository extends Repository implements RepositoryInterfa
 {
     private string $table = 'paragraph_gallery';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -51,7 +56,6 @@ class ParagraphGalleryRepository extends Repository implements RepositoryInterfa
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", ParagraphGallery::class));
         }
         else{
-            $this->connectDB();
             $id = $entity->getId();
             $paragraphContent = $entity->getParagraphContent()->getId();
             $img = $entity->getImg();
@@ -69,7 +73,6 @@ class ParagraphGalleryRepository extends Repository implements RepositoryInterfa
             $stmt->bind_param("issii", $paragraphContent, $img, $figcaption, $sequence, $id);
         }
         $stmt->execute();
-        $this->closeDB();
     }
 
     public function delete(object $entity): void
@@ -81,6 +84,7 @@ class ParagraphGalleryRepository extends Repository implements RepositoryInterfa
             $this->deleteFunc($this->table, $entity);
         }
     }
+
     /**
      * @param false|mysqli_result $result
      * @return ParagraphGallery|null
@@ -89,7 +93,6 @@ class ParagraphGalleryRepository extends Repository implements RepositoryInterfa
     private function findOne(false|mysqli_result $result): ?ParagraphGallery
     {
         $paragraphGallery = $result->fetch_object();
-        $this->closeDB();
         if (!empty($paragraphGallery)) {
             $paragraphGallery = $this->convertDataTypes($paragraphGallery);
             return new ParagraphGallery($paragraphGallery->id, $paragraphGallery->paragraph_content, $paragraphGallery->img, $paragraphGallery->figcaption, $paragraphGallery->sequence);
@@ -114,11 +117,9 @@ class ParagraphGalleryRepository extends Repository implements RepositoryInterfa
                 $paragraphGalleries->offsetSet($paragraphGalleries->key(), $paragraphGallery);
                 $paragraphGalleries->next();
             }
-            $this->closeDB();
             return $paragraphGalleries;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
@@ -128,7 +129,6 @@ class ParagraphGalleryRepository extends Repository implements RepositoryInterfa
      */
     private function convertDataTypes(object $paragraphGallery): object{
         $paragraphGallery->paragraph_content = (new ParagraphContentRepository())->findById($paragraphGallery->paragraph_content);
-        $this->connectDB();
         return $paragraphGallery;
     }
 }

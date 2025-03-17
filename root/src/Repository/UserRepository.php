@@ -14,6 +14,11 @@ class UserRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'users';
 
+    public function __construct()
+    {
+        $this->connectDB();
+    }
+
     /**
      * @throws Exception
      */
@@ -76,7 +81,6 @@ class UserRepository extends Repository implements RepositoryInterface
                 $stmt->bind_param("ssssssisiisi", $firstname, $registrationDate, $lastname, $email, $username, $password, $verified, $token, $firstnamePublic, $lastnamePublic, $profileText, $id);
             }
             $stmt->execute();
-            $this->closeDB();
         }
     }
 
@@ -98,7 +102,6 @@ class UserRepository extends Repository implements RepositoryInterface
     private function findOne(false|mysqli_result $result): ?User
     {
         $user = $result->fetch_object();
-        $this->closeDB();
         if (!empty($user)) {
             $user->registration_date = (new DateTime($user->registration_date));
             return new User($user->id, $user->registration_date, $user->firstname, $user->lastname, $user->email, $user->username, $user->password, $user->verified === 1, $user->token, $user->firstname_public === 1, $user->lastname_public === 1, $user->profiletext);
@@ -123,11 +126,9 @@ class UserRepository extends Repository implements RepositoryInterface
                 $users->offsetSet($users->key(), $user);
                 $users->next();
             }
-            $this->closeDB();
             return $users;
         }
         else {
-            $this->closeDB();
             return null;
         }
     }
