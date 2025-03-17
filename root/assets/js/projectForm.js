@@ -1,5 +1,6 @@
-import {checkDuplicate, showMaxLength} from "./formCheck.js";
+import {checkDuplicate, showMaxLength, searchSelect} from "./formCheck.js";
 $(function () {
+    searchSelect();
     let elName = $("input[name='name']");
     let edit = false;
     let origName = $("h1").text().split(' ')[0];

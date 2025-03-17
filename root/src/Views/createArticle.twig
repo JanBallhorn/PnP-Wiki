@@ -4,7 +4,6 @@
 
 {% block head %}
     {{ parent() }}
-    <script src="../../assets/js/selectSearch.js" type="text/javascript"></script>
     <script src="../../assets/js/articleForm.js" type="module"></script>
 {% endblock %}
 
@@ -21,7 +20,7 @@
                 <span class="maxLength">300</span>
             </label>
             <label>Projekt*
-                <input class="searchselect" name="project" list="projects" value="{{ project }}">
+                <input class="searchSelect" name="project" list="projects" value="{{ project }}">
                 <datalist>
                     <option value="">-</option>
                     {% for project in projects %}

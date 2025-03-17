@@ -3,9 +3,11 @@
 namespace App\Model;
 
 use App\Collection\ArticleListCollection;
+use App\Collection\ArticleSourceCollection;
 use App\Collection\CategoryCollection;
 use App\Collection\ParagraphCollection;
 use App\Repository\ArticleInfoRepository;
+use App\Repository\ArticleSourceRepository;
 use App\Repository\ListElementRepository;
 use App\Repository\ParagraphRepository;
 use DateTime;
@@ -301,6 +303,14 @@ class Article
     public function getParagraphs(): ?ParagraphCollection
     {
         return (new ParagraphRepository())->findBy('article', $this->getId(), 'sequence');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getArticleSources(): ?ArticleSourceCollection
+    {
+        return (new ArticleSourceRepository())->findBy('article', $this->getId());
     }
 
 }

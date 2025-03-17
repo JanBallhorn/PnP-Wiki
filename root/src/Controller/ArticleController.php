@@ -12,16 +12,20 @@ use App\Model\Article;
 use App\Model\ArticleInfo;
 use App\Model\ArticleInfoContent;
 use App\Model\ArticleInfoGallery;
+use App\Model\ArticleSource;
 use App\Model\Paragraph;
 use App\Model\ParagraphContent;
 use App\Model\ParagraphGallery;
+use App\Model\Source;
 use App\Repository\ArticleInfoRepository;
 use App\Repository\ArticleRepository;
+use App\Repository\ArticleSourceRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\ParagraphContentRepository;
 use App\Repository\ParagraphGalleryRepository;
 use App\Repository\ParagraphRepository;
 use App\Repository\ProjectRepository;
+use App\Repository\SourceRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Exception;
@@ -39,7 +43,9 @@ class ArticleController extends Controller
         private readonly ParagraphRepository $paragraphRepository = new ParagraphRepository(),
         private readonly ParagraphContentRepository $paragraphContentRepository = new ParagraphContentRepository(),
         private readonly ParagraphGalleryRepository $paragraphGalleryRepository = new ParagraphGalleryRepository(),
-        private readonly ArticleInfoRepository $articleInfoRepository = new ArticleInfoRepository()
+        private readonly ArticleInfoRepository $articleInfoRepository = new ArticleInfoRepository(),
+        private readonly SourceRepository $sourceRepository = new SourceRepository(),
+        private readonly ArticleSourceRepository $articleSourceRepository = new ArticleSourceRepository(),
     ){}
 
     /**
@@ -243,7 +249,8 @@ class ArticleController extends Controller
     public function editParagraphs(array $article): void
     {
         $article = $this->articleRepository->findOneBy('headline', $article['name']);
-        $this->render('articleEditParagraphs.twig', ['article' => $article]);
+        $sources = $this->sourceRepository->findAll('name');
+        $this->render('articleEditParagraphs.twig', ['article' => $article, 'sources' => $sources]);
     }
 
     /**
@@ -324,8 +331,10 @@ class ArticleController extends Controller
                         $paragraph = new Paragraph($oldParagraph->getId(), $oldParagraph->getPublished(), $oldParagraph->getCreatedBy(), new DateTime(), $user, $article, $headline, $i + 1);
                         $this->paragraphRepository->save($paragraph);
                         $contents = $this->paragraphContentRepository->findBy('paragraph', $oldParagraph->getId());
-                        foreach ($contents as $content){
+                        if($contents !== null){
+                            foreach ($contents as $content){
                             $this->paragraphContentRepository->delete($content);
+                            }
                         }
                     }
                     else{
@@ -417,6 +426,37 @@ class ArticleController extends Controller
                             $paragraphGallery = new ParagraphGallery(0, $content, 'articleImg/' . $articleData['name'] . '/' . $upload->getFileName(), $figcaption, $imgOrder + 1);
                             $this->paragraphGalleryRepository->save($paragraphGallery);
                         }
+                    }
+                }
+                $oldArticleSources = $this->articleSourceRepository->findBy('article', $article->getId());
+                if($oldArticleSources !== null){
+                    $oldArticleSources->rewind();
+                    for ($i = 0; $i < $oldArticleSources->count(); $i++){
+                        $this->articleSourceRepository->delete($oldArticleSources->current());
+                        $oldArticleSources->next();
+                    }
+                }
+                if(isset($articleData['source'])){
+                    $articleSources = array();
+                    $i = 0;
+                    foreach ($articleData['source'] as $source){
+                        $type = $articleData['sourceType'][$i];
+                        $reference  = $articleData['reference'][$i];
+                        if($source !== '' && $reference !== ''){
+                            $articleSources[] = ['source' => $source, 'type' => $type, 'reference' => $reference];
+                        }
+                        $i++;
+                    }
+                    foreach ($articleSources as $source){
+                        $sourceId = 0;
+                        $sameSource = $this->sourceRepository->findOneBy('name', $source['source']);
+                        if($sameSource === null){
+                            $newSource = new Source($sourceId, $source['source'], $source['type']);
+                            $this->sourceRepository->save($newSource);
+                            $sameSource = $this->sourceRepository->findOneBy('name', $source['source']);
+                        }
+                        $newArticleSource = new ArticleSource(0, $article, $sameSource, $source['reference']);
+                        $this->articleSourceRepository->save($newArticleSource);
                     }
                 }
             }

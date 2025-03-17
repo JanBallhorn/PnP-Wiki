@@ -1,0 +1,26 @@
+<div class="source">
+    <div>
+        <label>Quelle
+            <input class="searchSelect" name="source[]" maxlength="200">
+            <datalist>
+                <option value="">-</option>
+                {% for source in sources %}
+                    <option value="{{ source.name }}" data-type="{{ source.type }}">{{ source.name }}</option>
+                {% endfor %}
+            </datalist>
+            <i class="fa-solid fa-chevron-down"></i>
+            <span class="maxLength">200</span>
+        </label>
+        <label>Quellentyp
+            <select name="sourceType[]">
+                <option value="book">Buch/PDF</option>
+                <option value="web">Webseite</option>
+            </select>
+        </label>
+        <label>Link / Seite
+            <input name="reference[]" maxlength="300">
+            <span class="maxLength">300</span>
+        </label>
+    </div>
+    {{ include("controlButtons.twig") }}
+</div>

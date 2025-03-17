@@ -309,7 +309,7 @@ main label > span{
 main form span.maxLength{
     right: 0;
 }
-label:has(input.searchselect){
+label:has(input.searchSelect){
     position: relative;
 }
 input + datalist{
@@ -332,7 +332,7 @@ input + datalist option{
 input + datalist option:hover{
     background-color: var(--box-bg);
 }
-input.searchselect ~ i{
+input.searchSelect ~ i{
     position: absolute;
     right: 0.5em;
     top: 50%;
@@ -346,7 +346,7 @@ form .paragraph + hr{
     height: 0.35em;
     background-color: var(--txt);
 }
-.paragraph:has(.controlButtons), .paragraph .text, .paragraph .gallery, .uploads > div, .upload > div, .infoGallery, .infoTable, .rows{
+.paragraph:has(.controlButtons), .paragraph .text, .paragraph .gallery, .uploads > div, .upload > div, .infoGallery, .infoTable, .rows, .sources{
     padding: 1em;
     background-color: var(--body-bg);
     border: 2px solid var(--box-bg);
@@ -372,10 +372,10 @@ form .paragraph + hr{
 .controlButtons .moveDown{
     margin-top: 0.5em;
 }
-.paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child, .contentImage > div:first-child, .infoTable > div:first-child, .infoTableRow > div:first-child{
+.paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child, .contentImage > div:first-child, .infoTable > div:first-child, .infoTableRow > div:first-child, .source > div:first-child{
     width: calc(100% - 3.5em);
 }
-.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(6) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp, .infoTableRow button:not(.delete), .infoTable:last-child .moveDown{
+.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(6) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp, .infoTableRow button:not(.delete), .infoTable:last-child .moveDown, .source button:not(.delete){
     display: none;
 }
 .controlButtons .minimize{
@@ -402,18 +402,21 @@ form .paragraph + hr{
     max-height: 150px;
     overflow: hidden;
 }
-.infoGallery > div, .infoTableRow{
+.infoGallery > div, .infoTableRow, .source{
     width: 100%;
 }
-.rows{
+.rows, .sources{
     flex-flow: column;
 }
-.infoTableRow{
+.sources{
+    margin-top: 1rem;
+}
+.infoTableRow, .source{
     display: flex;
     justify-content: space-between;
     position: relative;
 }
-.infoTableRow > div:first-child{
+.infoTableRow > div:first-child, .source > div:first-child{
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -421,35 +424,50 @@ form .paragraph + hr{
 .infoTableRow label{
     width: calc(50% - 0.25rem);
 }
-.infoTableRow .controlButtons{
+.infoTableRow .controlButtons, .source .controlButtons{
     padding: 0;
 }
-.rowButtons{
+.rowButtons, .sourceButtons{
     display: flex;
     align-items: center;
     justify-content: left;
     margin-top: 0.5rem;
 }
-.rowButtons button{
+.rowButtons button, .sourceButtons button{
     margin-right: 1.5rem;
 }
-.rowButtons label{
+.rowButtons label, .sourceButtons label{
     margin: 0!important;
     padding: 0!important;
 }
 .tox-menu .tox-collection__item[aria-label="Überschrift 1"], .tox-menu .tox-collection__item[aria-label="Überschrift 2"]{
     display: none;
 }
-select[name="filter"]{
+select/*[name="filter"]*/{
     background-color: var(--main-bg);
     border: 1px solid var(--txt);
     padding: 0.25em;
     font-size: 1rem;
     border-radius: 0.3em;
 }
-select[name="filter"] option{
+select/*[name="filter"]*/ option{
     font-family: "Roboto", sans-serif;
 }
+.source label{
+    width: calc(70% - 5.5rem);
+    display: flex;
+    flex-flow: column;
+    margin-bottom: 0.5em;
+    padding-bottom: 1.2em;
+    position: relative;
+}
+.source label:has(.searchSelect){
+    width: calc(30% - 5.5rem);
+}
+.source label:has(select){
+    width: 10rem;
+}
+
 
 /******************************************
 HEADER

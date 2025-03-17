@@ -1,4 +1,4 @@
-import {checkFileSize, checkFileType, showMaxLength, getTemplate} from "./formCheck.js";
+import {checkFileSize, checkFileType, showMaxLength, getTemplate, searchSelect} from "./formCheck.js";
 
 const images = {};
 $(function () {
@@ -8,8 +8,11 @@ $(function () {
     newGallery();
     singleImgUpload();
     galleryImgUpload();
+    newSource();
     const intervalControlButtons = setInterval(function (){
         controlButtons();
+        searchSelect();
+        changeSourceType();
         $("main form input, main form textarea").each(function (){
             let input = $(this);
             showMaxLength(input);
@@ -181,6 +184,9 @@ function controlButtons(){
             curPos = elToDel.prevAll().length;
             let contentNum = elToDel.closest('.contentElement').attr('data-position');
             images["p" + parNum + "c" + contentNum].splice(curPos, 1);
+            elToDel.remove();
+        }
+        else if(elToDel.hasClass("source")){
             elToDel.remove();
         }
         else{
@@ -680,4 +686,27 @@ async function fillMovedParagraph(el, parNum, html){
         await fillContent(newEl, i, parNum, x);
         x++;
     }
+}
+
+function newSource(){
+    $(".newSource").on("click", function (){
+        let rowEl = $(this).parent().siblings(".sources");
+        let amount = $(this).closest(".sourceButtons").find("input[type='number']").val();
+        for (let i = 0; i < amount; i++){
+            getTemplate(rowEl, "newSource.twig", [], true);
+        }
+    });
+}
+
+function changeSourceType(){
+    let options = $("input.searchSelect + datalist option");
+    options.on("click", function (){
+        let typeSelectOptions = $(this).closest("label").siblings("label:has(select)").find("option");
+        let type = $(this).attr("data-type")
+        typeSelectOptions.each(function (){
+            if($(this).val() === type){
+                $(this).prop("selected", true);
+            }
+        });
+    });
 }

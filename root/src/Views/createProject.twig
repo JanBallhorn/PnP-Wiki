@@ -4,7 +4,6 @@
 
 {% block head %}
     {{ parent() }}
-    <script src="../../assets/js/selectSearch.js" type="text/javascript"></script>
     <script src="../../assets/js/projectForm.js" type="module"></script>
 {% endblock %}
 
@@ -21,7 +20,7 @@
                 <span class="maxLength">200</span>
             </label>
             <label>Übergeordnetes Projekt
-                <input class="searchselect" name="parentProject" list="projects" value="{{ parent }}">
+                <input class="searchSelect" name="parentProject" list="projects" value="{{ parent }}">
                     <datalist>
                         <option value="">-</option>
                         {% for project in projects %}

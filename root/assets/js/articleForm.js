@@ -1,5 +1,6 @@
-import {checkDuplicate, showMaxLength, checkCheckboxCollectionChecked} from "./formCheck.js";
+import {checkDuplicate, showMaxLength, checkCheckboxCollectionChecked, searchSelect} from "./formCheck.js";
 $(function (){
+    searchSelect();
     let elHeadline = $("input[name='headline']");
     let elCheckbox = $("fieldset.checkbox.required");
     let elAltHeadlines = $("textarea[name='altHeadlines']")

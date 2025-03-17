@@ -113,4 +113,58 @@ function getTemplate(el, template, data = [], append = false){
     );
 }
 
-export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked, getTemplate};
+function searchSelect(){
+    let searchSelect = $(".searchSelect");
+    let options = $(".searchSelect + datalist option");
+    searchSelect.off("click");
+    searchSelect.off("keyup")
+    searchSelect.off("blur");
+    options.off("click");
+    searchSelect.on("click", function (){
+        if($(this).siblings("datalist").is(":visible")){
+            $(this).siblings("i").css("transform", "translateY(-50%) rotate(180deg)");
+        }
+        else{
+            $(this).siblings("i").css("transform", "translateY(-50%) rotate(0)");
+        }
+    });
+    searchSelect.on("keyup", function (){
+        let input = $(this).val();
+        $(this).siblings("datalist").children("option").each(function (){
+            if(!$(this).val().toLowerCase().includes(input.toLowerCase())){
+                $(this).addClass("hide");
+            }
+            else {
+                $(this).removeClass("hide");
+            }
+        });
+    });
+    searchSelect.on("blur", function (){
+        let exists = false;
+        let input = $(this).val();
+        let datalist = $(this).siblings("datalist");
+        datalist.children("option").each(function (){
+            if($(this).val().toLowerCase() === input.toLowerCase()){
+                exists = true;
+                input = $(this).val();
+            }
+        });
+        if(exists === false){
+            $(this).siblings(".error.notfound").removeClass("hide");
+        }
+        else{
+            $(this).siblings(".error.notfound").addClass("hide");
+        }
+        if(datalist.is(":hidden")){
+            $(this).siblings("i").css("transform", "translateY(-50%) rotate(0)");
+        }
+    });
+    options.on("click", function (){
+        if($(this).parent().is(":visible")){
+            $(this).parent().siblings("i").css("transform", "translateY(-50%) rotate(180deg)");
+        }
+        $(this).parent().siblings(".searchSelect").val($(this).val());
+    });
+}
+
+export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked, getTemplate, searchSelect};

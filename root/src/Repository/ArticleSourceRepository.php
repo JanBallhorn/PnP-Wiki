@@ -57,18 +57,17 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
             $id = $entity->getId();
             $article = $entity->getArticle()->getId();
             $source = $entity->getSource()->getId();
-            $page = $entity->getPage();
-            $link = $entity->getLink();
+            $reference = $entity->getReference();
         }
         if($id === 0){
-            $query = "INSERT INTO `$this->table` (article, source, page, link) VALUES(?, ?, ?, ?)";
+            $query = "INSERT INTO `$this->table` (article, source, reference) VALUES(?, ?, ?)";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("iiss", $article, $source, $page, $link);
+            $stmt->bind_param("iis", $article, $source, $reference);
         }
         else{
-            $query = "UPDATE `$this->table` SET `article` = ?, `source` = ?, `page` = ?, `link` = ? WHERE `id` = ?";
+            $query = "UPDATE `$this->table` SET `article` = ?, `source` = ?, `reference` = ? WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("iissi", $article, $source, $page, $link, $id);
+            $stmt->bind_param("iisi", $article, $source, $reference, $id);
         }
         $stmt->execute();
     }
@@ -93,7 +92,7 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($articleSource = $result->fetch_object()) {
                 $articleSource = $this->convertDataTypes($articleSource);
-                $articleSource = new ArticleSource($articleSource->id, $articleSource->article, $articleSource->source, $articleSource->page, $articleSource->link);
+                $articleSource = new ArticleSource($articleSource->id, $articleSource->article, $articleSource->source, $articleSource->reference);
                 $articleSources->offsetSet($articleSources->key(), $articleSource);
                 $articleSources->next();
             }
@@ -112,7 +111,7 @@ class ArticleSourceRepository extends Repository implements RepositoryInterface
         $articleSource = $result->fetch_object();
         if(!empty($articleSource)){
             $articleSource = $this->convertDataTypes($articleSource);
-            return new ArticleSource($articleSource->id, $articleSource->article, $articleSource->source, $articleSource->page, $articleSource->link);
+            return new ArticleSource($articleSource->id, $articleSource->article, $articleSource->source, $articleSource->reference);
         }
         else{
             return null;

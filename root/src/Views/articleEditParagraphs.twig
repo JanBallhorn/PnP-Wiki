@@ -146,6 +146,72 @@
                         <hr>
                     {% endif %}
                     <button type="button" class="newParagraph button">+<br/>Neuen Abschnitt hinzufügen</button>
+                    <div class="sources">
+                        <h3>Quellen</h3>
+                        {% if article.articleSources is empty %}
+                            <div class="source">
+                                <div>
+                                    <label>Quelle
+                                        <input class="searchSelect" name="source[]" maxlength="200" value="{{ articleSource.name }}">
+                                        <datalist>
+                                            <option value="">-</option>
+                                            {% for source in sources.__serialize %}
+                                                <option value="{{ source.name }}" data-type="{{ source.type }}">{{ source.name }}</option>
+                                            {% endfor %}
+                                        </datalist>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                        <span class="maxLength">200</span>
+                                    </label>
+                                    <label>Quellentyp
+                                        <select name="sourceType[]">
+                                            <option value="book">Buch/PDF</option>
+                                            <option value="web">Webseite</option>
+                                        </select>
+                                    </label>
+                                    <label>Link / Seite
+                                        <input name="reference[]" maxlength="300">
+                                        <span class="maxLength">300</span>
+                                    </label>
+                                </div>
+                                {{ include("controlButtons.twig") }}
+                            </div>
+                        {% else %}
+                            {% for articleSource in article.articleSources.__serialize %}
+                                <div class="source">
+                                    <div>
+                                        <label>Quelle
+                                            <input class="searchSelect" name="source[]" maxlength="200" value="{{ articleSource.name }}">
+                                            <datalist>
+                                                <option value="">-</option>
+                                                {% for source in sources.__serialize %}
+                                                    <option value="{{ source.name }}" data-type="{{ source.type }}">{{ source.name }}</option>
+                                                {% endfor %}
+                                            </datalist>
+                                            <i class="fa-solid fa-chevron-down"></i>
+                                            <span class="maxLength">200</span>
+                                        </label>
+                                        <label>Quellentyp
+                                            <select name="sourceType[]">
+                                                <option value="book" {% if articleSource.type == "book" %}selected{% endif %}>Buch/PDF</option>
+                                                <option value="web" {% if articleSource.type == "web" %}selected{% endif %}>Webseite</option>
+                                            </select>
+                                        </label>
+                                        <label>Link / Seite
+                                            <input name="reference[]" maxlength="300" value="{{ articleSource.reference }}">
+                                            <span class="maxLength">300</span>
+                                        </label>
+                                    </div>
+                                    {{ include("controlButtons.twig") }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="sourceButtons">
+                        <button type="button" class="newSource button">+<br/>Neue Quelle hinzufügen</button>
+                        <label>Anzahl neuer Quellen
+                            <input type="number" value="1">
+                        </label>
+                    </div>
                     <input name="name" type="hidden" value="{{ article.headline }}">
                     <input name="images" type="hidden">
                     <input class="button" type="submit" value="Inhalte speichern" name="submit" form="editParagraphs">

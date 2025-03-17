@@ -2,28 +2,28 @@
 
 namespace App\Model;
 
+use App\Repository\ArticleRepository;
+use App\Repository\SourceRepository;
+
 class ArticleSource
 {
     private int $id;
     private Article $article;
     private Source $source;
-    private string $page;
-    private string $link;
+    private string $reference;
 
     /**
      * @param int $id
      * @param Article $article
      * @param Source $source
-     * @param string $page
-     * @param string $link
+     * @param string $reference
      */
-    public function __construct(int $id, Article $article, Source $source, string $page, string $link)
+    public function __construct(int $id, Article $article, Source $source, string $reference)
     {
         $this->id = $id;
         $this->article = $article;
         $this->source = $source;
-        $this->page = $page;
-        $this->link = $link;
+        $this->reference = $reference;
     }
 
     /**
@@ -77,33 +77,27 @@ class ArticleSource
     /**
      * @return string
      */
-    public function getPage(): string
+    public function getReference(): string
     {
-        return $this->page;
+        return $this->reference;
     }
 
     /**
-     * @param string $page
+     * @param string $reference
      */
-    public function setPage(string $page): void
+    public function setReference(string $reference): void
     {
-        $this->page = $page;
+        $this->reference = $reference;
     }
 
-    /**
-     * @return string
-     */
-    public function getLink(): string
+    public function getType(): string
     {
-        return $this->link;
+        return $this->source->getType();
     }
 
-    /**
-     * @param string $link
-     */
-    public function setLink(string $link): void
+    public function getName(): string
     {
-        $this->link = $link;
+        return $this->source->getName();
     }
 
 }

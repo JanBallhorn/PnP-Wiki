@@ -80,6 +80,7 @@
                         </div>
                     {% endif %}
                 </div>
+                {% set articleSources = article.articleSources.__serialize %}
                 {% for paragraph in article.paragraphs.__serialize %}
                     <div id="{{ paragraph.headline }}" class="paragraph {% if paragraph.sequence == 1 %}introduction{% endif %}">
                         {% if paragraph.sequence != 1 %}
@@ -139,9 +140,44 @@
                                 {% endfor %}
                                 {% set i = i + 1 %}
                             {% endfor %}
+                            {% if articleSources is not empty %}
+                                <a class="level1" href="#articleSources">{{ i }}. Quellen</a>
+                            {% endif %}
                         </div>
                     {% endif %}
                 {% endfor %}
+                {% set articleSources = article.articleSources.__serialize %}
+                {% if articleSources is not empty %}
+                    <div class="articleSources">
+                        <h2 id="articleSources">Quellen</h2>
+                        {% set articleSources = article.articleSources.__serialize %}
+                        {% set book = false %}
+                        {% set web = false %}
+                        {% for articleSource in articleSources %}
+                            {% if articleSource.type == "book" %}
+                                {% set book = true %}
+                            {% elseif articleSource.type == "web" %}
+                                {% set web = true %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if book == true %}
+                            <h3>Buchquellen</h3>
+                            {% for articleSource in articleSources %}
+                                {% if articleSource.type == "book" %}
+                                    <p>{{ articleSource.name }} - Seite {{ articleSource.reference }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if web == true %}
+                            <h3>Weblinks</h3>
+                            {% for articleSource in articleSources %}
+                                {% if articleSource.type == "web" %}
+                                    <p>{{ articleSource.name }} - Link: <a href="{{ articleSource.reference }}" target="_blank">{{ articleSource.reference }}</a></p>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endif %}
             </div>
         </div>
     {% else %}
