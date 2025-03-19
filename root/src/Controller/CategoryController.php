@@ -57,7 +57,7 @@ class CategoryController extends Controller
      */
     public function save(array $categoryData): void
     {
-        if(!empty($_FILES[0]["tmp_name"])){
+        if(!empty($_FILES["fileUpload"]["tmp_name"])){
             $uploader = new FileUpload(__DIR__ . '/../../../externalImages/categoryIcons/', str_replace('/', '-', $categoryData['name']) . '.svg', ['svg'], 20000, $_FILES);
             $upload = $this->prepareUpload($uploader);
         }

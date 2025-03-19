@@ -128,23 +128,20 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
         }
         $this->findArticlesById($articles, $query);
-        $query = "SELECT * FROM articles WHERE headline LIKE '%$search%'";
+        $query = "SELECT DISTINCT articles.id FROM articles WHERE headline LIKE '%$search%'";
         if($category !== null){
-            $query = "SELECT * FROM articles INNER JOIN article_categories ON articles.id = article_categories.article WHERE headline LIKE '%$search%' AND category = " . $category->getId();
+            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_categories ON articles.id = article_categories.article WHERE headline LIKE '%$search%' AND category = " . $category->getId();
         }
         elseif ($project !== null){
             $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
         }
         $stmt = $this->db->prepare($query);
         $stmt->execute();
-        $result = $this->findCollection($stmt);
-        if($result !== null){
-            $result->rewind();
-            for($i = 0; $i < $result->count(); $i++){
-                $articles->offsetSet($articles->key(), $result->current());
-                $articles->next();
-                $result->next();
-            }
+        $result = $stmt->get_result()->fetch_object();
+        if(!empty($result)){
+            $article = $this->findOneBy('id', $result->id);
+            $articles->offsetSet($articles->current(), $article);
+            $articles->next();
         }
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline LIKE '%$search%'";
         if($category !== null){

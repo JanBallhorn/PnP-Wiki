@@ -82,26 +82,28 @@ class ArticleController extends Controller
         if($sameHeadline === null){
             $articles = $this->articleRepository->findAll();
             $allOtherAltHeadlines = [];
-            foreach ($articles as $Article) {
-                $otherAltHeadlines = $Article->getAltHeadlines();
-                if($otherAltHeadlines !== null){
-                    foreach ($otherAltHeadlines as $altHeadline) {
-                        $allOtherAltHeadlines[] = $altHeadline;
+            if($articles !== null){
+                foreach ($articles as $Article) {
+                    $otherAltHeadlines = $Article->getAltHeadlines();
+                    if($otherAltHeadlines !== null){
+                        foreach ($otherAltHeadlines as $altHeadline) {
+                            $allOtherAltHeadlines[] = $altHeadline;
+                        }
                     }
                 }
-            }
-            foreach ($altHeadlines as $altHeadline) {
-                $sameHeadline = $this->articleRepository->findOneBy('headline', $altHeadline);
-                if($sameHeadline !== null){
-                    break;
-                }
-                if($allOtherAltHeadlines !== null){
-                    if(in_array($altHeadline, $allOtherAltHeadlines)){
-                        $sameHeadline = true;
+                foreach ($altHeadlines as $altHeadline) {
+                    $sameHeadline = $this->articleRepository->findOneBy('headline', $altHeadline);
+                    if($sameHeadline !== null){
                         break;
                     }
+                    if($allOtherAltHeadlines !== null){
+                        if(in_array($altHeadline, $allOtherAltHeadlines)){
+                            $sameHeadline = true;
+                            break;
+                        }
+                    }
+                    $allOtherAltHeadlines[] = $altHeadline;
                 }
-                $allOtherAltHeadlines[] = $altHeadline;
             }
         }
         if($sameHeadline === null && !empty($article['project']) && isset($article['category'])){
@@ -348,10 +350,12 @@ class ArticleController extends Controller
             $introduction = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, "", 1);
             $this->paragraphRepository->save($introduction);
             $i = 2;
-            foreach ($articleData['headline'] as $headline){
-                $paragraph = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, $headline, $i);
-                $this->paragraphRepository->save($paragraph);
-                $i++;
+            if(isset($articleData['headline'])){
+                foreach ($articleData['headline'] as $headline){
+                    $paragraph = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, $headline, $i);
+                    $this->paragraphRepository->save($paragraph);
+                    $i++;
+                }
             }
         }
         foreach ($articleData as $element => $value){

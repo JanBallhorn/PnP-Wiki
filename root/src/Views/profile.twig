@@ -45,7 +45,7 @@
             {% if profileTextExists %}
                 <div>
                     <b>Profilbeschreibung:</b>
-                    <p>{{ profileText }}</p>
+                    <p>{{ profileText|nl2br }}</p>
                 </div>
             {% endif %}
             {% if ownProfile %}
@@ -62,7 +62,9 @@
         <h5>Statistiken:</h5>
         <ul>
             <li>Erstellte Artikel:<br> {{ createdArticles }}</li>
-            <li>Neuster Artikel:<br> <a href="/article?name={{ newestArticle.headline }}">{{ newestArticle.headline }}</a></li>
+            {% if newestArticle != null %}
+                <li>Neuster Artikel:<br> <a href="/article?name={{ newestArticle.headline }}">{{ newestArticle.headline }}</a></li>
+            {% endif %}
         </ul>
     {% endif %}
 {% endblock %}

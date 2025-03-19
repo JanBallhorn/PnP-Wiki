@@ -56,7 +56,7 @@
                     Dieser Artikel soll privat sein (Private Artikel können nur von dir gesehen und bearbeitet werden.)
                 </label>
                 <label>
-                    <input type="checkbox" name="editable" {% if editable %}checked{% endif %}>
+                    <input type="checkbox" name="editable" {% if editable is not defined or editable %}checked{% endif %}>
                     Andere sollen diesen Artikel bearbeiten dürfen
                 </label>
             </fieldset>

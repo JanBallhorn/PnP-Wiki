@@ -45,7 +45,9 @@
                             <a class="noUnderline" href="/article?name={{ article.headline }}">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
-                                {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                                <div class="firstLine">
+                                    {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                                </div>
                             </a>
                         </li>
                     {% endfor %}
@@ -60,7 +62,9 @@
                             <a class="noUnderline" href="/article?name={{ article.headline }}">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
-                                {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                                <div class="firstLine">
+                                    {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
+                                </div>
                             </a>
                         </li>
                     {% endfor %}

@@ -69,8 +69,8 @@
                                                     <span class="maxLength">300</span>
                                                 </label>
                                                 <label>
-                                                    <input name="rowInfo{{ i }}[]" maxlength="300" value="{{ infoContent.content }}">
-                                                    <span class="maxLength">300</span>
+                                                    <textarea name="rowInfo{{ i }}[]" maxlength="1000" value="{{ infoContent.content }}">{{ infoContent.content }}</textarea>
+                                                    <span class="maxLength">1000</span>
                                                 </label>
                                             </div>
                                             {{ include("controlButtons.twig") }}

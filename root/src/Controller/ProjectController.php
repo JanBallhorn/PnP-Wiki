@@ -126,12 +126,14 @@ class ProjectController extends Controller
             $this->projectRepository->save($project);
             if($oldPrivateState !== $private){
                 $articles = $this->articleRepository->findBy('project', $project->getId());
-                $articles->rewind();
-                for($i = 0; $i < $articles->count(); $i++){
-                    $article = $articles->current();
-                    $article->setPrivate($private);
-                    $this->articleRepository->save($article);
-                    $articles->next();
+                if($articles !== null){
+                    $articles->rewind();
+                    for($i = 0; $i < $articles->count(); $i++){
+                        $article = $articles->current();
+                        $article->setPrivate($private);
+                        $this->articleRepository->save($article);
+                        $articles->next();
+                    }
                 }
                 $childProjects = $project->getChildren();
                 if($childProjects !== null){

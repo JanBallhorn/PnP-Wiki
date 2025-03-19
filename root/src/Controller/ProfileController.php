@@ -29,7 +29,15 @@ class ProfileController extends Controller
         $user = $this->userRepository->findOneBy('username', $username);
         $profileTextExists = !empty($user->getProfileText());
         $articles = $this->articleRepository->findBy('created_by', $user->getId(), "published DESC");
-        $articles->rewind();
+        if($articles !== null){
+            $articles->rewind();
+            $createdArticles = $articles->count();
+            $newestArticle = $articles->current();
+        }
+        else{
+            $createdArticles = 0;
+            $newestArticle = null;
+        }
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
             'username'=>$user->getUsername(),
@@ -40,8 +48,8 @@ class ProfileController extends Controller
             'profileTextExists'=>$profileTextExists,
             'profileText'=>$user->getProfileText(),
             'user_query'=>http_build_query(['user'=>$user->getUsername()]),
-            'createdArticles'=>$articles->count(),
-            'newestArticle'=>$articles->current()
+            'createdArticles'=>$createdArticles,
+            'newestArticle'=>$newestArticle
         ];
         $this->render($this->template, $templateData);
     }
@@ -56,7 +64,15 @@ class ProfileController extends Controller
         $username = $username['user'];
         $user = $this->userRepository->findOneBy('username', $username);
         $articles = $this->articleRepository->findBy('created_by', $user->getId(), "published DESC");
-        $articles->rewind();
+        if($articles !== null){
+            $articles->rewind();
+            $createdArticles = $articles->count();
+            $newestArticle = $articles->current();
+        }
+        else{
+            $createdArticles = 0;
+            $newestArticle = null;
+        }
         $templateData = [
             'ownProfile'=> $this->checkOwnProfile($user->getUsername()),
             'editMode'=>true,
@@ -64,8 +80,8 @@ class ProfileController extends Controller
             'firstnamePublic'=>$user->getFirstnamePublic(),
             'lastnamePublic'=>$user->getLastnamePublic(),
             'profileText'=>$user->getProfileText(),
-            'createdArticles'=>$articles->count(),
-            'newestArticle'=>$articles->current()
+            'createdArticles'=>$createdArticles,
+            'newestArticle'=>$newestArticle
         ];
         $this->render($this->template, $templateData);
     }
