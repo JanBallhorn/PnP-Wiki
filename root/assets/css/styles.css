@@ -6,6 +6,7 @@ COLOR VARIABLES
     --body-bg: #ececec;
     --main-bg: #f4f4f4;
     --box-bg: #ccc;
+    --box-bg2: #e3e3e3;
     --link: #4242ff;
     --error: #d90000;
     --svg-filter: invert(9%) sepia(98%) saturate(9%) hue-rotate(326deg) brightness(91%) contrast(93%);
@@ -16,6 +17,7 @@ COLOR VARIABLES
     --body-bg: #f4f4f4;
     --main-bg: #fff;
     --box-bg: #ccc;
+    --box-bg2: #e3e3e3;
     --link: #4242ff;
     --error: #d90000;
     --svg-filter: invert(9%) sepia(98%) saturate(9%) hue-rotate(326deg) brightness(91%) contrast(93%);
@@ -26,6 +28,7 @@ COLOR VARIABLES
     --body-bg: #222;
     --main-bg: #191919;
     --box-bg: #555;
+    --box-bg2: #404040;
     --link: #9d9dff;
     --error: #f66;
     --svg-filter: invert(100%) sepia(1%) saturate(37%) hue-rotate(182deg) brightness(113%) contrast(89%);
@@ -207,6 +210,8 @@ input[type='file']{
 input:focus, textarea:focus{
     outline: none;
 }
+
+/*noinspection CssInvalidPseudoSelector*/
 input:is(:-webkit-autofill, :autofill){
     filter: none;
     box-shadow: 0 0 0 40px var(--main-bg) inset !important;
@@ -361,21 +366,44 @@ form .paragraph + hr{
     justify-content: center;
     padding: 1.25rem 0;
 }
+.infoTableRow .controlButtons{
+    width: 6em;
+    flex-flow: row;
+    justify-content: space-between;
+}
 .controlButtons button{
     border: none;
     background-color: transparent;
     font-size: 2em;
 }
+.infoTableRow .controlButtons button{
+    margin-bottom: 0.85em;
+}
 .controlButtons .moveUp{
-    margin-bottom: 0.5em;
+    margin-bottom: 0.25em;
 }
 .controlButtons .moveDown{
-    margin-top: 0.5em;
+    margin-top: 0.25em;
 }
-.paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child, .contentImage > div:first-child, .infoTable > div:first-child, .infoTableRow > div:first-child, .source > div:first-child{
+.infoTableRow .moveUp, .infoTableRow .moveDown{
+    margin: 0;
+}
+.infoTableRow .delete{
+    order: 1;
+}
+.infoTableRow .moveUp i{
+    margin-top: 0.2em;
+}
+.infoTableRow .moveDown i{
+    margin-bottom: 0.2em;
+}
+.paragraph:has(.controlButtons) > div:first-child, .paragraph .text > div:first-child, .paragraph .gallery > div:first-child, .contentImage > div:first-child, .infoTable > div:first-child, .source > div:first-child{
     width: calc(100% - 3.5em);
 }
-.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(6) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp, .infoTableRow button:not(.delete), .infoTable:last-child .moveDown, .source button:not(.delete){
+.infoTableRow > div:first-child{
+    width: calc(100% - 7em);
+}
+.text .upload .moveUp, .text .upload .moveDown, *[data-position="1"] > .controlButtons > .moveUp, .paragraph[data-position="2"] > .controlButtons > .moveUp, .paragraph:nth-last-child(6) > .controlButtons > .moveDown, .contentElement:nth-last-child(2) > .controlButtons > .moveDown, .uploads > div:last-child .moveDown, .contentImage:first-child .moveUp, .infoTableRow button.minimize, .infoTable:last-child  > .controlButtons > .moveDown, .source button:not(.delete){
     display: none;
 }
 .controlButtons .minimize{
@@ -426,6 +454,11 @@ form .paragraph + hr{
 }
 .infoTableRow .controlButtons, .source .controlButtons{
     padding: 0;
+}
+.infoTableRow textarea {
+    min-height: 1.8125em;
+    padding: 0.25em 0.5em;
+    min-width: 100%;
 }
 .rowButtons, .sourceButtons{
     display: flex;
@@ -480,6 +513,10 @@ header{
     justify-content: space-between;
     margin-bottom: 1.5em;
     min-height: 4.25em;
+    position: sticky;
+    z-index: 100;
+    width: 100%;
+    top: 0;
 }
 header > div{
     display: flex;
@@ -597,6 +634,7 @@ main{
     display: flex;
     justify-content: space-between;
     flex: 1;
+    flex-wrap: wrap;
 }
 #right, main .content{
     background-color: var(--main-bg);
@@ -638,7 +676,7 @@ nav ul.level2{
     top: -1px;
     border: 1px solid var(--txt);
     border-left: 0.35em solid var(--txt);
-    min-width: 7em;
+    min-width: 10em;
     width: fit-content;
     z-index: 100;
     box-shadow: 0.35em 0 0.75em -0.25em var(--shadow);
@@ -702,11 +740,14 @@ PROJECT LIST
     border-radius: 0.3rem;
     margin-bottom: 0.5rem;
 }
-.content ul li > a > p:last-child{
+.content ul li > a > p:last-child, .firstLine > *:first-child{
     white-space: nowrap;
     overflow: hidden;
     display: block;
     text-overflow: ellipsis;
+}
+.firstLine *{
+    display: none;
 }
 .content ul li a.privateProject{
     pointer-events: none;
@@ -795,12 +836,14 @@ ARTICLES
     hyphens: auto;
 }
 .mainArticleContent .articleInfo{
+    min-width: 25rem;
     float: right;
     width: 30%;
     max-width: 37.5rem;
     background-color: var(--box-bg);
     border-left: 1rem solid var(--main-bg);
     border-bottom: 1rem solid var(--main-bg);
+    font-size: 0.9rem;
 }
 .mainArticleContent .articleInfo .info{
     border: 1px solid var(--txt);
@@ -837,6 +880,9 @@ ARTICLES
 }
 .mainArticleContent .articleInfo h5{
     text-align: center;
+}
+.mainArticleContent .articleInfo td[colspan="2"]:has(h5){
+    background-color: var(--box-bg2);
 }
 .mainArticleContent .articleInfo tr:not(:last-child){
     border-bottom: 1px solid var(--txt);
@@ -928,4 +974,17 @@ ARTICLES
 .mainArticleContent .spoiler.shown{
     background-color: var(--body-bg);
     color: var(--txt);
+}
+
+/******************************************
+MEDIA QUERIES
+******************************************/
+@media screen and (max-width: 1400px){
+    main > .content{
+        width: calc(100% - 13em);
+    }
+    #right{
+        width: 100%;
+        margin-top: 2em;
+    }
 }

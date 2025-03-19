@@ -114,11 +114,11 @@ function controlButtons(){
 
                 prevTopics.push($(this).val());
             });
-            elToMove.find("input[name='rowInfo" + curPos + "[]']").each(function (){
-                curInfos.push($(this).val());
+            elToMove.find("textarea[name='rowInfo" + curPos + "[]']").each(function (){
+                curInfos.push($(this).text());
             });
-            prevEl.find("input[name='rowInfo" + (curPos - 1) + "[]']").each(function (){
-                prevInfos.push($(this).val());
+            prevEl.find("textarea[name='rowInfo" + (curPos - 1) + "[]']").each(function (){
+                prevInfos.push($(this).text());
             });
             let curHeadline = elToMove.find("input[name='tableHeadline[]']").val();
             elToMove.find("input[name='tableHeadline[]']").val(prevEl.find("input[name='tableHeadline[]']").val());
@@ -139,14 +139,14 @@ function controlButtons(){
                 i++;
             });
             i = 0;
-            prevEl.find("input[name='rowInfo" + curPos + "[]']").each(function (){
-                $(this).val(curInfos[i]);
+            prevEl.find("textarea[name='rowInfo" + curPos + "[]']").each(function (){
+                $(this).text(curInfos[i]);
                 $(this).attr("name", "rowInfo" + (curPos - 1) + "[]");
                 i++;
             });
             i = 0;
-            elToMove.find("input[name='rowInfo" + (curPos - 1) + "[]']").each(function (){
-                $(this).val(prevInfos[i]);
+            elToMove.find("textarea[name='rowInfo" + (curPos - 1) + "[]']").each(function (){
+                $(this).text(prevInfos[i]);
                 $(this).attr("name", "rowInfo" + curPos + "[]");
                 i++;
             });
@@ -168,6 +168,20 @@ function controlButtons(){
             elToMove.find("input[type='text']").val(prevElVal);
             prevEl.find("input[type='text']").val(curVal);
         }
+        else if(elToMove.hasClass("infoTableRow")){
+            let tablePos = elToMove.closest(".infoTable").attr("data-position");
+            let prevEl = elToMove.prev();
+            let curTopic = elToMove.find("input[name='rowTopic" + tablePos + "[]']");
+            let curInfo = elToMove.find("textarea[name='rowInfo" + tablePos + "[]']");
+            let prevTopic = prevEl.find("input[name='rowTopic" + tablePos + "[]']");
+            let prevInfo = prevEl.find("textarea[name='rowInfo" + tablePos + "[]']");
+            let curTopicVal = curTopic.val();
+            curTopic.val(prevTopic.val());
+            prevTopic.val(curTopicVal);
+            let curInfoVal = curInfo.text();
+            curInfo.text(prevInfo.text());
+            prevInfo.text(curInfoVal);
+        }
     });
     mDownEl.on("click", function (){
         let elToMove = $(this).parent().parent();
@@ -185,11 +199,11 @@ function controlButtons(){
 
                 nextTopics.push($(this).val());
             });
-            elToMove.find("input[name='rowInfo" + curPos + "[]']").each(function (){
-                curInfos.push($(this).val());
+            elToMove.find("textarea[name='rowInfo" + curPos + "[]']").each(function (){
+                curInfos.push($(this).text());
             });
-            nextEl.find("input[name='rowInfo" + (curPos + 1) + "[]']").each(function (){
-                nextInfos.push($(this).val());
+            nextEl.find("textarea[name='rowInfo" + (curPos + 1) + "[]']").each(function (){
+                nextInfos.push($(this).text());
             });
             let curHeadline = elToMove.find("input[name='tableHeadline[]']").val();
             elToMove.find("input[name='tableHeadline[]']").val(nextEl.find("input[name='tableHeadline[]']").val());
@@ -211,13 +225,13 @@ function controlButtons(){
             });
             i = 0;
             nextEl.find("input[name='rowInfo" + curPos + "[]']").each(function (){
-                $(this).val(curInfos[i]);
+                $(this).text(curInfos[i]);
                 $(this).attr("name", "rowInfo" + (curPos + 1) + "[]");
                 i++;
             });
             i = 0;
             elToMove.find("input[name='rowInfo" + (curPos + 1) + "[]']").each(function (){
-                $(this).val(nextInfos[i]);
+                $(this).text(nextInfos[i]);
                 $(this).attr("name", "rowInfo" + curPos + "[]");
                 i++;
             });
@@ -238,6 +252,20 @@ function controlButtons(){
             let curVal = elToMove.find("input[type='text']").val();
             elToMove.find("input[type='text']").val(nextElVal);
             nextEl.find("input[type='text']").val(curVal);
+        }
+        else if(elToMove.hasClass("infoTableRow")){
+            let tablePos = elToMove.closest(".infoTable").attr("data-position");
+            let nextEl = elToMove.next();
+            let curTopic = elToMove.find("input[name='rowTopic" + tablePos + "[]']");
+            let curInfo = elToMove.find("textarea[name='rowInfo" + tablePos + "[]']");
+            let nextTopic = nextEl.find("input[name='rowTopic" + tablePos + "[]']");
+            let nextInfo = nextEl.find("textarea[name='rowInfo" + tablePos + "[]']");
+            let curTopicVal = curTopic.val();
+            curTopic.val(nextTopic.val());
+            nextTopic.val(curTopicVal);
+            let curInfoVal = curInfo.text();
+            curInfo.text(nextInfo.text());
+            nextInfo.text(curInfoVal);
         }
     });
 }
