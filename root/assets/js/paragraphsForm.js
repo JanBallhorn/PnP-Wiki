@@ -1,4 +1,4 @@
-import {checkFileSize, checkFileType, showMaxLength, getTemplate, searchSelect} from "./formCheck.js";
+import {checkFileSize, checkFileType, showMaxLength, getTemplate, searchSelect, linkModal} from "./formCheck.js";
 
 const images = {};
 $(function () {
@@ -13,6 +13,7 @@ $(function () {
         controlButtons();
         searchSelect();
         changeSourceType();
+        linkModal();
         $("main form input, main form textarea").each(function (){
             let input = $(this);
             showMaxLength(input);

@@ -2,8 +2,9 @@
     <div>
         <img src="{{ i }}" alt="{{ l }}" width="100">
         <label>Bildunterschrift
-                <input name="p{{ j }}c{{ k }}figcaption[]" type="text" maxlength="500" value="{{ m }}">
-                <span class="maxLength">500</span>
+            <input name="p{{ j }}c{{ k }}figcaption[]" type="text" maxlength="500" value="{{ m }}" class="withModal">
+            <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
+            <span class="maxLength">500</span>
         </label>
     </div>
     {{ include("controlButtons.twig") }}

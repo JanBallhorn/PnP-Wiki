@@ -1,4 +1,4 @@
-import {checkFileSize, checkFileType, showMaxLength, getTemplate} from "./formCheck.js";
+import {checkFileSize, checkFileType, showMaxLength, getTemplate, linkModal} from "./formCheck.js";
 
 const images = [];
 
@@ -9,6 +9,7 @@ $(function (){
     ImgUpload();
     setInterval(function (){
         controlButtons();
+        linkModal();
         $("main form input, main form textarea").each(function (){
             let input = $(this);
             showMaxLength(input);

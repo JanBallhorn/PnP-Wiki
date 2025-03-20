@@ -68,7 +68,8 @@
                                                                 <div>
                                                                     <img src="{{ gallery.img }}" alt="Bild{{ gallery.sequence }}" width="100">
                                                                     <label>Bildunterschrift
-                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" value="{{ gallery.figcaption }}" maxlength="500">
+                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" value="{{ gallery.figcaption }}" maxlength="500" class="withModal">
+                                                                        <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                                         <span class="maxLength">500</span>
                                                                     </label>
                                                                 </div>
@@ -100,7 +101,8 @@
                                                                 <div>
                                                                     <img src="{{ content.img }}" alt="{{ content.figcaption }}" width="100">
                                                                     <label>Bildunterschrift
-                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" maxlength="500" value="{{ content.figcaption }}">
+                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" maxlength="500" value="{{ content.figcaption }}" class="withModal">
+                                                                        <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                                         <span class="maxLength">500</span>
                                                                     </label>
                                                                 </div>
@@ -152,7 +154,7 @@
                             <div class="source">
                                 <div>
                                     <label>Quelle
-                                        <input class="searchSelect" name="source[]" maxlength="200" value="{{ articleSource.name }}">
+                                        <input class="searchSelect" name="source[]" maxlength="200" value="{{ articleSource.name }}" autocomplete="off">
                                         <datalist>
                                             <option value="">-</option>
                                             {% for source in sources.__serialize %}
@@ -180,7 +182,7 @@
                                 <div class="source">
                                     <div>
                                         <label>Quelle
-                                            <input class="searchSelect" name="source[]" maxlength="200" value="{{ articleSource.name }}">
+                                            <input class="searchSelect" name="source[]" maxlength="200" value="{{ articleSource.name }}" autocomplete="off">
                                             <datalist>
                                                 <option value="">-</option>
                                                 {% for source in sources.__serialize %}
@@ -218,6 +220,7 @@
                 </form>
             </div>
         </div>
+        {{ include("linkModal.twig") }}
     {% else %}
         {{ _self.notLoggedIn() }}
     {% endif %}

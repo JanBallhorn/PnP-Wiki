@@ -74,8 +74,8 @@
                                         {% for content in infoContents.__serialize %}
                                             {% if content.headline == headline %}
                                                 <tr>
-                                                    <td>{{ content.topic }}</td>
-                                                    <td>{{ content.content|nl2br }}</td>
+                                                    <td>{{ content.topic|raw }}</td>
+                                                    <td>{{ content.content|raw|nl2br }}</td>
                                                 </tr>
                                             {% endif %}
                                         {% endfor %}
@@ -97,11 +97,11 @@
                                     <div class="contentGallery">
                                     {% for img in content.galleryImages.__serialize %}
                                         <figure>
-                                            <a href="{{ img.img }}" data-lightbox="gallery{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ img.figcaption }}">
+                                            <a href="{{ img.img }}" data-lightbox="gallery{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ img.figcaption|striptags }}">
                                                 <img src="{{ img.img }}" alt="{{ img.figcaption }}">
                                             </a>
                                             {% if img.figcaption != '' %}
-                                                <figcaption>{{ img.figcaption }}</figcaption>
+                                                <figcaption>{{ img.figcaption|raw }}</figcaption>
                                             {% endif %}
                                         </figure>
                                     {% endfor %}
@@ -110,11 +110,11 @@
                                     <div class="contentText">
                                         {% if content.img != null %}
                                             <figure>
-                                                <a href="{{ content.img }}" data-lightbox="img{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ content.figcaption }}">
+                                                <a href="{{ content.img }}" data-lightbox="img{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ content.figcaption|striptags }}">
                                                     <img src="{{ content.img }}" alt="{{ content.figcaption }}">
                                                 </a>
                                                 {% if content.figcaption != '' %}
-                                                    <figcaption>{{ content.figcaption }}</figcaption>
+                                                    <figcaption>{{ content.figcaption|raw }}</figcaption>
                                                 {% endif %}
                                             </figure>
                                         {% endif %}

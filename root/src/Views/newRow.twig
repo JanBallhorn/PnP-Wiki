@@ -1,11 +1,13 @@
 <div class="infoTableRow">
     <div>
         <label>
-            <input name="rowTopic{{ i }}[]" maxlength="300" value="{{ j }}">
+            <input name="rowTopic{{ i }}[]" maxlength="300" value="{{ j }}" class="withModal">
+            <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
             <span class="maxLength">300</span>
         </label>
         <label>
-            <textarea name="rowInfo{{ i }}[]" maxlength="1000" value="{{ k }}"></textarea>
+            <textarea name="rowInfo{{ i }}[]" maxlength="1000" value="{{ k }}" class="withModal"></textarea>
+            <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
             <span class="maxLength">1000</span>
         </label>
     </div>

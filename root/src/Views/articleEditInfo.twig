@@ -40,7 +40,8 @@
                                 <div>
                                     <img src="{{ encodeImg(img.img) }}" alt="Bild{{ img.sequence }}" width="100">
                                     <label>Bildunterschrift
-                                        <input name="pcfigcaption[]" type="text" value="{{ img.figcaption }}" maxlength="500">
+                                        <input name="pcfigcaption[]" type="text" value="{{ img.figcaption }}" maxlength="500" class="withModal">
+                                        <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                         <span class="maxLength">500</span>
                                     </label>
                                 </div>
@@ -65,11 +66,13 @@
                                         <div class="infoTableRow">
                                             <div>
                                                 <label>
-                                                    <input name="rowTopic{{ i }}[]" maxlength="300" value="{{ infoContent.topic }}">
+                                                    <input name="rowTopic{{ i }}[]" class="withModal" maxlength="300" value="{{ infoContent.topic }}">
+                                                    <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                     <span class="maxLength">300</span>
                                                 </label>
                                                 <label>
-                                                    <textarea name="rowInfo{{ i }}[]" maxlength="1000" value="{{ infoContent.content }}">{{ infoContent.content }}</textarea>
+                                                    <textarea name="rowInfo{{ i }}[]" class="withModal" maxlength="1000" value="{{ infoContent.content }}">{{ infoContent.content }}</textarea>
+                                                    <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                     <span class="maxLength">1000</span>
                                                 </label>
                                             </div>
@@ -95,6 +98,7 @@
             <input name="images" type="hidden">
             <input class="button" type="submit" value="Inhalte speichern" name="submit" form="editInfo">
         </form>
+        {{ include("linkModal.twig") }}
     {% else %}
         {{ _self.notLoggedIn() }}
     {% endif %}
