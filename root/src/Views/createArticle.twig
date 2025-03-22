@@ -41,7 +41,8 @@
                 <textarea name="tags">{{ tags }}</textarea>
                 <span>Tags mit Kommata trennen!</span>
             </label>
-            <fieldset class="checkbox required">Kategorien*
+            <fieldset class="checkbox required">
+                <legend>Kategorien*</legend>
                 {% for category in categories %}
                     <label>
                         <input type="checkbox" name="category[]"  value="{{ category.id }}" {% if category.id in categoryIds %}checked{% endif %}>
@@ -52,13 +53,21 @@
             </fieldset>
             <fieldset class="checkbox">
                 <label>
-                    <input type="checkbox" name="private" {% if private %}checked{% endif %}>
-                    Dieser Artikel soll privat sein (Private Artikel können nur von dir gesehen und bearbeitet werden.)
-                </label>
-                <label>
                     <input type="checkbox" name="editable" {% if editable is not defined or editable %}checked{% endif %}>
                     Andere sollen diesen Artikel bearbeiten dürfen
                 </label>
+                <label>
+                    <input type="checkbox" name="private" {% if private %}checked{% endif %}>
+                    Dieser Artikel soll privat sein (Private Artikel können nur von dir gesehen und bearbeitet werden.)
+                </label>
+                <fieldset class="checkbox authorize hide">
+                    <legend>Wähle weitere Nutzer, die diesen Artikel sehen dürfen:</legend>
+                    {% for user in users.__serialize %}
+                        <label>
+                            <input type="checkbox" name="authorized[]" value="{{ user.id }}">{{ user.username }}
+                        </label>
+                    {% endfor %}
+                </fieldset>
             </fieldset>
         </form>
         <input class="button" type="submit" value="Artikel speichern" name="submit" form="createArticle">

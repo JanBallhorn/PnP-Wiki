@@ -7,6 +7,7 @@ use App\Collection\ArticleInfoContentCollection;
 use App\Collection\ArticleInfoGalleryCollection;
 use App\Collection\CategoryCollection;
 use App\Collection\ProjectCollection;
+use App\Collection\UserCollection;
 use App\FileUpload;
 use App\Model\Article;
 use App\Model\ArticleInfo;
@@ -27,6 +28,7 @@ use App\Repository\ParagraphRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\SourceRepository;
 use App\Repository\UserRepository;
+use DateMalformedStringException;
 use DateTime;
 use Exception;
 use Twig\Error\LoaderError;
@@ -107,20 +109,8 @@ class ArticleController extends Controller
             }
         }
         if($sameHeadline === null && !empty($article['project']) && isset($article['category'])){
-            $categories = new CategoryCollection();
-            foreach ($article['category'] as $category){
-                $category = $this->categoryRepository->findById(intval($category));
-                $categories->offsetSet($categories->key(), $category);
-                $categories->next();
-            }
-            $categories->rewind();
-            $project = $this->projectRepository->findOneBy('name', $article['project']);
-            $tags = explode(",", $article['tags']);
-            $private = false;
-            if($project->getPrivate() || isset($article['private'])){
-                $private = true;
-            }
-            $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $project, $categories, $tags, $altHeadlines, $private, isset($article['editable']), 0);
+            $converted = $this->convertFormData($article);
+            $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $converted['project'], $converted['categories'], $converted['tags'], $altHeadlines, $converted['private'], $converted['authorized'], isset($article['editable']), 0);
             $this->articleRepository->save($article);
             header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
         }
@@ -209,27 +199,16 @@ class ArticleController extends Controller
             }
         }
         if($sameHeadline === false && $sameAltHeadline !== true && !empty($articleData['project']) && isset($articleData['category'])){
-            $categories = new CategoryCollection();
-            foreach ($articleData['category'] as $category){
-                $category = $this->categoryRepository->findById(intval($category));
-                $categories->offsetSet($categories->key(), $category);
-                $categories->next();
-            }
-            $categories->rewind();
-            $project = $this->projectRepository->findOneBy('name', $articleData['project']);
-            $tags = explode(",", $articleData['tags']);
-            $private = false;
-            if($project->getPrivate() || isset($articleData['private'])){
-                $private = true;
-            }
+            $converted = $this->convertFormData($articleData);
             $article->setLastEdit(new DateTime());
             $article->setLastEditBy($user);
             $article->setHeadline($articleData['headline']);
-            $article->setProject($project);
-            $article->setCategories($categories);
-            $article->setTags($tags);
+            $article->setProject($converted['project']);
+            $article->setCategories($converted['categories']);
+            $article->setTags($converted['tags']);
             $article->setAltHeadlines($altHeadlines);
-            $article->setPrivate($private);
+            $article->setPrivate($converted['private']);
+            $article->setAuthorized($converted['authorized']);
             $article->setEditable(isset($articleData['editable']));
             $this->articleRepository->save($article);
             header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
@@ -243,6 +222,40 @@ class ArticleController extends Controller
                 'categoryError' => !isset($articleData['category'])
             ]);
         }
+    }
+
+    /**
+     * @throws DateMalformedStringException
+     * @throws Exception
+     */
+    private function convertFormData(array $articleData): array
+    {
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        $categories = new CategoryCollection();
+        foreach ($articleData['category'] as $category){
+            $category = $this->categoryRepository->findById(intval($category));
+            $categories->offsetSet($categories->key(), $category);
+            $categories->next();
+        }
+        $categories->rewind();
+        $project = $this->projectRepository->findOneBy('name', $articleData['project']);
+        $tags = explode(",", $articleData['tags']);
+        $private = false;
+        $authorized = null;
+        if(isset($articleData['private'])){
+            $private = true;
+            $authorized = new UserCollection();
+            $authorized->rewind();
+            $authorized->offsetSet($authorized->key(), $user);
+            if(isset($articleData['authorized'])){
+                foreach ($articleData['authorized'] as $userId){
+                    $authorized->next();
+                    $authorized->offsetSet($authorized->key(), $this->userRepository->findById($userId));
+                }
+            }
+        }
+        return array('categories' => $categories, 'project' => $project, 'tags' => $tags, 'private' => $private, 'authorized' => $authorized);
     }
 
     /**
@@ -569,7 +582,7 @@ class ArticleController extends Controller
             $filter = 'called DESC';
         }
         if($user !== null){
-            $articles = $this->articleRepository->findAllBetween(($page - 1) * 50 + 1, ($page - 1) * 50 + 50, $user->getId(), $filter);
+            $articles = $this->articleRepository->findAllBetween(($page - 1) * 50, 50, $user->getId(), $filter);
             $articleNum = $this->articleRepository->getNumberOfArticles($user->getId());
             $pages = ceil($articleNum / 50);
         }

@@ -1,11 +1,23 @@
 {% macro recursiveProject(project, wikiUser) %}
     {% import _self as self %}
+    {% set authorizedIds = [] %}
+    {% set authorizedNames = [] %}
+    {% for user in project.authorized.__serialize %}
+        {% set authorizedIds = authorizedIds|merge([user.id]) %}
+        {% set authorizedNames = authorizedNames|merge([user.username]) %}
+    {% endfor %}
     <li>
         <div class="project-link">
-            <a class="{% if project.private and project.lastEditBy.id != wikiUser.id %}privateProject{% endif %} noUnderline" href="/project/detail?name={{ project.name }}">
+            <a class="{% if project.private and wikiUser.id not in authorizedIds %}privateProject{% endif %} noUnderline" href="/project/detail?name={{ project.name }}">
                 {{ project.name }}
-                {% if project.private and project.lastEditBy.id != wikiUser.id %}
-                    <span>Privates Projekt von {{ project.lastEditBy.username }}</span>
+                {% if project.private and wikiUser.id not in authorizedIds %}
+                    <span>Privates Projekt von
+                        {% if authorizedNames|length == 1 %}
+                            {{ authorizedNames[0] }}
+                        {% else %}
+                            {{ authorizedNames|join(", ", " und ") }}
+                        {% endif %}
+                    </span>
                 {% endif %}
             </a>
             <i class="fa-solid fa-chevron-up"></i>

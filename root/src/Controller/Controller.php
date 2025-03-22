@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Collection\UserCollection;
 use App\Repository\ArticleRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\ProjectRepository;
@@ -68,15 +69,16 @@ abstract class Controller
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
         $twigParams["baseCategories"] = (new CategoryRepository())->findPopularCategories();
+        $twigParams["users"] = $this->getAllUsersExceptCurrent();
         if($twigParams["loggedIn"] === true) {
             $user = (new UserRepository())->findOneBy("username", $this->getUsernameFromToken($this->getCookie()));
             $twigParams["wikiUser"] = $user;
-            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, $user->getId(), "searched DESC");
-            $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(1, 5, $user->getId(), "called DESC");
+            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(0, 5, $user->getId(), "searched DESC");
+            $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(0, 5, $user->getId(), "called DESC");
         }
         else{
-            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(1, 5, 0, "searched DESC");
-            $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(1, 5, 0, "called DESC");
+            $twigParams["baseProjects"] = (new ProjectRepository())->findAllBetween(0, 5, 0, "searched DESC");
+            $twigParams["popularArticles"] = (new ArticleRepository())->findAllBetween(0, 5, 0, "called DESC");
         }
         foreach ($params as $key => $value) {
             $twigParams[$key] = $value;
@@ -178,5 +180,26 @@ abstract class Controller
             }
         }
         return $collection;
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function getAllUsersExceptCurrent(): UserCollection
+    {
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $userRepository = new UserRepository();
+        $user = $userRepository->findOneBy('username', $username);
+        $users = $userRepository->findAll('username');
+        if($user !== null){
+            $users->rewind();
+            for($i = 0; $i < $users->count(); $i++){
+                if($users->current()->getId() === $user->getId()){
+                    $users->offsetUnset($users->key());
+                }
+                $users->next();
+            }
+        }
+        return $users;
     }
 }

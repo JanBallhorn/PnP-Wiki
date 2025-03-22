@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Collection\ProjectCollection;
+use App\Collection\UserCollection;
 use App\Model\Project;
 use DateTime;
 use Exception;
@@ -54,14 +55,28 @@ class ProjectRepository extends Repository implements RepositoryInterface
     /**
      * @throws Exception
      */
-    public function findAllBetween(int $start, int $end, int $userId, string $order = 'id'): ?ProjectCollection
+    public function findAllBetween(int $start, int $limit, int $userId, string $order = 'id'): ?ProjectCollection
     {
-        $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
+        //$query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
+        $query = "SELECT DISTINCT `$this->table`.id FROM `$this->table` LEFT JOIN project_authorized ON `$this->table`.id = project_authorized.project WHERE private = 0 OR (private = 1 AND project_authorized.user = $userId) ORDER BY $order LIMIT $limit OFFSET $start";
+        $projects = new ProjectCollection();
+        $projects->rewind();
         $stmt = $this->db->prepare($query);
         $stmt->execute();
-        return $this->findCollection($stmt);
+        $result = $stmt->get_result();
+        if ($result->num_rows > 0) {
+            while ($id = $result->fetch_object()) {
+                $project = $this->findOneBy('id', $id->id);
+                $projects->offsetSet($projects->key(), $project);
+                $projects->next();
+            }
+        }
+        return $projects;
     }
 
+    /**
+     * @throws Exception
+     */
     public function save(object $entity): void
     {
         if(!$entity instanceof Project){
@@ -77,6 +92,7 @@ class ProjectRepository extends Repository implements RepositoryInterface
             $lastEditBy = $entity->getLastEditBy()->getId();
             $parentProject = $entity->getParentProject()?->getId();
             $private = $entity->getPrivate() === true ? 1 : 0;
+            $authorized = $entity->getAuthorized();
             $searched = $entity->getSearched();
         }
         if($id === 0){
@@ -89,7 +105,29 @@ class ProjectRepository extends Repository implements RepositoryInterface
             $stmt = $this->db->prepare($query);
             $stmt->bind_param("sssisiiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $searched, $id);
         }
-        $stmt->execute();
+        $success = $stmt->execute();
+        if($success) {
+            $newProject = $id === 0;
+            if (!$newProject) {
+                $id = $this->findOneBy('name', $name)->getId();
+                $query = "DELETE FROM `project_authorized` WHERE `project` = ?";
+                $stmt = $this->db->prepare($query);
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+            } else {
+                $id = $this->db->insert_id;
+            }
+            if($authorized !== null){
+                $query = "INSERT INTO `project_authorized` (project, user) VALUES (?, ?)";
+                $stmt = $this->db->prepare($query);
+                $authorized->rewind();
+                for($i = 1; $i <= $authorized->count(); $i++){
+                    $stmt->bind_param("ii", $id, $authorized->current()->getId());
+                    $stmt->execute();
+                    $authorized->next();
+                }
+            }
+        }
     }
 
     public function delete(object $entity): void
@@ -112,7 +150,7 @@ class ProjectRepository extends Repository implements RepositoryInterface
         $project = $result->fetch_object();
         if (!empty($project)) {
             $project = $this->convertDataTypes($project);
-            return new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private, $project->searched);
+            return new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private, $project->authorized, $project->searched);
         } else {
             return null;
         }
@@ -130,7 +168,7 @@ class ProjectRepository extends Repository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($project = $result->fetch_object()) {
                 $project = $this->convertDataTypes($project);
-                $project = new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private, $project->searched);
+                $project = new Project($project->id, $project->name, $project->description, $project->published, $project->created_by, $project->last_edit, $project->last_edit_by, $project->parent_project, $project->private, $project->authorized, $project->searched);
                 $projects->offsetSet($projects->key(), $project);
                 $projects->next();
             }
@@ -153,6 +191,28 @@ class ProjectRepository extends Repository implements RepositoryInterface
             $project->parent_project = $this->findById($project->parent_project);
         }
         $project->private = $project->private === 1;
+        $project->authorized = $this->findAuthorized($project->id);
         return $project;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function findAuthorized(int $projectId): ?UserCollection
+    {
+        $userIds = $this->findByFunc('project_authorized', 'project', $projectId, '');
+        $users = new UserCollection();
+        $result = $userIds->get_result();
+        if ($result->num_rows > 0) {
+            while ($user = $result->fetch_object()) {
+                $user = (new UserRepository())->findById($user->user);
+                $users->offsetSet($users->key(), $user);
+                $users->next();
+            }
+            return $users;
+        }
+        else {
+            return null;
+        }
     }
 }

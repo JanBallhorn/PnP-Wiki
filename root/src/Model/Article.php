@@ -6,6 +6,7 @@ use App\Collection\ArticleListCollection;
 use App\Collection\ArticleSourceCollection;
 use App\Collection\CategoryCollection;
 use App\Collection\ParagraphCollection;
+use App\Collection\UserCollection;
 use App\Repository\ArticleInfoRepository;
 use App\Repository\ArticleSourceRepository;
 use App\Repository\ListElementRepository;
@@ -26,6 +27,7 @@ class Article
     private ?array $tags;
     private ?array $altHeadlines;
     private bool $private;
+    private ?UserCollection $authorized;
     private bool $editable;
     private int $called;
 
@@ -41,10 +43,11 @@ class Article
      * @param array|null $tags
      * @param array|null $altHeadlines
      * @param bool $private
+     * @param UserCollection|null $authorized
      * @param bool $editable
      * @param int $called
      */
-    public function __construct(int $id, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $headline, Project $project, ?CategoryCollection $categories, ?array $tags, ?array $altHeadlines, bool $private, bool $editable, int $called)
+    public function __construct(int $id, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $headline, Project $project, ?CategoryCollection $categories, ?array $tags, ?array $altHeadlines, bool $private, ?UserCollection $authorized, bool $editable, int $called)
     {
         $this->id = $id;
         $this->published = $published;
@@ -57,6 +60,7 @@ class Article
         $this->tags = $tags;
         $this->altHeadlines = $altHeadlines;
         $this->private = $private;
+        $this->authorized = $authorized;
         $this->editable = $editable;
         $this->called = $called;
     }
@@ -236,6 +240,22 @@ class Article
     public function setPrivate(bool $private): void
     {
         $this->private = $private;
+    }
+
+    /**
+     * @return UserCollection|null
+     */
+    public function getAuthorized(): ?UserCollection
+    {
+        return $this->authorized;
+    }
+
+    /**
+     * @param UserCollection|null $authorized
+     */
+    public function setAuthorized(?UserCollection $authorized): void
+    {
+        $this->authorized = $authorized;
     }
 
     /**

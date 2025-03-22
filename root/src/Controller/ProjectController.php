@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Collection\UserCollection;
 use App\Model\Project;
+use App\Model\User;
 use App\Repository\ArticleRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
@@ -58,11 +60,21 @@ class ProjectController extends Controller
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
         $private = false;
-        if(($parentProject !== null && $parentProject->getPrivate()) || isset($projectData['private'])){
+        $authorized = null;
+        if(isset($projectData['private'])){
             $private = true;
+            $authorized = new UserCollection();
+            $authorized->rewind();
+            $authorized->offsetSet($authorized->key(), $user);
+            if(isset($projectData['authorized'])){
+                foreach ($projectData['authorized'] as $userId){
+                    $authorized->offsetSet($authorized->key(), $this->userRepository->findById($userId));
+                    $authorized->next();
+                }
+            }
         }
         if($sameProject === null && ($parentProject !== null || $projectData['parentProject'] === '')) {
-            $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, $private, 0);
+            $project = new Project(0, $projectData['name'], $projectData['description'], new DateTime(), $user, new DateTime(), $user, $parentProject, $private, $authorized, 0);
             $this->projectRepository->save($project);
             header("Location: /project");
         }
@@ -110,27 +122,62 @@ class ProjectController extends Controller
      */
     public function update(array $projectData): void
     {
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
         $project = $this->projectRepository->findById($projectData['id']);
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
         $oldPrivateState = $project->getPrivate();
+        $oldAuthorizedState = $project->getAuthorized();
         $private = false;
-        if(($parentProject !== null && $parentProject->getPrivate()) || (isset($projectData['private']) && ($projectData['private'] === true || $projectData['private'] === "private"))){
+        $authorized = null;
+        $authorizedComparison = false;
+        if(isset($projectData['private']) && ($projectData['private'] === true || $projectData['private'] === "private")){
             $private = true;
+            $authorized = new UserCollection();
+            $authorized->rewind();
+            $authorized->offsetSet($authorized->key(), $user);
+            if(isset($projectData['authorized'])){
+                if(gettype($projectData['authorized']) === "array"){
+                    foreach ($projectData['authorized'] as $userId){
+                        $authorized->next();
+                        $authorized->offsetSet($authorized->key(), $this->userRepository->findById($userId));
+                    }
+                }
+                else if($parentProject !== null && $parentProject->getAuthorized() !== null){
+                    $authorized = $parentProject->getAuthorized();
+                }
+            }
+        }
+        if($oldAuthorizedState !== null && $authorized !== null){
+            $comparison1 = empty(array_udiff($authorized->__serialize(), $oldAuthorizedState->__serialize(), function($a, $b) {
+                return $a->getId() - $b->getId();
+            }));
+            $comparison2 = empty(array_udiff($oldAuthorizedState->__serialize(), $authorized->__serialize(), function($a, $b) {
+                return $a->getId() - $b->getId();
+            }));
+            if($comparison1 && $comparison2){
+                $authorizedComparison = true;
+            }
+        }
+        else if($oldAuthorizedState === null && $authorized === null){
+            $authorizedComparison = true;
         }
         $project->setName($projectData['name']);
         $project->setDescription($projectData['description']);
         $project->setParentProject($parentProject);
         $project->setPrivate($private);
-        if($sameProject->getId() === $project->getId() && ($parentProject !== null || $projectData['parentProject'] === '')) {
+        $project->setAuthorized($authorized);
+        if(($sameProject === null || $sameProject->getId() === $project->getId()) && ($parentProject !== null || $projectData['parentProject'] === '')) {
             $this->projectRepository->save($project);
-            if($oldPrivateState !== $private){
+            if($oldPrivateState !== $private || !$authorizedComparison){
                 $articles = $this->articleRepository->findBy('project', $project->getId());
                 if($articles !== null){
                     $articles->rewind();
                     for($i = 0; $i < $articles->count(); $i++){
                         $article = $articles->current();
                         $article->setPrivate($private);
+                        $article->setAuthorized($authorized);
                         $this->articleRepository->save($article);
                         $articles->next();
                     }
@@ -145,7 +192,8 @@ class ProjectController extends Controller
                             'name' => $childProject->getName(),
                             'description' => $childProject->getDescription(),
                             'parentProject' => $childProject->getParentProject()->getName(),
-                            'private' => $private
+                            'private' => $private,
+                            'authorized' => $authorized
                         ]);
                         $childProjects->next();
                     }

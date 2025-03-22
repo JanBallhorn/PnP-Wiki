@@ -239,4 +239,47 @@ function emptyModal(modal){
     })
 }
 
-export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked, getTemplate, searchSelect, linkModal};
+function getProjectAuthorized(el){
+    let options = el.siblings("datalist").find("option");
+    el.on("keyup", function (){
+        setPrivateAndAuth($(this));
+    });
+    options.on("click", function (){
+        setPrivateAndAuth($(this));
+    });
+}
+
+function setPrivateAndAuth(el){
+    let project = el.val();
+    let privateEl = $("input[name='private']");
+    let authEl = $("fieldset.authorize");
+    let authEls = $("fieldset.authorize input");
+    let ajaxPath = "../../src/Ajax.php";
+    $.post(ajaxPath,
+        {
+            'type': 'privateAndAuth',
+            'project': project
+        },
+        function(data) {
+            let result = JSON.parse(data);
+            if(result !== null){
+                privateEl.prop("checked", result.private);
+                if((result.private && authEl.hasClass("hide")) || (!result.private && authEl.hasClass("hide") === false)){
+                    privateEl.trigger("change");
+                }
+                if(result.auth !== null){
+                    authEls.each(function (){
+                        if(result.auth.includes(Number($(this).val()))){
+                            $(this).prop("checked", true);
+                        }
+                        else{
+                            $(this).prop("checked", false);
+                        }
+                    });
+                }
+            }
+        }
+    );
+}
+
+export {checkDuplicate, checkMinLength, showMaxLength, checkFileType, checkFileSize, checkCheckboxCollectionChecked, getTemplate, searchSelect, linkModal, getProjectAuthorized};

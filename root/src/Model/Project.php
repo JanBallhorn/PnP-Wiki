@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Collection\ProjectCollection;
+use App\Collection\UserCollection;
 use App\Repository\ProjectRepository;
 use DateTime;
 use Exception;
@@ -18,6 +19,7 @@ class Project
     private User $lastEditBy;
     private null|Project $parentProject;
     private bool $private;
+    private ?UserCollection $authorized;
     private int $searched;
 
     /**
@@ -30,9 +32,10 @@ class Project
      * @param User $lastEditBy
      * @param null|Project $parentProject
      * @param bool $private
+     * @param UserCollection|null $authorized
      * @param int $searched
      */
-    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, null|Project $parentProject, bool $private, int $searched)
+    public function __construct(int $id, string $name, string $description, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, ?Project $parentProject, bool $private, ?UserCollection $authorized, int $searched)
     {
         $this->id = $id;
         $this->name = $name;
@@ -43,6 +46,7 @@ class Project
         $this->lastEditBy = $lastEditBy;
         $this->parentProject = $parentProject;
         $this->private = $private;
+        $this->authorized = $authorized;
         $this->searched = $searched;
     }
 
@@ -188,6 +192,22 @@ class Project
     public function setPrivate(bool $private): void
     {
         $this->private = $private;
+    }
+
+    /**
+     * @return UserCollection|null
+     */
+    public function getAuthorized(): ?UserCollection
+    {
+        return $this->authorized;
+    }
+
+    /**
+     * @param UserCollection|null $authorized
+     */
+    public function setAuthorized(?UserCollection $authorized): void
+    {
+        $this->authorized = $authorized;
     }
 
     /**

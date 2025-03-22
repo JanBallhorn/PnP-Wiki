@@ -3,7 +3,9 @@
 namespace App;
 use App\Collection\SourceCollection;
 use App\Repository\ArticleRepository;
+use App\Repository\ProjectRepository;
 use App\Repository\SourceRepository;
+use Exception;
 use mysqli;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -60,6 +62,20 @@ class Ajax
     {
         return (new SourceRepository())->findAll('name');
     }
+
+    /**
+     * @throws Exception
+     */
+    function getPrivateAndAuth($projectName): ?array
+    {
+        $project = (new ProjectRepository())->findOneBy("name", $projectName);
+        if($project !== null){
+            return ["private" => $project->getPrivate(), "auth" => $project->getAuthorized()];
+        }
+        else{
+            return null;
+        }
+    }
 }
 
 
@@ -105,4 +121,26 @@ if(isset($_POST['type']) && $_POST['type'] === 'render'){
 
 if(isset($_POST['type']) && $_POST['type'] === 'track'){
     (new Ajax())->trackVisits($_POST['article']);
+}
+
+if(isset($_POST['type']) && $_POST['type'] === 'privateAndAuth'){
+    $result = (new Ajax())->getPrivateAndAuth($_POST['project']);
+    if($result !== null){
+        $users = $result['auth'];
+        if($users !== null){
+            $users->rewind();
+            $userIds = array();
+            for ($i = 0; $i < $users->count(); $i++){
+                $userIds[] = $users->current()->getId();
+                $users->next();
+            }
+        }
+        else{
+            $userIds = null;
+        }
+        echo json_encode(['private' => $result['private'], 'auth' => $userIds]);
+    }
+    else{
+        echo json_encode(null);
+    }
 }

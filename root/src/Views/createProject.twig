@@ -39,6 +39,14 @@
                     <input type="checkbox" name="private" value="private" {% if private %}checked{% endif %}>
                     Das Projekt soll privat sein (Private Projekte und ihre Inhalte können nur von dir gesehen und bearbeitet werden.)
                 </label>
+                <fieldset class="fullwidth checkbox authorize hide">
+                    <legend>Wähle weitere Nutzer, die dieses Projekt verwalten dürfen:</legend>
+                    {% for user in users.__serialize %}
+                        <label>
+                            <input type="checkbox" name="authorized[]" value="{{ user.id }}">{{ user.username }}
+                        </label>
+                    {% endfor %}
+                </fieldset>
             </fieldset>
         </form>
         <input class="button" type="submit" value="Projekt speichern" name="submit" form="createProject">

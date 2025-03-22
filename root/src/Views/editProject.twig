@@ -40,6 +40,18 @@
                     <input type="checkbox" name="private" value="private" {% if project.private %}checked{% endif %}>
                     Soll das Projekt privat sein? (Private Projekte und ihre Inhalte können nur von dir gesehen und bearbeitet werden.)
                 </label>
+                <fieldset class="fullwidth checkbox authorize hide">
+                    <legend>Wähle weitere Nutzer, die dieses Projekt verwalten dürfen:</legend>
+                    {% set authorizedIds = [] %}
+                    {% for user in project.authorized.__serialize %}
+                        {% set authorizedIds = authorizedIds|merge([user.id]) %}
+                    {% endfor %}
+                    {% for user in users.__serialize %}
+                        <label>
+                            <input type="checkbox" name="authorized[]" value="{{ user.id }}" {% if user.id in authorizedIds %}checked{% endif %}>{{ user.username }}
+                        </label>
+                    {% endfor %}
+                </fieldset>
             </fieldset>
         </form>
         <input class="button" type="submit" value="Änderungen speichern" name="submit" form="editProject">

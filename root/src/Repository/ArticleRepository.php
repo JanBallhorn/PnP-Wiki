@@ -6,6 +6,7 @@ namespace App\Repository;
 use App\Collection\ArticleCollection;
 use App\Collection\CategoryCollection;
 use App\Collection\ProjectCollection;
+use App\Collection\UserCollection;
 use App\Model\Article;
 use App\Model\Category;
 use App\Model\Project;
@@ -58,12 +59,14 @@ class ArticleRepository extends Repository implements RepositoryInterface
     /**
      * @throws Exception
      */
-    public function findAllBetween(int $start, int $end, int $userId, string $order = 'id'): ?ArticleCollection
+    public function findAllBetween(int $start, int $limit, int $userId, string $order = 'articles.id'): ?ArticleCollection
     {
-        $query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        return $this->findCollection($stmt);
+        //$query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
+        $query = "SELECT  DISTINCT `$this->table`.id FROM `$this->table` LEFT JOIN article_authorized ON `$this->table`.id = article_authorized.article WHERE private = 0 OR (private = 1 AND article_authorized.user = $userId) ORDER BY $order LIMIT $limit OFFSET $start";
+        $articles = new ArticleCollection();
+        $articles->rewind();
+        $this->findArticlesById($articles, $query);
+        return $articles;
     }
 
     /**
@@ -210,6 +213,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $tags = $entity->getTags();
             $altHeadlines = $entity->getAltHeadlines();
             $private = $entity->getPrivate() === true ? 1 : 0;
+            $authorized = $entity->getAuthorized();
             $editable = $entity->getEditable() === true ? 1 : 0;
             $called = $entity->getCalled();
         }
@@ -237,6 +241,10 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $stmt->bind_param("i", $id);
                 $stmt->execute();
                 $query = "DELETE FROM `article_alt_headline` WHERE `article` = ?";
+                $stmt = $this->db->prepare($query);
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $query = "DELETE FROM `article_authorized` WHERE `article` = ?";
                 $stmt = $this->db->prepare($query);
                 $stmt->bind_param("i", $id);
                 $stmt->execute();
@@ -270,6 +278,16 @@ class ArticleRepository extends Repository implements RepositoryInterface
                     $stmt->execute();
                 }
             }
+            if($authorized !== null){
+                $query = "INSERT INTO `article_authorized` (article, user) VALUES (?, ?)";
+                $stmt = $this->db->prepare($query);
+                $authorized->rewind();
+                for($i = 1; $i <= $authorized->count(); $i++){
+                    $stmt->bind_param("ii", $id, $authorized->current()->getId());
+                    $stmt->execute();
+                    $authorized->next();
+                }
+            }
         }
     }
 
@@ -293,7 +311,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($article = $result->fetch_object()) {
                 $article = $this->convertDataTypes($article);
-                $article = new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->editable, $article->called);
+                $article = new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->authorized, $article->editable, $article->called);
                 $articles->offsetSet($articles->key(), $article);
                 $articles->next();
             }
@@ -312,7 +330,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $article = $result->fetch_object();
         if(!empty($article)){
             $article = $this->convertDataTypes($article);
-            return new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->editable, $article->called);
+            return new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->authorized, $article->editable, $article->called);
         }
         else{
             return null;
@@ -326,12 +344,13 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $article->published = (new DateTime($article->published));
         $article->created_by = (new UserRepository())->findById($article->created_by);
         $article->last_edit = (new DateTime($article->last_edit));
-        $article->last_edit_by = (new UserRepository(0))->findById($article->last_edit_by);
+        $article->last_edit_by = (new UserRepository())->findById($article->last_edit_by);
         $article->project = (new ProjectRepository())->findById($article->project);
         $article->categories = $this->findCategoriesForArticle($article->id);
         $article->tags = $this->findTagsForArticle($article->id);
         $article->altHeadlines = $this->findAltHeadlinesForArticle($article->id);
         $article->private = $article->private === 1;
+        $article->authorized =$this->findAuthorized($article->id);
         $article->editable = $article->editable === 1;
         return $article;
     }
@@ -346,7 +365,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $result = $categoryIds->get_result();
         if ($result->num_rows > 0) {
             while ($category = $result->fetch_object()) {
-                $category = (new CategoryRepository(0))->findById($category->category);
+                $category = (new CategoryRepository())->findById($category->category);
                 $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
@@ -383,6 +402,27 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $altHeadlines[] = $altHeadline->headline;
             }
             return $altHeadlines;
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function findAuthorized(int $articleId): ?UserCollection
+    {
+        $userIds = $this->findByFunc('article_authorized', 'article', $articleId, '');
+        $users = new UserCollection();
+        $result = $userIds->get_result();
+        if ($result->num_rows > 0) {
+            while ($user = $result->fetch_object()) {
+                $user = (new UserRepository())->findById($user->user);
+                $users->offsetSet($users->key(), $user);
+                $users->next();
+            }
+            return $users;
         }
         else {
             return null;

@@ -1,9 +1,12 @@
-import {checkDuplicate, showMaxLength, checkCheckboxCollectionChecked, searchSelect} from "./formCheck.js";
+import {checkDuplicate, showMaxLength, checkCheckboxCollectionChecked, searchSelect, getProjectAuthorized} from "./formCheck.js";
 $(function (){
     searchSelect();
+    getProjectAuthorized($("input[name='project']"));
     let elHeadline = $("input[name='headline']");
     let elCheckbox = $("fieldset.checkbox.required");
-    let elAltHeadlines = $("textarea[name='altHeadlines']")
+    let elAltHeadlines = $("textarea[name='altHeadlines']");
+    let elPrivate = $("input[name='private']");
+    let elAutorize = $("fieldset.authorize");
     let edit = false;
     let origName = $("h1").text().split(' ')[1];
     let path = $(location).attr('pathname');
@@ -23,6 +26,9 @@ $(function (){
     if(edit){
         checkCheckboxCollectionChecked(elCheckbox);
         checkForDuplicateAltHeadlines(elAltHeadlines, elAltHeadlines.val().split(","), edit, origName);
+        if(elPrivate.prop("checked")){
+            elAutorize.toggleClass('hide');
+        }
     }
     else{
         checkForDuplicateAltHeadlines(elAltHeadlines, elAltHeadlines.val().split(","), edit);
@@ -39,6 +45,9 @@ $(function (){
     $("main form input, main form textarea").each(function (){
         let input = $(this);
         showMaxLength(input);
+    });
+    elPrivate.on("change", function (){
+        elAutorize.toggleClass('hide');
     });
 });
 

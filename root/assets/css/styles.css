@@ -227,6 +227,9 @@ main form, main form fieldset{
     display: flex;
     flex-wrap: wrap;
 }
+main form fieldset > legend{
+    margin-bottom: 0.25rem;
+}
 main form:not(.flex-50){
     flex-flow: column;
 }
@@ -292,7 +295,7 @@ main form label:has(input[type='checkbox']):after, .linkModal label:has(input[ty
     content: '';
     position: absolute;
     left: 0.45em;
-    top: 0.1em;
+    /*top: 0.1em;*/
     border-bottom: 3px solid var(--txt);
     border-right: 3px solid var(--txt);
     width: 0.3em;

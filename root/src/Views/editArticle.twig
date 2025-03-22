@@ -42,7 +42,8 @@
                 <textarea name="tags">{{ article.tags|join(', ') }}</textarea>
                 <span>Tags mit Kommata trennen!</span>
             </label>
-            <fieldset class="checkbox required">Kategorien*
+            <fieldset class="checkbox required">
+                <legend>Kategorien*</legend>
                 {% set categoryIds = [] %}
                 {% for category in article.categories.__serialize %}
                     {% set categoryIds = categoryIds|merge([category.id]) %}
@@ -57,13 +58,25 @@
             </fieldset>
             <fieldset class="checkbox">
                 <label>
-                    <input type="checkbox" name="private" {% if article.private %}checked{% endif %}>
-                    Dieser Artikel soll privat sein (Private Artikel können nur von dir gesehen und bearbeitet werden.)
-                </label>
-                <label>
                     <input type="checkbox" name="editable" {% if article.editable %}checked{% endif %}>
                     Andere sollen diesen Artikel bearbeiten dürfen
                 </label>
+                <label>
+                    <input type="checkbox" name="private" {% if article.private %}checked{% endif %}>
+                    Dieser Artikel soll privat sein (Private Artikel können nur von dir gesehen und bearbeitet werden.)
+                </label>
+                <fieldset class="checkbox authorize hide">
+                    <legend>Wähle weitere Nutzer, die diesen Artikel sehen dürfen:</legend>
+                    {% set authorizedIds = [] %}
+                    {% for user in article.authorized.__serialize %}
+                        {% set authorizedIds = authorizedIds|merge([user.id]) %}
+                    {% endfor %}
+                    {% for user in users.__serialize %}
+                        <label>
+                            <input type="checkbox" name="authorized[]" value="{{ user.id }}" {% if user.id in authorizedIds %}checked{% endif %}>{{ user.username }}
+                        </label>
+                    {% endfor %}
+                </fieldset>
             </fieldset>
         </form>
         <input class="button" type="submit" value="Artikel speichern" name="submit" form="editArticle">
