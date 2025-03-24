@@ -98,9 +98,9 @@ class CategoryController extends Controller
      * @throws RuntimeError
      * @throws LoaderError|DateMalformedStringException
      */
-    public function detail(array $categoryName): void
+    public function detail(array $category): void
     {
-        $category = $this->categoryRepository->findOneBy('name', $categoryName['name']);
+        $category = $this->categoryRepository->findById($category['id']);
         $this->render('categoryDetail.twig', ['category' => $category]);
 
     }
@@ -110,9 +110,9 @@ class CategoryController extends Controller
      * @throws SyntaxError
      * @throws LoaderError|DateMalformedStringException
      */
-    public function edit(array $categoryName): void
+    public function edit(array $category): void
     {
-        $category = $this->categoryRepository->findOneBy('name', $categoryName['name']);
+        $category = $this->categoryRepository->findById($category['id']);
         $this->render('editCategory.twig', ['category' => $category]);
     }
 
@@ -131,14 +131,14 @@ class CategoryController extends Controller
             $uploader = new FileUpload(__DIR__ . '/../../../externalImages/categoryIcons/', str_replace('/', '-', $categoryData['name']) . '.svg', ['svg'], 20000, $_FILES);
             $upload = $this->prepareUpload($uploader);
         }
-        if($sameCategory->getId() === $category->getId() && isset($upload) && $upload !== false){
+        if(($sameCategory === null || $sameCategory->getId() === $category->getId()) && isset($upload) && $upload !== false){
             $upload->upload();
             $icon = "categoryIcons/" . $upload->getFileName();
             $category->setIcon($icon);
             $this->categoryRepository->save($category);
             header("Location: /category");
         }
-        elseif($sameCategory->getId() === $category->getId() && !isset($upload)){
+        elseif(($sameCategory === null || $sameCategory->getId() === $category->getId()) && !isset($upload)){
             $this->categoryRepository->save($category);
             header("Location: /category");
         }
@@ -164,9 +164,9 @@ class CategoryController extends Controller
     /**
      * @throws DateMalformedStringException
      */
-    public function delete(array $categoryName): void
+    public function delete(array $category): void
     {
-        $category = $this->categoryRepository->findOneBy('name', $categoryName['name']);
+        $category = $this->categoryRepository->findById($category['id']);
         $this->categoryRepository->delete($category);
         header("Location: /category");
     }

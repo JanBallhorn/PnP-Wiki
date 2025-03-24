@@ -9,7 +9,7 @@
         <a class="button" href="/category/create">Neue Kategorie anlegen</a>
         <div class="categories flex-20">
             {% for category in categories %}
-                <a class="category" href="/category/detail?name={{ category.name }}">
+                <a class="category" href="/category/detail?id={{ category.id }}">
                     <img src="{{ category.icon }}" alt="{{ category.name }}">
                     <h3>{{ category.name }}</h3>
                 </a>

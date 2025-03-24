@@ -1,4 +1,10 @@
 $(function (){
+    let lists = $(".project-link + ul");
+    lists.each(function (){
+        if($(this).hasClass("hidden")){
+            $(this).css("display", "none");
+        }
+    })
     $(".content ul li i").click(function (){
         let el = $(this).parent().parent();
         let sublist = el.find ("> ul");

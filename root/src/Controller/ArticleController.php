@@ -55,7 +55,7 @@ class ArticleController extends Controller
      */
     public function index(array $article): void
     {
-        $article = $this->articleRepository->findOneBy('headline', $article['name']);
+        $article = $this->articleRepository->findById($article['id']);
         $this->render('article.twig', ['article' => $article]);
     }
 
@@ -112,7 +112,8 @@ class ArticleController extends Controller
             $converted = $this->convertFormData($article);
             $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $converted['project'], $converted['categories'], $converted['tags'], $altHeadlines, $converted['private'], $converted['authorized'], isset($article['editable']), 0);
             $this->articleRepository->save($article);
-            header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+            $articleId = $this->articleRepository->findOneBy('headline', $article['headline'])->getId();
+            header("Location: /article?" . http_build_query(['id' => $articleId]));
         }
         else{
             $projects = $this->projectRepository->findAll('name');
@@ -138,7 +139,7 @@ class ArticleController extends Controller
      */
     public function edit(array $article): void
     {
-        $article = $this->articleRepository->findOneBy('headline', $article['name']);
+        $article = $this->articleRepository->findById($article['id']);
         $projects = $this->getNonPrivate($this->projectRepository->findAll('name'));
         $this->render('editArticle.twig', [
             'article' => $article,
@@ -211,7 +212,7 @@ class ArticleController extends Controller
             $article->setAuthorized($converted['authorized']);
             $article->setEditable(isset($articleData['editable']));
             $this->articleRepository->save($article);
-            header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
         }
         else{
             $this->render('editArticle.twig', [
@@ -263,7 +264,7 @@ class ArticleController extends Controller
      */
     public function editParagraphs(array $article): void
     {
-        $article = $this->articleRepository->findOneBy('headline', $article['name']);
+        $article = $this->articleRepository->findById($article['id']);
         $sources = $this->sourceRepository->findAll('name');
         $this->render('articleEditParagraphs.twig', ['article' => $article, 'sources' => $sources]);
     }
@@ -316,19 +317,27 @@ class ArticleController extends Controller
             $introduction = new Paragraph($oldIntroduction->getId(), $oldIntroduction->getPublished(), $oldIntroduction->getCreatedBy(), new DateTime(), $user, $article, "", 1);
             $this->paragraphRepository->save($introduction);
             $contents = $this->paragraphContentRepository->findBy('paragraph', $introduction->getId());
-            foreach ($contents as $content){
-                $this->paragraphContentRepository->delete($content);
+            if($contents !== null){
+                $contents->rewind();
+                for($i = 0; $i < $contents->count(); $i++){
+                    $this->paragraphContentRepository->delete($contents->current());
+                    $contents->next();
+                }
             }
             $oldParagraphs->offsetUnset(0);
             $i = 1;
-            if(count($articleData['headline']) > $oldParagraphs->count()){
+            if(isset($articleData['headline']) && count($articleData['headline']) > $oldParagraphs->count()){
                 foreach ($articleData['headline'] as $headline){
                     if($oldParagraphs->count() >= $i){
                         $oldParagraph = $oldParagraphs->offsetGet($i);
                         $paragraph = new Paragraph($oldParagraph->getId(), $oldParagraph->getPublished(), $oldParagraph->getCreatedBy(), new DateTime(), $user, $article, $headline, $i + 1);
                         $contents = $this->paragraphContentRepository->findBy('paragraph', $oldParagraph->getId());
-                        foreach ($contents as $content){
-                            $this->paragraphContentRepository->delete($content);
+                        if($contents !== null){
+                            $contents->rewind();
+                            for($i = 0; $i < $contents->count(); $i++){
+                                $this->paragraphContentRepository->delete($contents->current());
+                                $contents->next();
+                            }
                         }
                     }
                     else{
@@ -341,7 +350,7 @@ class ArticleController extends Controller
             }
             else{
                 foreach($oldParagraphs->__serialize() as $oldParagraph){
-                    if(count($articleData['headline']) >= $i){
+                    if(isset($articleData['headline']) && count($articleData['headline']) >= $i){
                         $headline = $articleData['headline'][$i - 1];
                         $paragraph = new Paragraph($oldParagraph->getId(), $oldParagraph->getPublished(), $oldParagraph->getCreatedBy(), new DateTime(), $user, $article, $headline, $i + 1);
                         $this->paragraphRepository->save($paragraph);
@@ -397,10 +406,10 @@ class ArticleController extends Controller
                         $i++;
                     }
                     $value = implode("", $value);
-                    $value = preg_split('/<h3[A-Za-z0-9="\\s]*>/', $value);
+                    $value = preg_split('/<h3[A-Za-z0-9="\\s-]*>/', $value);
                     for ($i = 0; $i < count($value); $i++){
                         if($i !== 0){
-                            $curStr = preg_split('/<h4[A-Za-z0-9="\\s]*>/', $value[$i]);
+                            $curStr = preg_split('/<h4[A-Za-z0-9="\\s-]*>/', $value[$i]);
                             for ($j = 0; $j < count($curStr); $j++){
                                 if($j !== 0){
                                     $replace = '<h4 id="headline' . $parNum . "-" . round($i / 2) . "-" . round($j / 2) .'">';
@@ -445,40 +454,40 @@ class ArticleController extends Controller
                         }
                     }
                 }
-                $oldArticleSources = $this->articleSourceRepository->findBy('article', $article->getId());
-                if($oldArticleSources !== null){
-                    $oldArticleSources->rewind();
-                    for ($i = 0; $i < $oldArticleSources->count(); $i++){
-                        $this->articleSourceRepository->delete($oldArticleSources->current());
-                        $oldArticleSources->next();
-                    }
-                }
-                if(isset($articleData['source'])){
-                    $articleSources = array();
-                    $i = 0;
-                    foreach ($articleData['source'] as $source){
-                        $type = $articleData['sourceType'][$i];
-                        $reference  = $articleData['reference'][$i];
-                        if($source !== '' && $reference !== ''){
-                            $articleSources[] = ['source' => $source, 'type' => $type, 'reference' => $reference];
-                        }
-                        $i++;
-                    }
-                    foreach ($articleSources as $source){
-                        $sourceId = 0;
-                        $sameSource = $this->sourceRepository->findOneBy('name', $source['source']);
-                        if($sameSource === null){
-                            $newSource = new Source($sourceId, $source['source'], $source['type']);
-                            $this->sourceRepository->save($newSource);
-                            $sameSource = $this->sourceRepository->findOneBy('name', $source['source']);
-                        }
-                        $newArticleSource = new ArticleSource(0, $article, $sameSource, $source['reference']);
-                        $this->articleSourceRepository->save($newArticleSource);
-                    }
-                }
             }
         }
-        header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+        $oldArticleSources = $this->articleSourceRepository->findBy('article', $article->getId());
+        if($oldArticleSources !== null){
+            $oldArticleSources->rewind();
+            for ($i = 0; $i < $oldArticleSources->count(); $i++){
+                $this->articleSourceRepository->delete($oldArticleSources->current());
+                $oldArticleSources->next();
+            }
+        }
+        if(isset($articleData['source'])){
+            $articleSources = array();
+            $i = 0;
+            foreach ($articleData['source'] as $source){
+                $type = $articleData['sourceType'][$i];
+                $reference  = $articleData['reference'][$i];
+                if($source !== '' && $reference !== ''){
+                    $articleSources[] = ['source' => $source, 'type' => $type, 'reference' => $reference];
+                }
+                $i++;
+            }
+            foreach ($articleSources as $source){
+                $sourceId = 0;
+                $sameSource = $this->sourceRepository->findOneBy('name', $source['source']);
+                if($sameSource === null){
+                    $newSource = new Source($sourceId, $source['source'], $source['type']);
+                    $this->sourceRepository->save($newSource);
+                    $sameSource = $this->sourceRepository->findOneBy('name', $source['source']);
+                }
+                $newArticleSource = new ArticleSource(0, $article, $sameSource, $source['reference']);
+                $this->articleSourceRepository->save($newArticleSource);
+            }
+        }
+        header("Location: /article?" . http_build_query(['id' => $article->getId()]));
     }
 
     /**
@@ -489,7 +498,7 @@ class ArticleController extends Controller
      */
     public function editInfo(array $article): void
     {
-        $article = $this->articleRepository->findOneBy('headline', $article['name']);
+        $article = $this->articleRepository->findById($article['id']);
         $this->render('articleEditInfo.twig', ['article' => $article]);
     }
 
@@ -534,14 +543,16 @@ class ArticleController extends Controller
         $sameInfo = $this->articleInfoRepository->findOneBy('article', $article->getId());
         $infoContents = new ArticleInfoContentCollection();
         $infoGallery = new ArticleInfoGalleryCollection();
-        foreach ($info['tableHeadline'] as $number => $headline){
-            $topics = $info['rowTopic' . ($number + 1)];
-            $infos = $info['rowInfo' . ($number + 1)];
-            foreach ($topics as $topicNumber => $topic){
-                if(!empty($topic) || !empty($infos[$topicNumber])){
-                    $infoContent = new ArticleInfoContent(0, $topic, $infos[$topicNumber], $headline, $topicNumber + 1);
-                    $infoContents->offsetSet($infoContents->key(), $infoContent);
-                    $infoContents->next();
+        if(isset($info['tableHeadline'])){
+            foreach ($info['tableHeadline'] as $number => $headline){
+                $topics = $info['rowTopic' . ($number + 1)];
+                $infos = $info['rowInfo' . ($number + 1)];
+                foreach ($topics as $topicNumber => $topic){
+                    if(!empty($topic) || !empty($infos[$topicNumber])){
+                        $infoContent = new ArticleInfoContent(0, $topic, $infos[$topicNumber], $headline, $topicNumber + 1);
+                        $infoContents->offsetSet($infoContents->key(), $infoContent);
+                        $infoContents->next();
+                    }
                 }
             }
         }
@@ -612,7 +623,7 @@ class ArticleController extends Controller
         }
         $randomNumber = $offsets[array_rand($offsets)];
         $article = $articles->offsetGet($randomNumber);
-        header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+        header("Location: /article?" . http_build_query(['id' => $article->getId()]));
     }
 
     private function prepareUpload(FileUpload $uploader): FileUpload|false

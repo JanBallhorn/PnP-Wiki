@@ -34,7 +34,7 @@ class ProjectController extends Controller
      */
     public function index(): void
     {
-        $projects = $this->getNonPrivate($this->projectRepository->findBy('parent_project', null, 'name'));
+        $projects = $this->projectRepository->findBy('parent_project', null, 'name');
         $this->render($this->template, ['mainProjects' => $projects->__serialize()]);
     }
 
@@ -100,7 +100,7 @@ class ProjectController extends Controller
         if(isset($project['error'])){
             $error = $project['error'];
         }
-        $project = $this->projectRepository->findOneBy('name', $project['name']);
+        $project = $this->projectRepository->findById($project['id']);
         $this->render("projectDetail.twig", ['project' => $project, 'deleteError' => $error]);
     }
 
@@ -113,7 +113,7 @@ class ProjectController extends Controller
     public function edit(array $project): void
     {
         $projects = $this->getNonPrivate($this->projectRepository->findAll());
-        $project = $this->projectRepository->findOneBy('name', $project['name']);
+        $project = $this->projectRepository->findById($project['id']);
         $this->render("editProject.twig", ['projects' => $projects->__serialize(), 'project' => $project]);
     }
 
@@ -210,15 +210,15 @@ class ProjectController extends Controller
     /**
      * @throws Exception
      */
-    public function delete(array $projectName): void
+    public function delete(array $project): void
     {
-        $project = $this->projectRepository->findOneBy('name', $projectName['name']);
+        $project = $this->projectRepository->findById($project['id']);
         if($project->getChildren() === null){
             $this->projectRepository->delete($project);
             header("Location: /project");
         }
         else{
-            header("Location: /project/detail?" . http_build_query(['name'=>$project->getName(), 'error'=>true]));
+            header("Location: /project/detail?" . http_build_query(['id'=>$project->getId(), 'error'=>true]));
         }
     }
 }

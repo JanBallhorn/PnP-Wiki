@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Model\User;
 use App\Repository\UserRepository;
 use DateTime;
+use Exception;
 use Random\RandomException;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -32,6 +33,7 @@ class RegisterController extends Controller
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError|RandomException
+     * @throws Exception
      */
     public function register(array $userData): void
     {
@@ -72,6 +74,7 @@ class RegisterController extends Controller
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError
+     * @throws Exception
      */
     public function verify(array $token): void
     {

@@ -8,7 +8,7 @@
     {% endfor %}
     <li>
         <div class="project-link">
-            <a class="{% if project.private and wikiUser.id not in authorizedIds %}privateProject{% endif %} noUnderline" href="/project/detail?name={{ project.name }}">
+            <a class="{% if project.private and wikiUser.id not in authorizedIds %}privateProject{% endif %} noUnderline" href="/project/detail?id={{ project.id }}">
                 {{ project.name }}
                 {% if project.private and wikiUser.id not in authorizedIds %}
                     <span>Privates Projekt von
@@ -24,7 +24,8 @@
         </div>
         {% if project.children|length %}
             {% set children = project.children.__serialize %}
-            <ul class="level{{ children|first.level }}">
+            {% set level = children|first.level %}
+            <ul class="level{{ level }}{% if level > 3 %} hidden{% endif %}">
                 {% for child in children %}
                     {{ self.recursiveProject(child, wikiUser) }}
                 {% endfor %}

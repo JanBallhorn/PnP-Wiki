@@ -11,9 +11,9 @@
     {% if loggedIn %}
         {% if article.editable or wikiUser.id == article.lastEditBy.username %}
             <div class="articleEdit">
-                <a href="/article/editParagraphs?name={{ article.headline }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
-                <a href="/article/editInfo?name={{ article.headline }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
-                <a href="/article/edit?name={{ article.headline }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
+                <a href="/article/editParagraphs?id={{ article.id }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
+                <a href="/article/editInfo?id={{ article.id }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
+                <a href="/article/edit?id={{ article.id }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
             </div>
         {% endif %}
         <h1>{{ article.headline }}</h1>

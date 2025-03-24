@@ -28,19 +28,16 @@
                 {% else %}
                     {% for article in articles.__serialize %}
                         <li>
-                            <a href="/article?name={{ article.headline }}" class="article">
+                            <a href="/article?id={{ article.id }}" class="article">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
-                                <div class="firstLine">
-                                    {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
-                                </div>
                             </a>
                         </li>
                     {% endfor %}
                 {% endif %}
             </ul>
         {% endif %}
-        <a class="button" href="/category/edit?name={{ category.name }}">Kategorie bearbeiten</a>
+        <a class="button" href="/category/edit?id={{ category.id }}">Kategorie bearbeiten</a>
         <a class="button" onclick="deleteAlert('{{ category.name }}')">Kategorie löschen</a>
     {% else %}
         {{ _self.notLoggedIn() }}
@@ -51,10 +48,10 @@
     {% if loggedIn %}
         <ul>
             <li><b>Veröffentlicht:</b> {{ category.published|date("d.m.Y - H:i:s") }} Uhr</li>
-            <li><b>Ersteller:</b> <a href="/profile?user={{ category.createdBy.username }}">{{ category.createdBy.username }}</a></li>
+            <li><b>Ersteller:</b> <a href="/profile?id={{ category.createdBy.id }}">{{ category.createdBy.username }}</a></li>
             {% if category.published|date("d.m.Y - H:i:s") != category.lastEdit|date("d.m.Y - H:i:s") %}
                 <li><b>Letzte Änderung:</b> {{ category.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
-                <li><b>Letzte Änderung von:</b> <a href="/profile?user={{ category.lastEditBy.username }}">{{ category.lastEditBy.username }}</a></li>
+                <li><b>Letzte Änderung von:</b> <a href="/profile?id={{ category.lastEditBy.id }}">{{ category.lastEditBy.username }}</a></li>
             {% endif %}
         </ul>
     {% endif %}

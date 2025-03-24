@@ -88,23 +88,24 @@ class ArticleRepository extends Repository implements RepositoryInterface
             }
         }
         $articles = new ArticleCollection();
+        $articles->rewind();
         $article= $this->findOneBy('headline', $search);
         if($article !== null){
             if($category !== null){
                 $categories = $article->getCategories();
                 for($i = 1; $i <= $categories->count(); $i++){
                     if($categories->current()->getId() === $category->getId()){
-                        $articles->offsetSet($articles->current(), $article);
+                        $articles->offsetSet($articles->key(), $article);
                         $articles->next();
                     }
                 }
             }
             elseif(in_array($article->getProject()->getId(), $projectIds)){
-                $articles->offsetSet($articles->current(), $article);
+                $articles->offsetSet($articles->key(), $article);
                 $articles->next();
             }
             else{
-                $articles->offsetSet($articles->current(), $article);
+                $articles->offsetSet($articles->key(), $article);
                 $articles->next();
             }
         }
@@ -120,7 +121,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $result = $stmt->get_result()->fetch_object();
         if(!empty($result)){
             $article = $this->findOneBy('id', $result->id);
-            $articles->offsetSet($articles->current(), $article);
+            $articles->offsetSet($articles->key(), $article);
             $articles->next();
         }
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article WHERE tag = '$search'";
@@ -143,7 +144,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $result = $stmt->get_result()->fetch_object();
         if(!empty($result)){
             $article = $this->findOneBy('id', $result->id);
-            $articles->offsetSet($articles->current(), $article);
+            $articles->offsetSet($articles->key(), $article);
             $articles->next();
         }
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline LIKE '%$search%'";
@@ -264,7 +265,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $query = "INSERT INTO `article_tags` (article, tag) VALUES (?, ?)";
                 $stmt = $this->db->prepare($query);
                 for($i = 0; $i < count($tags); $i++){
-                    $tag = strval($tags[$i]);
+                    $tag = trim(strval($tags[$i]));
                     $stmt->bind_param("is", $id, $tag);
                     $stmt->execute();
                 }
@@ -273,7 +274,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $query = "INSERT INTO `article_alt_headline` (headline, article) VALUES (?, ?)";
                 $stmt = $this->db->prepare($query);
                 for($i = 0; $i < count($altHeadlines); $i++){
-                    $altHeadline = strval($altHeadlines[$i]);
+                    $altHeadline = trim(strval($altHeadlines[$i]));
                     $stmt->bind_param("si", $altHeadline, $id);
                     $stmt->execute();
                 }

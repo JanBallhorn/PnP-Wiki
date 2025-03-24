@@ -8,16 +8,20 @@
     <script>
         tinymce.init({
             selector: 'textarea.tinymce',
+            relative_urls: false,
+            remove_script_host: false,
             license_key: 'gpl',
-            plugins: [ 'link','lists','table' ],
+            plugins: [ 'link','lists','table','code','charmap' ],
             toolbar: [
                 { name: 'history', items: [ 'undo', 'redo' ] },
                 { name: 'styles', items: [ 'styles' ] },
                 { name: 'formatting', items: [ 'bold', 'italic','underline' ] },
                 { name: 'alignment', items: [ 'alignleft', 'aligncenter', 'alignright', 'alignjustify' ] },
                 { name: 'indentation', items: [ 'outdent', 'indent' ] },
+                { name: 'specialChars', items: ['charmap']},
                 { name: 'lists', items: [ 'numlist', 'bullist' ] },
-                { name: 'links', items: [ 'link', 'unlink' ] }
+                { name: 'links', items: [ 'link', 'unlink' ] },
+                { name: 'code', items: ['code']}
             ],
             language: 'de',
             promotion: false,
@@ -32,9 +36,9 @@
     {% if loggedIn %}
         {% if article.editable or wikiUser.id == article.lastEditBy.username %}
             <div class="articleEdit">
-                <a href="/article/editParagraphs?name={{ article.headline }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
-                <a href="/article/editInfo?name={{ article.headline }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
-                <a href="/article/edit?name={{ article.headline }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
+                <a href="/article/editParagraphs?id={{ article.id }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
+                <a href="/article/editInfo?id={{ article.id }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
+                <a href="/article/edit?id={{ article.id }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
             </div>
         {% endif %}
         <h1>{{ article.headline }}</h1>

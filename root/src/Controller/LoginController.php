@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\UserRepository;
+use Exception;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -30,6 +31,7 @@ class LoginController extends Controller
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError
+     * @throws Exception
      */
     public function login(array $loginData): void
     {
@@ -57,7 +59,7 @@ class LoginController extends Controller
                 $username = $user->getUsername();
                 $token = $this->buildToken($username, $userId, $remember);
                 $this->createCookie($token, $remember);
-                header('Location: ' . $this->url . '/profile?' . http_build_query(['user'=>$username]));
+                header('Location: ' . $this->url . '/profile?' . http_build_query(['id'=>$userId]));
             }
             else{
                 $this->render($this->template, ['verificationError' => true, 'user' => $loginData['user']]);

@@ -8,6 +8,7 @@
     <script src="../../assets/js/trackVisits.js" type="text/javascript"></script>
     <script src="../../assets/js/spoiler.js" type="text/javascript"></script>
     <script src="../../assets/js/lightbox.js" type="text/javascript"></script>
+    <script src="../../assets/js/adjustArticleTables.js" type="text/javascript"></script>
     <script>
         lightbox.option({
             'resizeDuration': 200,
@@ -17,12 +18,16 @@
 {% endblock %}
 
 {% block mainContent %}
-    {% if loggedIn %}
+    {% set authorizedIds = [] %}
+    {% for user in article.authorized.__serialize %}
+        {% set authorizedIds = authorizedIds|merge([user.id]) %}
+    {% endfor %}
+    {% if loggedIn and (article.private == false or wikiUser.id in authorizedIds) %}
         {% if article.editable or wikiUser.id == article.lastEditBy.id %}
             <div class="articleEdit">
-                <a href="/article/editParagraphs?name={{ article.headline }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
-                <a href="/article/editInfo?name={{ article.headline }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
-                <a href="/article/edit?name={{ article.headline }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
+                <a href="/article/editParagraphs?id={{ article.id }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
+                <a href="/article/editInfo?id={{ article.id }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
+                <a href="/article/edit?id={{ article.id }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
             </div>
         {% endif %}
         <h1>{{ article.headline }}</h1>
@@ -109,14 +114,16 @@
                                 {% else %}
                                     <div class="contentText">
                                         {% if content.img != null %}
-                                            <figure>
-                                                <a href="{{ content.img }}" data-lightbox="img{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ content.figcaption|striptags }}">
-                                                    <img src="{{ content.img }}" alt="{{ content.figcaption }}">
-                                                </a>
-                                                {% if content.figcaption != '' %}
-                                                    <figcaption>{{ content.figcaption|raw }}</figcaption>
-                                                {% endif %}
-                                            </figure>
+                                            <div class="contentImg">
+                                                <figure>
+                                                    <a href="{{ content.img }}" data-lightbox="img{{ paragraph.sequence }}{{ content.sequence }}" data-title="{{ content.figcaption|striptags }}">
+                                                        <img src="{{ content.img }}" alt="{{ content.figcaption }}">
+                                                    </a>
+                                                    {% if content.figcaption != '' %}
+                                                        <figcaption>{{ content.figcaption|raw }}</figcaption>
+                                                    {% endif %}
+                                                </figure>
+                                            </div>
                                         {% endif %}
                                         {{ content.text|raw }}
                                     </div>
@@ -187,6 +194,11 @@
                 {% endif %}
             </div>
         </div>
+    {% elseif article.private == true and wikiUser.id not in authorizedIds %}
+        <div>
+            Dieser Artikel ist privat und du bist nicht autorisiert.
+            <a class="button" href="/">Zurück zur Startseite</a>
+        </div>
     {% else %}
         {{ _self.notLoggedIn() }}
     {% endif %}
@@ -196,23 +208,23 @@
     {% if loggedIn %}
         <ul>
             <li><b>Aufrufe:</b>{{ article.called }}</li>
-            <li><b>Projekt:</b><a href="/project/detail?name={{ article.project.name }}">{{ article.project.name }}</a></li>
+            <li><b>Projekt:</b><a href="/project/detail?id={{ article.project.id }}">{{ article.project.name }}</a></li>
             <li><b>Kategorien:</b>
                 <ul>
                     {% for category in article.categories.__serialize %}
-                        <li><a href="/category/detail?name={{ category.name }}">{{ category.name }}</a></li>
+                        <li><a href="/category/detail?id={{ category.id }}">{{ category.name }}</a></li>
                     {% endfor %}
                 </ul>
             </li>
             <li><b>Veröffentlicht:</b> {{ article.published|date("d.m.Y - H:i:s") }} Uhr</li>
-            <li><b>Ersteller:</b> <a href="/profile?user={{ article.createdBy.username }}">{{ article.createdBy.username }}</a></li>
+            <li><b>Ersteller:</b> <a href="/profile?id={{ article.createdBy.id }}">{{ article.createdBy.username }}</a></li>
             {% if article.published|date("d.m.Y - H:i:s") != article.lastEdit|date("d.m.Y - H:i:s") %}
                 <li><b>Letzte Änderung am Artikel:</b> {{ article.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
-                <li><b>Letzte Änderung am Artikel von:</b> <a href="/profile?user={{ article.lastEditBy.username }}">{{ article.lastEditBy.username }}</a></li>
+                <li><b>Letzte Änderung am Artikel von:</b> <a href="/profile?id={{ article.lastEditBy.id }}">{{ article.lastEditBy.username }}</a></li>
             {% endif %}
             {% if article.paragraphs.__serialize[0] != null %}
                 <li><b>Letzte Änderung am Inhalt:</b> {{ article.paragraphs.__serialize[0].lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
-                <li><b>Letzte Änderung am Inhalt von:</b> <a href="/profile?user={{ article.paragraphs.__serialize[0].lastEditBy.username }}">{{ article.paragraphs.__serialize[0].lastEditBy.username }}</a></li>
+                <li><b>Letzte Änderung am Inhalt von:</b> <a href="/profile?id={{ article.paragraphs.__serialize[0].lastEditBy.id }}">{{ article.paragraphs.__serialize[0].lastEditBy.username }}</a></li>
             {% endif %}
         </ul>
     {% endif %}

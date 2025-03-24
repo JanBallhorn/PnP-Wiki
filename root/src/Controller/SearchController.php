@@ -36,11 +36,11 @@ class SearchController extends Controller
     public function search(array $query): void
     {
         if(isset($query['category'])){
-            $category = $this->categoryRepository->findOneBy('id', $query['category']);
+            $category = $this->categoryRepository->findById($query['category']);
             $articles = $this->articleRepository->search($query['search'], $category);
         }
         elseif (isset($query['project'])){
-            $project = $this->projectRepository->findOneBy('id', $query['project']);
+            $project = $this->projectRepository->findById($query['project']);
             $articles = $this->articleRepository->search($query['search'], null, $project);
         }
         else{
@@ -48,13 +48,26 @@ class SearchController extends Controller
         }
         $ids = [];
         $offsets = [];
+        $articles->rewind();
         if($articles->current() !== null){
             $username = $this->getUsernameFromToken($this->getCookie());
             $user = $this->userRepository->findOneBy('username', $username);
-            for($i = 1; $i <= $articles->count(); $i++){
+            for($i = 0; $i < $articles->count(); $i++){
                 $id = $articles->current()->getId();
-                if($articles->current()->getPrivate() && $user->getId() !== $articles->current()->getCreatedBy()->getId()){
-                    $offsets[] = $articles->key();
+                if($articles->current()->getPrivate()){
+                    $authorizedIds = array();
+                    $authorized = $articles->current()->getAuthorized();
+                    $authorized->rewind();
+                    for($i = 0; $i < $authorized->count(); $i++){
+                        $authorizedIds[] = $authorized->current()->getId();
+                        $authorized->next();
+                    }
+                    if(!in_array($user->getId(), $authorizedIds) || in_array($id, $ids)){
+                        $offsets[] = $articles->key();
+                    }
+                    else{
+                        $ids[] = $id;
+                    }
                 }
                 elseif(!in_array($id, $ids)){
                     $ids[] = $id;
@@ -69,7 +82,7 @@ class SearchController extends Controller
             }
         }
         if(isset($query['category'])){
-            $category = $this->categoryRepository->findOneBy('id', $query['category']);
+            $category = $this->categoryRepository->findById($query['category']);
             $this->render('categoryDetail.twig', [
                 'category' => $category,
                 'searched' => true,
@@ -78,7 +91,7 @@ class SearchController extends Controller
             ]);
         }
         elseif (isset($query['project'])){
-            $project = $this->projectRepository->findOneBy('id', $query['project']);
+            $project = $this->projectRepository->findById($query['project']);
             $project->setSearched($project->getSearched() + 1);
             $this->projectRepository->save($project);
             $this->render("projectDetail.twig", [

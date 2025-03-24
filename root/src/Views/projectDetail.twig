@@ -31,19 +31,16 @@
                 {% else %}
                     {% for article in articles.__serialize %}
                         <li>
-                            <a href="/article?name={{ article.headline }}" class="article">
+                            <a href="/article?id={{ article.id }}" class="article">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
-                                <div class="firstLine">
-                                    {{ article.paragraphs.offsetGet(0).contents.offsetGet(0).text|raw }}
-                                </div>
                             </a>
                         </li>
                     {% endfor %}
                 {% endif %}
             </ul>
         {% endif %}
-        <a class="button" href="/project/edit?name={{ project.name }}">Projekt bearbeiten</a>
+        <a class="button" href="/project/edit?id={{ project.id }}">Projekt bearbeiten</a>
         <a class="button" onclick="deleteAlert('{{ project.name }}')">Projekt löschen</a>
     {% else %}
         {{ _self.notLoggedIn() }}
@@ -54,13 +51,13 @@
     {% if loggedIn %}
         <ul>
             <li><b>Veröffentlicht:</b> {{ project.published|date("d.m.Y - H:i:s") }} Uhr</li>
-            <li><b>Ersteller:</b> <a href="/profile?user={{ project.createdBy.username }}">{{ project.createdBy.username }}</a></li>
+            <li><b>Ersteller:</b> <a href="/profile?id={{ project.createdBy.id }}">{{ project.createdBy.username }}</a></li>
             {% if project.published|date("d.m.Y - H:i:s") != project.lastEdit|date("d.m.Y - H:i:s") %}
                 <li><b>Letzte Änderung:</b> {{ project.lastEdit|date("d.m.Y - H:i:s") }} Uhr</li>
-                <li><b>Letzte Änderung von:</b> <a href="/profile?user={{ project.lastEditBy.username }}">{{ project.lastEditBy.username }}</a></li>
+                <li><b>Letzte Änderung von:</b> <a href="/profile?id={{ project.lastEditBy.id }}">{{ project.lastEditBy.username }}</a></li>
             {% endif %}
             {% if project.parentProject.name != null %}
-                <li><b>Übergeordnetes Projekt:</b> <a href="/project/detail?name={{ project.parentProject.name }}">{{ project.parentProject.name }}</a></li>
+                <li><b>Übergeordnetes Projekt:</b> <a href="/project/detail?id={{ project.parentProject.id }}">{{ project.parentProject.name }}</a></li>
             {% endif %}
             <li><b>Privat:</b>
                 {% if project.private %}

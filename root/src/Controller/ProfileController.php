@@ -23,10 +23,9 @@ class ProfileController extends Controller
      * @throws LoaderError
      * @throws Exception
      */
-    public function index(array $username): void
+    public function index(array $user): void
     {
-        $username = $username['user'];
-        $user = $this->userRepository->findOneBy('username', $username);
+        $user = $this->userRepository->findById($user['id']);
         $profileTextExists = !empty($user->getProfileText());
         $articles = $this->articleRepository->findBy('created_by', $user->getId(), "published DESC");
         if($articles !== null){
@@ -61,8 +60,7 @@ class ProfileController extends Controller
      * @throws Exception
      */
     public function edit(array $username): void{
-        $username = $username['user'];
-        $user = $this->userRepository->findOneBy('username', $username);
+        $user = $this->userRepository->findOneBy('username', $username['user']);
         $articles = $this->articleRepository->findBy('created_by', $user->getId(), "published DESC");
         if($articles !== null){
             $articles->rewind();
@@ -95,7 +93,7 @@ class ProfileController extends Controller
         $user->setLastnamePublic(isset($profileData['lastnamePublic']));
         $user->setProfileText($profileData['profileText']);
         $this->userRepository->save($user);
-        header("Location: /profile?" . http_build_query(['user'=>$user->getUsername()]));
+        header("Location: /profile?" . http_build_query(['id'=>$user->getId()]));
     }
     protected function checkOwnProfile($username): bool{
         if($this->getCookie()){

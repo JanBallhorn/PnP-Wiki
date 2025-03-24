@@ -171,10 +171,22 @@ abstract class Controller
             $username = $this->getUsernameFromToken($this->getCookie());
             $user = (new UserRepository())->findOneBy('username', $username);
             $collection->rewind();
-            for($i = 0; $i < $collection->count(); $i++){
+            $colCount = $collection->count();
+            for($i = 0; $i < $colCount; $i++){
                 $cur = $collection->current();
-                if($cur->getPrivate() === true && $cur->getLastEditBy()->getId() !== $user->getId()){
-                    $collection->offsetUnset($collection->key());
+                if($cur->getPrivate() === true){
+                    $authorized = $cur->getAuthorized();
+                    $authorized->rewind();
+                    $authed = false;
+                    for($j = 0; $j < $authorized->count(); $j++){
+                        if($user->getId() === $authorized->current()->getId()){
+                            $authed = true;
+                        }
+                        $authorized->next();
+                    }
+                    if(!$authed){
+                        $collection->offsetUnset($collection->key());
+                    }
                 }
                 $collection->next();
             }

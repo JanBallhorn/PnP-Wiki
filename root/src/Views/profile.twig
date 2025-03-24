@@ -63,7 +63,7 @@
         <ul>
             <li>Erstellte Artikel:<br> {{ createdArticles }}</li>
             {% if newestArticle != null %}
-                <li>Neuster Artikel:<br> <a href="/article?name={{ newestArticle.headline }}">{{ newestArticle.headline }}</a></li>
+                <li>Neuster Artikel:<br> <a href="/article?id={{ newestArticle.id }}">{{ newestArticle.headline }}</a></li>
             {% endif %}
         </ul>
     {% endif %}
