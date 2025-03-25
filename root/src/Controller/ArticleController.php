@@ -112,7 +112,7 @@ class ArticleController extends Controller
             $converted = $this->convertFormData($article);
             $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $converted['project'], $converted['categories'], $converted['tags'], $altHeadlines, $converted['private'], $converted['authorized'], isset($article['editable']), 0);
             $this->articleRepository->save($article);
-            $articleId = $this->articleRepository->findOneBy('headline', $article['headline'])->getId();
+            $articleId = $this->articleRepository->findOneBy('headline', $article->getHeadline())->getId();
             header("Location: /article?" . http_build_query(['id' => $articleId]));
         }
         else{
@@ -257,6 +257,16 @@ class ArticleController extends Controller
             }
         }
         return array('categories' => $categories, 'project' => $project, 'tags' => $tags, 'private' => $private, 'authorized' => $authorized);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function delete(array $article): void
+    {
+        $article = $this->articleRepository->findById($article['id']);
+        $this->articleRepository->delete($article);
+        header("Location: /");
     }
 
     /**
@@ -568,7 +578,18 @@ class ArticleController extends Controller
             $info = new ArticleInfo(0, $article, $info['mainHeadline'], $infoContents, $infoGallery);
         }
         $this->articleInfoRepository->save($info);
-        header("Location: /article?" . http_build_query(['name' => $article->getHeadline()]));
+        header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function deleteInfo(array $info): void
+    {
+        $info = $this->articleInfoRepository->findById($info['id']);
+        $article = $info->getArticle();
+        $this->articleInfoRepository->delete($info);
+        header("Location: /article?" . http_build_query(['id' => $article->getId()]));
     }
 
     /**

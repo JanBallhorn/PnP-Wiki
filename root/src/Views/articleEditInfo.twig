@@ -5,6 +5,7 @@
 {% block head %}
     {{ parent() }}
     <script src="../../assets/js/infoForm.js" type="module"></script>
+    <script src="../../assets/js/deleteAlert.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block mainContent %}
@@ -98,6 +99,7 @@
             <input name="images" type="hidden">
             <input class="button" type="submit" value="Inhalte speichern" name="submit" form="editInfo">
         </form>
+        <a class="button" onclick="deleteAlert('{{ article.info.headline }}', '{{ article.info.id }}')">Inhalte löschen</a>
         {{ include("linkModal.twig") }}
     {% else %}
         {{ _self.notLoggedIn() }}

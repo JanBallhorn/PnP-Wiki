@@ -5,6 +5,7 @@
 {% block head %}
     {{ parent() }}
     <script src="../../assets/js/articleForm.js" type="module"></script>
+    <script src="../../assets/js/deleteAlert.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block mainContent %}
@@ -42,7 +43,7 @@
                 <textarea name="tags">{{ article.tags|join(', ') }}</textarea>
                 <span>Tags mit Kommata trennen!</span>
             </label>
-            <fieldset class="checkbox required">
+            <fieldset class="checkbox category required">
                 <legend>Kategorien*</legend>
                 {% set categoryIds = [] %}
                 {% for category in article.categories.__serialize %}
@@ -50,7 +51,7 @@
                 {% endfor %}
                 {% for category in categories %}
                     <label>
-                        <input type="checkbox" name="category[]"  value="{{ category.id }}" {% if category.id in categoryIds %}checked{% endif %}>
+                        <input type="checkbox" name="category[]" value="{{ category.id }}" {% if category.id in categoryIds %}checked{% endif %}>
                         {{ category.name }}
                     </label>
                 {% endfor %}
@@ -81,6 +82,7 @@
         </form>
         <input class="button" type="submit" value="Artikel speichern" name="submit" form="editArticle">
         <p>Mit * versehende Felder müssen ausgefüllt sein.</p>
+        <a class="button" onclick="deleteAlert('{{ article.headline }}', '{{ article.id }}')">Artikel löschen</a>
     {% else %}
         {{ _self.notLoggedIn() }}
     {% endif %}
