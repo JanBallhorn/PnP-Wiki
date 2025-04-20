@@ -41,7 +41,7 @@
             </ul>
         {% endif %}
         <a class="button" href="/project/edit?id={{ project.id }}">Projekt bearbeiten</a>
-        <a class="button" onclick="deleteAlert('{{ project.name }}')">Projekt löschen</a>
+        <a class="button" onclick="deleteAlert('{{ project.name }}', '{{ project.id }}')">Projekt löschen</a>
     {% else %}
         {{ _self.notLoggedIn() }}
     {% endif %}

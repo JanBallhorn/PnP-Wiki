@@ -38,7 +38,7 @@
             </ul>
         {% endif %}
         <a class="button" href="/category/edit?id={{ category.id }}">Kategorie bearbeiten</a>
-        <a class="button" onclick="deleteAlert('{{ category.name }}')">Kategorie löschen</a>
+        <a class="button" onclick="deleteAlert('{{ category.name }}', '{{ category.id }}')">Kategorie löschen</a>
     {% else %}
         {{ _self.notLoggedIn() }}
     {% endif %}

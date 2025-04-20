@@ -724,6 +724,11 @@ main #right > ul > li{
 /******************************************
 NAVIGATION
 ******************************************/
+nav{
+    position: sticky;
+    top: 5.75em;
+    z-index: 15;
+}
 nav ul, aside ul{
     list-style-type: none;
 }

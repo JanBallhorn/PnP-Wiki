@@ -8,12 +8,14 @@
             <div class="infoTableRow">
                 <div>
                     <label>
-                        <input name="rowTopic{{ i }}[]" maxlength="300">
+                        <input name="rowTopic{{ i }}[]" maxlength="300" class="withModal">
+                        <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                         <span class="maxLength">300</span>
                     </label>
                     <label>
-                        <input name="rowInfo{{ i }}[]" maxlength="300">
-                        <span class="maxLength">300</span>
+                        <input name="rowInfo{{ i }}[]" maxlength="1000" class="withModal">
+                        <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
+                        <span class="maxLength">1000</span>
                     </label>
                 </div>
                 {{ include("controlButtons.twig") }}

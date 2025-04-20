@@ -3,3 +3,4 @@ db_credentials.txt
 externalImages/*
 imprint.twig
 privacy.twig
+.idea
