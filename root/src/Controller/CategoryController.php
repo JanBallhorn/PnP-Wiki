@@ -59,6 +59,10 @@ class CategoryController extends Controller
      */
     public function save(array $categoryData): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /category");
+            return;
+        }
         if(!empty($_FILES["fileUpload"]["tmp_name"])){
             $uploader = new FileUpload(__DIR__ . '/../../../externalImages/categoryIcons/', str_replace('/', '-', $categoryData['name']) . '.svg', ['svg'], 20000, $_FILES);
             $upload = $this->prepareUpload($uploader);
@@ -148,6 +152,10 @@ class CategoryController extends Controller
      */
     public function update(array $categoryData): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /category");
+            return;
+        }
         $category = $this->categoryRepository->findById($categoryData['id']);
         $sameCategory = $this->categoryRepository->findOneBy('name', $categoryData['name']);
         $category->setName($categoryData['name']);
@@ -191,6 +199,10 @@ class CategoryController extends Controller
      */
     public function delete(array $category): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /category");
+            return;
+        }
         $category = $this->categoryRepository->findById($category['id']);
         $this->categoryRepository->delete($category);
         header("Location: /category");

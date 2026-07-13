@@ -78,6 +78,10 @@ class ArticleController extends Controller
      */
     public function save(array $article): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /");
+            return;
+        }
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $sameHeadline = $this->articleRepository->findOneBy('headline', $article['headline']);
@@ -154,6 +158,10 @@ class ArticleController extends Controller
      */
     public function update(array $articleData): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /");
+            return;
+        }
         $article = $this->articleRepository->findById($articleData['id']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
@@ -265,6 +273,10 @@ class ArticleController extends Controller
      */
     public function delete(array $article): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /");
+            return;
+        }
         $article = $this->articleRepository->findById($article['id']);
         $this->articleRepository->delete($article);
         header("Location: /");
@@ -285,6 +297,10 @@ class ArticleController extends Controller
      */
     public function saveParagraphs(array $articleData): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /");
+            return;
+        }
         $articleImages = json_decode($articleData['images'], true);
         if(!file_exists(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name'])){
             mkdir(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name']);
@@ -537,6 +553,10 @@ class ArticleController extends Controller
      */
     public function saveInfo(array $info): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /");
+            return;
+        }
         $infoImages = json_decode($info['images'], true);
         if(!file_exists(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'])){
             mkdir(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name']);
@@ -610,6 +630,10 @@ class ArticleController extends Controller
      */
     public function deleteInfo(array $info): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /");
+            return;
+        }
         $info = $this->articleInfoRepository->findById($info['id']);
         $article = $info->getArticle();
         $this->articleInfoRepository->delete($info);

@@ -55,6 +55,10 @@ class ProjectController extends Controller
      */
     public function save(array $projectData): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /project");
+            return;
+        }
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
@@ -145,6 +149,10 @@ class ProjectController extends Controller
      */
     public function update(array $projectData): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /project");
+            return;
+        }
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $project = $this->projectRepository->findById($projectData['id']);
@@ -235,6 +243,10 @@ class ProjectController extends Controller
      */
     public function delete(array $project): void
     {
+        if(!$this->checkLogin()){
+            header("Location: /project");
+            return;
+        }
         $project = $this->projectRepository->findById($project['id']);
         if($project->getChildren() === null){
             $this->projectRepository->delete($project);

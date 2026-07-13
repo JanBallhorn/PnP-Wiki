@@ -14,7 +14,9 @@ use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\Builder;
 use Lcobucci\JWT\Token\Parser;
+use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\RelatedTo;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Validator;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -95,13 +97,46 @@ abstract class Controller
     }
     protected function checkLogin(): bool
     {
-        return isset($_COOKIE['login']);
+        return $this->getVerifiedToken($this->getCookie()) !== null;
+    }
+    private function signingKey(): InMemory
+    {
+        return InMemory::plainText("8VwxeMAGDkoz1nSuWD1tESkCOGgPk5Il");
+    }
+    /**
+     * Parses the given token and verifies its signature and expiry. Returns
+     * null if the token is missing, malformed, unsigned by us or expired,
+     * so callers never trust an unverified token's claims.
+     */
+    private function getVerifiedToken(?string $token): ?UnencryptedToken
+    {
+        if($token === null){
+            return null;
+        }
+        $parser = new Parser(new JoseEncoder());
+        try{
+            $parsedToken = $parser->parse($token);
+        }
+        catch(\Exception){
+            return null;
+        }
+        if(!$parsedToken instanceof UnencryptedToken){
+            return null;
+        }
+        $validator = new Validator();
+        if(!$validator->validate($parsedToken, new SignedWith(new Sha256(), $this->signingKey()))){
+            return null;
+        }
+        if($parsedToken->isExpired(new \DateTimeImmutable())){
+            return null;
+        }
+        return $parsedToken;
     }
     protected function buildToken(string $username, int $userId, bool $remember): string
     {
         $tokenBuilder = new Builder(new JoseEncoder(), ChainedFormatter::default());
         $algorithm = new Sha256();
-        $signingKey = InMemory::plainText("8VwxeMAGDkoz1nSuWD1tESkCOGgPk5Il");
+        $signingKey = $this->signingKey();
         $now = new \DateTimeImmutable();
         if($remember === true){
             $expires = $now->add(\DateInterval::createFromDateString('6 months'));
@@ -121,20 +156,21 @@ abstract class Controller
     }
     protected function validateToken(string $token, string $username): bool
     {
-        $parser = new Parser(new JoseEncoder());
-        $token = $parser->parse($token);
+        $verifiedToken = $this->getVerifiedToken($token);
+        if($verifiedToken === null){
+            return false;
+        }
         $validator = new Validator();
-        return $validator->validate($token, new RelatedTo($username));
+        return $validator->validate($verifiedToken, new RelatedTo($username));
     }
     protected function getUsernameFromToken(?string $token): string
     {
-        if($token === null){
+        $verifiedToken = $this->getVerifiedToken($token);
+        if($verifiedToken === null){
             return "";
         }
         else{
-            $parser = new Parser(new JoseEncoder());
-            $token = $parser->parse($token);
-            return $token->claims()->get('username');
+            return $verifiedToken->claims()->get('username');
         }
     }
 
