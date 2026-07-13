@@ -32,7 +32,7 @@ function parseImages(){
 function ImgUpload(){
     $(".galleryUpload").on("change", function (){
         checkFileType($(this), "image/gif image/jpeg image/png image/svg+xml image/webp");
-        checkFileSize($(this), 1000000);
+        checkFileSize($(this), 2000000);
         let uploadEl = $(".uploads");
         for(const i of $(this)[0].files){
             let galleryReader = new FileReader();

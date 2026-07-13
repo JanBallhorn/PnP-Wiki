@@ -56,9 +56,12 @@ body{
     display: flex;
     flex-direction: column;
 }
-a{
+a, a > strong{
     color: var(--link);
     text-decoration: none;
+}
+a.createNewArticle, a.createNewArticle > strong{
+    color: var(--error);
 }
 .content a:not(.button, .category, .noUnderline, .article):hover, footer a:not(.button):hover{
     text-decoration: underline;
@@ -95,8 +98,8 @@ h6{
     font-weight: 600;
 }
 p{
-    margin: 0.3em 0;
-    line-height: 1.15em;
+    margin: 0.5em 0;
+    line-height: 1.35em;
 }
 .button{
     color: var(--txt);
@@ -151,6 +154,11 @@ main .button{
 }
 .hide{
     display: none;
+}
+h2.maintenance{
+    color: #ff0000;
+    border: none;
+    font-size: 2.5rem;
 }
 
 
@@ -565,6 +573,18 @@ button.openModal{
     top: 0.2rem;
     transform: none;
 }
+.newButtons{
+    display: flex;
+    justify-content: space-between;
+}
+.newButtons button{
+    width: calc(50% - 0.5rem);
+    font-size: 1.25rem;
+}
+button.newParagraph{
+    width: 100%;
+    font-size: 1.25rem;
+}
 
 
 /******************************************
@@ -747,7 +767,7 @@ nav ul.level2{
     border: 1px solid var(--txt);
     border-left: 0.35em solid var(--txt);
     min-width: 10em;
-    width: fit-content;
+    width: 100%;
     z-index: 100;
     box-shadow: 0.35em 0 0.75em -0.25em var(--shadow);
 }
@@ -809,6 +829,13 @@ LISTS
     border: 1px solid var(--txt);
     border-radius: 0.3rem;
     margin-bottom: 0.5rem;
+}
+.content ul li.emptyArticle > a{
+    border-color: var(--error);
+}
+.content ul li.emptyArticle > a h3:after{
+    content: " (leerer Artikel)";
+    color: var(--error);
 }
 .content ul li a.privateProject{
     pointer-events: none;
@@ -879,11 +906,14 @@ LISTS
 .articleList > ul, .searchResults > ul{
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 .articleList > ul > li, .searchResults > ul > li{
-    width: calc((100% - 1rem) / 2);
+    width: calc((100% - 2rem) / 3);
     margin-bottom: 1rem;
+}
+.articleList > ul > li:not(:nth-child(3n)), .searchResults > ul > li:not(:nth-child(3n)){
+    margin-right: 1rem;
 }
 .articleList > ul > li a, .searchResults > ul > li a{
     margin-bottom: 0;
@@ -893,16 +923,22 @@ LISTS
 /******************************************
 ARTICLES
 ******************************************/
-.articleEdit{
+.editButtons{
     position: absolute;
     right: 1.25rem;
     top: 1rem;
-    font-size: 1.5rem;
 }
-.articleEdit a{
+.editButtons a{
     margin-left: 0.25rem;
 }
-.articleEdit a:hover i{
+.editButtons .button{
+    margin-top: 0;
+    display: inline-block;
+}
+.editButtons a i{
+    font-size: 1.5rem;
+}
+.editButtons a:hover i{
     transition: 0.3s;
     color: var(--link);
 }
@@ -1043,6 +1079,13 @@ ARTICLES
     border-radius: 3px;
     color: transparent;
 }
+.spoiler:not(.shown){
+    user-select: none;
+}
+.spoiler:not(.shown) a{
+    pointer-events: none;
+    color: transparent;
+}
 .mainArticleContent .spoiler.shown{
     background-color: var(--body-bg);
     color: var(--txt);
@@ -1076,6 +1119,9 @@ ARTICLES
 .mainArticleContent .contentText h4{
     margin-top: 0.75rem;
     margin-bottom: 0.25rem;
+}
+.mainArticleContent .contentText strong{
+    font-weight: 900;
 }
 
 /******************************************

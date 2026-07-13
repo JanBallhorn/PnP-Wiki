@@ -11,7 +11,7 @@
 {% block mainContent %}
     {% if loggedIn %}
         {% if article.editable or wikiUser.id == article.lastEditBy.username %}
-            <div class="articleEdit">
+            <div class="editButtons">
                 <a href="/article/editParagraphs?id={{ article.id }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
                 <a href="/article/editInfo?id={{ article.id }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
                 <a href="/article/edit?id={{ article.id }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
@@ -29,7 +29,7 @@
                     <label class="button">
                         <i class="fa-solid fa-upload"></i>Bild-Upload
                         <input type="file" name="gallery" class="galleryUpload" multiple accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
-                        <span class="info">Die Dateien müssen eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und dürfen jeweils maximal 1 MB groß sein.</span>
+                        <span class="info">Die Dateien müssen eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und dürfen jeweils maximal 2 MB groß sein.</span>
                         <span class="errorContainer">
                             <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Diese Dateien sind zu groß.</span>
                             <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
@@ -72,7 +72,7 @@
                                                     <span class="maxLength">300</span>
                                                 </label>
                                                 <label>
-                                                    <textarea name="rowInfo{{ i }}[]" class="withModal" maxlength="1000" value="{{ infoContent.content }}">{{ infoContent.content }}</textarea>
+                                                    <textarea name="rowInfo{{ i }}[]" class="withModal" maxlength="1000" value="{{ infoContent.content }}" autocomplete="off">{{ infoContent.content }}</textarea>
                                                     <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                     <span class="maxLength">1000</span>
                                                 </label>

@@ -58,7 +58,7 @@ class SearchController extends Controller
                     $authorizedIds = array();
                     $authorized = $articles->current()->getAuthorized();
                     $authorized->rewind();
-                    for($i = 0; $i < $authorized->count(); $i++){
+                    for($j = 0; $j < $authorized->count(); $j++){
                         $authorizedIds[] = $authorized->current()->getId();
                         $authorized->next();
                     }

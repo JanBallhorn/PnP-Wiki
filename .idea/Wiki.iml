@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/root/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/root/src" isTestSource="false" packagePrefix="App" />
       <excludeFolder url="file://$MODULE_DIR$/root/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/root/vendor/lcobucci/jwt" />
       <excludeFolder url="file://$MODULE_DIR$/root/vendor/myclabs/deep-copy" />

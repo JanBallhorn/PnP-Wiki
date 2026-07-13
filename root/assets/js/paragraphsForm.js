@@ -86,7 +86,7 @@ function newGallery(){
 function singleImgUpload(){
     $(".imgUpload").on("change", function (){
         checkFileType($(this), "image/gif image/jpeg image/png image/svg+xml image/webp");
-        checkFileSize($(this), 1000000);
+        checkFileSize($(this), 2000000);
         let paragraphNum = $(this).closest('.paragraph').attr("data-position");
         let contentNum = $(this).closest('.text').attr("data-position");
         let uploadEl = $(this).parent().siblings(".upload");
@@ -106,7 +106,7 @@ function singleImgUpload(){
 function galleryImgUpload(){
     $(".galleryUpload").on("change", function (){
         checkFileType($(this), "image/gif image/jpeg image/png image/svg+xml image/webp");
-        checkFileSize($(this), 1000000);
+        checkFileSize($(this), 2000000);
         let paragraphNum = $(this).closest('.paragraph').attr("data-position");
         let contentNum = $(this).closest('.gallery').attr("data-position");
         let uploadEl = $(this).parent().siblings();
