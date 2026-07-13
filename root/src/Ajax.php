@@ -30,6 +30,16 @@ class Ajax
 
     function checkDuplicate(string $field, string $value, string $table): bool
     {
+        $allowedFieldsByTable = [
+            'categories' => ['name'],
+            'projects' => ['name'],
+            'articles' => ['headline'],
+            'article_alt_headline' => ['headline'],
+            'users' => ['email', 'username'],
+        ];
+        if(!isset($allowedFieldsByTable[$table]) || !in_array($field, $allowedFieldsByTable[$table], true)){
+            return false;
+        }
         $query = "SELECT COUNT(`$field`) FROM `$table` WHERE `$field` = ?";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("s", $value);
