@@ -4,3 +4,7 @@ externalImages/*
 imprint.twig
 privacy.twig
 .idea
+composer.phar
+root/vendor/
+root/phpunit.phar
+root/.phpunit.result.cache
