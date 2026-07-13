@@ -26,7 +26,7 @@
         <div class="articleList">
             <ul>
                 {% for article in articles.__serialize %}
-                    <li>
+                    <li {% if article.empty %}class="emptyArticle"{% endif %}>
                         <a href="/article?id={{ article.id }}" class="article">
                             <h3>{{ article.headline }}</h3>
                             <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
@@ -35,7 +35,7 @@
                 {% endfor %}
             </ul>
         </div>
-        {% if pages > 2 %}
+        {% if pages >= 2 %}
             <div class="pagination">
                 <button class="page first" value="1" type="button" form="articleFilter" {% if page == 1 %}disabled{% endif %}><i class="fa-solid fa-backward-fast"></i></button>
                 <button class="page prev" value="{{ page - 1 }}" type="button" form="articleFilter" {% if page == 1 %}disabled{% endif %}><i class="fa-solid fa-backward-step"></i></button>

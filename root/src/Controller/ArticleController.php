@@ -65,11 +65,12 @@ class ArticleController extends Controller
      * @throws LoaderError
      * @throws Exception
      */
-    public function create(): void
+    public function create(array $articleName = ['name' => '']): void
     {
         $projects = $this->getNonPrivate($this->projectRepository->findAll('name'));
         $categories = $this->categoryRepository->findAll('name');
-        $this->render('createArticle.twig', ['projects' => $projects->__serialize(), 'categories' => $categories->__serialize()]);
+        $headline = $articleName['name'];
+        $this->render('createArticle.twig', ['projects' => $projects->__serialize(), 'categories' => $categories->__serialize(), 'headline' => $headline]);
     }
 
     /**
@@ -110,7 +111,7 @@ class ArticleController extends Controller
         }
         if($sameHeadline === null && !empty($article['project']) && isset($article['category'])){
             $converted = $this->convertFormData($article);
-            $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $converted['project'], $converted['categories'], $converted['tags'], $altHeadlines, $converted['private'], $converted['authorized'], isset($article['editable']), 0);
+            $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $converted['project'], $converted['categories'], $converted['tags'], $altHeadlines, $converted['private'], $converted['authorized'], isset($article['editable']), 0, true);
             $this->articleRepository->save($article);
             $articleId = $this->articleRepository->findOneBy('headline', $article->getHeadline())->getId();
             header("Location: /article?" . http_build_query(['id' => $articleId]));
@@ -303,7 +304,7 @@ class ArticleController extends Controller
                 $imgData = base64_decode(str_replace(' ', '+', substr($image, strpos($image, ",")+1)));
                 $fileExtension = explode('/', mime_content_type($image))[1];
                 $fileSize = strlen($imgData);
-                $uploader = new FileUpload(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name'] . '/', str_replace('/', '-', $element . '-' . $i) . '.' . $fileExtension, ['svg', 'jpeg', 'png', 'webp', 'gif'], 1000000, []);
+                $uploader = new FileUpload(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name'] . '/', str_replace('/', '-', $element . '-' . $i) . '.' . $fileExtension, ['svg', 'jpeg', 'png', 'webp', 'gif'], 2000000, []);
                 $uploader->setFileSize($fileSize);
                 $uploader->setTmpFile($imgData);
                 $upload = $this->prepareUpload($uploader);
@@ -321,6 +322,10 @@ class ArticleController extends Controller
             fclose($file);
         }
         $article = $this->articleRepository->findOneBy('headline', $articleData['name']);
+        if($article->getEmpty()){
+            $article->setEmpty(false);
+            $this->articleRepository->save($article);
+        }
         $oldParagraphs = $this->paragraphRepository->findBy('article', $article->getId(), 'sequence');
         if($oldParagraphs !== null){
             $oldIntroduction = $oldParagraphs->offsetGet(0);
@@ -410,6 +415,21 @@ class ArticleController extends Controller
                         }
                         elseif($i === 4 * $j + 3){
                             $replace = "</span>";
+                            $j++;
+                        }
+                        array_splice($value, $i, 0, $replace);
+                        $i++;
+                    }
+                    $value = implode("", $value);
+                    $value = explode("??", $value);
+                    $j = 0;
+                    for ($i = 1; $i <= count($value); $i++){
+                        $replace = "";
+                        if($i === 4 * $j + 1 && $i !== count($value)){
+                            $replace = "<a class='createNewArticle' href='https://wiki.verplant-durch-aventurien.de/article/create?name=" . urlencode($value[$i]) . "' target='_blank'>";
+                        }
+                        elseif($i === 4 * $j + 3){
+                            $replace = "</a>";
                             $j++;
                         }
                         array_splice($value, $i, 0, $replace);
@@ -535,7 +555,7 @@ class ArticleController extends Controller
             $imgData = base64_decode(str_replace(' ', '+', substr($img, strpos($img, ",")+1)));
             $fileExtension = explode('/', mime_content_type($img))[1];
             $fileSize = strlen($imgData);
-            $uploader = new FileUpload(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'] . '/', str_replace('/', '-', $i) . '.' . $fileExtension, ['svg', 'jpeg', 'png', 'webp', 'gif'], 1000000, []);
+            $uploader = new FileUpload(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'] . '/', str_replace('/', '-', $i) . '.' . $fileExtension, ['svg', 'jpeg', 'png', 'webp', 'gif'], 2000000, []);
             $uploader->setFileSize($fileSize);
             $uploader->setTmpFile($imgData);
             $upload = $this->prepareUpload($uploader);
@@ -550,6 +570,10 @@ class ArticleController extends Controller
             fclose($file);
         }
         $article = $this->articleRepository->findOneBy('headline', $info['name']);
+        if($article->getEmpty()){
+            $article->setEmpty(false);
+            $this->articleRepository->save($article);
+        }
         $sameInfo = $this->articleInfoRepository->findOneBy('article', $article->getId());
         $infoContents = new ArticleInfoContentCollection();
         $infoGallery = new ArticleInfoGalleryCollection();
@@ -616,7 +640,7 @@ class ArticleController extends Controller
         if($user !== null){
             $articles = $this->articleRepository->findAllBetween(($page - 1) * 50, 50, $user->getId(), $filter);
             $articleNum = $this->articleRepository->getNumberOfArticles($user->getId());
-            $pages = ceil($articleNum / 50);
+            $pages = (int)ceil($articleNum / 50);
         }
         else{
             $articles = null;

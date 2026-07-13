@@ -82,6 +82,6 @@ class Router{
     private function needParams(object $controller, string $method): bool{
         $controller = new ReflectionClass($controller);
         $method = $controller->getMethod($method);
-        return $method->getNumberOfParameters() > 0;
+        return $method->getNumberOfRequiredParameters() > 0;
     }
 }

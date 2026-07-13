@@ -5,6 +5,7 @@
 {% block mainContent %}
     <h1>Willkommen im Pen and Paper Wiki!</h1>
     <p>Hier findest du alles rund um die Welt des Pen and Paper-Systems DSA. Navigiere in einzelne Projekte, um in ihnen explizit nach Inhalten zu suchen. Wenn du dich registrierst und anmeldest kannst du auch selber Artikel erstellen oder öffentliche Artikel bearbeiten.</p>
+    {#<h2 class="maintenance">Ich arbeite gerade an der Seite, also bitte gerade nichts bearbeiten und nicht über potentielle Fehler wundern.</h2>#}
     {% if loggedIn %}
         <div class="flex-50">
             <div class="popularProjects">
@@ -12,7 +13,7 @@
                 <ul>
                     {% for project in projects.__serialize %}
                         <li>
-                            <a class="noUnderline" href="/project/detail?id={{ project.id }}">
+                            <a class="noUnderline" href="/project/detail?id={{ project.id }}&filter=called&page=1">
                                 <h3>{{ project.name }}</h3>
                                 <p>Erstellt am {{ project.published|date("d.m.Y - H:i:s") }} von {{ project.createdBy.username }}</p>
                             </a>
@@ -26,7 +27,7 @@
                 <ul>
                     {% for category in categories.__serialize %}
                         <li>
-                            <a class="noUnderline" href="/category/detail?id={{ category.id }}">
+                            <a class="noUnderline" href="/category/detail?id={{ category.id }}&filter=called&page=1">
                                 <h3>{{ category.name }}</h3>
                                 <p>Erstellt am {{ category.published|date("d.m.Y - H:i:s") }} von {{ category.createdBy.username }}</p>
                             </a>
@@ -39,7 +40,7 @@
                 <h2>Beliebte Artikel</h2>
                 <ul>
                     {% for article in popularArticles.__serialize %}
-                        <li>
+                        <li {% if article.empty %}class="emptyArticle"{% endif %}>
                             <a class="noUnderline" href="/article?id={{ article.id }}">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
@@ -53,7 +54,7 @@
                 <h2>Neue Artikel</h2>
                 <ul>
                     {% for article in newArticles.__serialize %}
-                        <li>
+                        <li {% if article.empty %}class="emptyArticle"{% endif %}>
                             <a class="noUnderline" href="/article?id={{ article.id }}">
                                 <h3>{{ article.headline }}</h3>
                                 <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>

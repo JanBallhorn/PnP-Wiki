@@ -30,6 +30,7 @@ class Article
     private ?UserCollection $authorized;
     private bool $editable;
     private int $called;
+    private bool $empty;
 
     /**
      * @param int $id
@@ -46,8 +47,9 @@ class Article
      * @param UserCollection|null $authorized
      * @param bool $editable
      * @param int $called
+     * @param bool $empty
      */
-    public function __construct(int $id, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $headline, Project $project, ?CategoryCollection $categories, ?array $tags, ?array $altHeadlines, bool $private, ?UserCollection $authorized, bool $editable, int $called)
+    public function __construct(int $id, DateTime $published, User $createdBy, DateTime $lastEdit, User $lastEditBy, string $headline, Project $project, ?CategoryCollection $categories, ?array $tags, ?array $altHeadlines, bool $private, ?UserCollection $authorized, bool $editable, int $called, bool $empty)
     {
         $this->id = $id;
         $this->published = $published;
@@ -63,6 +65,7 @@ class Article
         $this->authorized = $authorized;
         $this->editable = $editable;
         $this->called = $called;
+        $this->empty = $empty;
     }
 
     /**
@@ -288,6 +291,22 @@ class Article
     public function setCalled(int $called): void
     {
         $this->called = $called;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getEmpty(): bool
+    {
+        return $this->empty;
+    }
+
+    /**
+     * @param bool $empty
+     */
+    public function setEmpty(bool $empty): void
+    {
+        $this->empty = $empty;
     }
 
     /**

@@ -25,7 +25,7 @@
                 {% else %}
                     <ul>
                         {% for article in articles.__serialize %}
-                            <li>
+                            <li {% if article.empty %}class="emptyArticle"{% endif %}>
                                 <a href="/article?id={{ article.id }}" class="article">
                                     <h3>{{ article.headline }}</h3>
                                     <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>

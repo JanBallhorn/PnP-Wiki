@@ -46,6 +46,14 @@ abstract class Controller
             return str_replace("</span>", "||", $string);
         });
         $twig->addFunction($function);
+        $function = new TwigFunction('replaceNewArticleLink', function($string){
+            preg_match_all("|<a class='createNewArticle'[^<]*</a>|", $string, $matches);
+            foreach ($matches[0] as $match) {
+                $string = str_replace($match, '??' . strip_tags($match) . '??', $string);
+            }
+            return $string;
+        });
+        $twig->addFunction($function);
         $function = new TwigFunction('getContentHeadlines', function($string){
             $headlines = array();
             preg_match_all('|<h[3-4]\\sid="headline[0-9-]*">.*</h[3-4]>|', $string, $matches);

@@ -35,7 +35,7 @@
 {% block mainContent %}
     {% if loggedIn %}
         {% if article.editable or wikiUser.id == article.lastEditBy.username %}
-            <div class="articleEdit">
+            <div class="editButtons">
                 <a href="/article/editParagraphs?id={{ article.id }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
                 <a href="/article/editInfo?id={{ article.id }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
                 <a href="/article/edit?id={{ article.id }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
@@ -60,7 +60,7 @@
                                                     <label class="button">
                                                         <i class="fa-solid fa-upload"></i>Bild-Upload
                                                         <input type="file" name="p{{ paragraph.sequence }}c{{ content.sequence }}gallery" class="galleryUpload" multiple accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
-                                                        <span class="info">Die Dateien müssen eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und dürfen jeweils maximal 1 MB groß sein.</span>
+                                                        <span class="info">Die Dateien müssen eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und dürfen jeweils maximal 2 MB groß sein.</span>
                                                         <span class="errorContainer">
                                                             <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Die Datei ist zu groß.</span>
                                                             <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
@@ -88,12 +88,12 @@
                                             <div class="contentElement text" data-position="{{ content.sequence }}">
                                                 <div>
                                                     <label>Inhalt
-                                                        <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ replaceSpoiler(content.text) }}</textarea>
+                                                        <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ replaceNewArticleLink(replaceSpoiler(content.text)) }}</textarea>
                                                     </label>
                                                     <label class="button">
                                                         <i class="fa-solid fa-upload"></i>Bild-Upload
                                                         <input type="file" name="Img{{ content.sequence }}" class="imgUpload" accept=".gif, .jpg, .jpeg, .png, .svg, .webp">
-                                                        <span class="info">Die Datei muss eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und darf maximal 1 MB groß sein.</span>
+                                                        <span class="info">Die Datei muss eine .gif, .jpg, .jpeg, .png, .svg oder .webp Datei sein und darf maximal 2 MB groß sein.</span>
                                                         <span class="errorContainer">
                                                             <span class="error fileSize {% if errorFileSize != true %}hide{% endif %}">Die Datei ist zu groß.</span>
                                                             <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
@@ -130,7 +130,7 @@
                                 <div class="contentElement" data-position="1">
                                     <div>
                                         <label>Inhalt
-                                            <textarea name="p1c1text" class="tinymce">{{ replaceSpoiler(paragraph.contents.__serialize[0].text) }}</textarea>
+                                            <textarea name="p1c1text" class="tinymce">{{ replaceNewArticleLink(replaceSpoiler(paragraph.contents.__serialize[0].text)) }}</textarea>
                                         </label>
                                     </div>
                                 </div>
@@ -228,4 +228,18 @@
     {% else %}
         {{ _self.notLoggedIn() }}
     {% endif %}
+{% endblock %}
+
+{% block asideRight %}
+    <p>Umschließe einen Abschnitt oder ein Wort wie folgt:</p>
+    <ul>
+        <li>
+            <p>||abc||</p>
+            <p>Um einen Spoiler zu verbergen</p>
+        </li>
+        <li>
+            <p>??abc??</p>
+            <p>Um zu signalisieren, dass es hierfür noch keinen Artikel gibt, aber einer gewünscht ist.</p>
+        </li>
+    </ul>
 {% endblock %}
