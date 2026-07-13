@@ -77,26 +77,16 @@ class ArticleRepository extends Repository implements RepositoryInterface
                     OFFSET $start"
             ;
         } elseif (isset($projectFilter)) {
-            $projects = new ProjectCollection();
-            $projectIds = array();
-            $projects->rewind();
-            $projects->offsetSet(0, $projectFilter);
-            $projects->next();
-            $projects = $this->findAllChildProjects($projectFilter, $projects);
-            $projects->rewind();
-            for($i = 0; $i < count($projects); $i++){
-                $projectIds[] = $projects->current()->getId();
-                $projects->next();
-            }
+            $projectIds = $this->getProjectIdsWithChildren($projectFilter);
             $query =
-                "SELECT  DISTINCT `$this->table`.id 
-                FROM `$this->table` 
-                LEFT JOIN article_authorized 
-                    ON `$this->table`.id = article_authorized.article 
+                "SELECT  DISTINCT `$this->table`.id
+                FROM `$this->table`
+                LEFT JOIN article_authorized
+                    ON `$this->table`.id = article_authorized.article
                 WHERE (private = 0 OR (private = 1 AND article_authorized.user = $userId))
                     AND `$this->table`.project IN (" . implode(',', $projectIds) . ")
-                ORDER BY $order 
-                LIMIT $limit 
+                ORDER BY $order
+                LIMIT $limit
                     OFFSET $start"
             ;
         } else {
@@ -122,19 +112,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
      */
     public function search(string $search, Category $category = null, Project $project = null): ArticleCollection
     {
-        $projects = new ProjectCollection();
-        $projectIds = array();
-        if($project !== null){
-            $projects->rewind();
-            $projects->offsetSet(0, $project);
-            $projects->next();
-            $projects = $this->findAllChildProjects($project, $projects);
-            $projects->rewind();
-            for($i = 0; $i < count($projects); $i++){
-                $projectIds[] = $projects->current()->getId();
-                $projects->next();
-            }
-        }
+        $projectIds = $project !== null ? $this->getProjectIdsWithChildren($project) : array();
         $articles = new ArticleCollection();
         $articles->rewind();
         $article= $this->findOneBy('headline', $search);
@@ -271,22 +249,12 @@ class ArticleRepository extends Repository implements RepositoryInterface
                     AND `article_categories`.`category` = ".$categoryFilter->getId()
             ;
         } elseif (isset($projectFilter)) {
-            $projects = new ProjectCollection();
-            $projectIds = array();
-            $projects->rewind();
-            $projects->offsetSet(0, $projectFilter);
-            $projects->next();
-            $projects = $this->findAllChildProjects($projectFilter, $projects);
-            $projects->rewind();
-            for($i = 0; $i < count($projects); $i++){
-                $projectIds[] = $projects->current()->getId();
-                $projects->next();
-            }
+            $projectIds = $this->getProjectIdsWithChildren($projectFilter);
             $query =
-                "SELECT COUNT(articles.id) as num 
-                FROM articles 
-                LEFT JOIN article_authorized 
-                    ON articles.id = article_authorized.article 
+                "SELECT COUNT(articles.id) as num
+                FROM articles
+                LEFT JOIN article_authorized
+                    ON articles.id = article_authorized.article
                 WHERE (private = 0 OR (private = 1 AND article_authorized.user = $userId))
                     AND `$this->table`.project IN (" . implode(',', $projectIds) . ")"
             ;
@@ -581,5 +549,24 @@ class ArticleRepository extends Repository implements RepositoryInterface
             }
         }
         return $projects;
+    }
+
+    /**
+     * @return int[]
+     */
+    private function getProjectIdsWithChildren(Project $project): array
+    {
+        $projects = new ProjectCollection();
+        $projects->rewind();
+        $projects->offsetSet(0, $project);
+        $projects->next();
+        $projects = $this->findAllChildProjects($project, $projects);
+        $projects->rewind();
+        $projectIds = array();
+        for($i = 0; $i < count($projects); $i++){
+            $projectIds[] = $projects->current()->getId();
+            $projects->next();
+        }
+        return $projectIds;
     }
 }
