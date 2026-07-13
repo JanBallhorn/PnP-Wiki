@@ -4,12 +4,14 @@
 
 {% block mainContent %}
     {% if loggedIn %}
+        <div class="editButtons">
+            <a class="button" href="/category/create">Neue Kategorie anlegen</a>
+        </div>
         <h1>Kategorien</h1>
         <p>Hier sind alle Kategorien nach welchen Artikel kategorisiert werden können.</p>
-        <a class="button" href="/category/create">Neue Kategorie anlegen</a>
         <div class="categories flex-20">
             {% for category in categories %}
-                <a class="category" href="/category/detail?id={{ category.id }}">
+                <a class="category" href="/category/detail?id={{ category.id }}&filter=called&page=1">
                     <img src="{{ category.icon }}" alt="{{ category.name }}">
                     <h3>{{ category.name }}</h3>
                 </a>

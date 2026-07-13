@@ -24,7 +24,7 @@
     {% endfor %}
     {% if loggedIn and (article.private == false or wikiUser.id in authorizedIds) %}
         {% if article.editable or wikiUser.id == article.lastEditBy.id %}
-            <div class="articleEdit">
+            <div class="editButtons">
                 <a href="/article/editParagraphs?id={{ article.id }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
                 <a href="/article/editInfo?id={{ article.id }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
                 <a href="/article/edit?id={{ article.id }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
@@ -65,7 +65,7 @@
                                                             <a href="{{ encodeImg(image.img) }}" data-lightbox="articleInfo" data-title="{{ image.figcaption }}">
                                                                 <img src="{{ encodeImg(image.img) }}" alt="{{ image.figcaption }}">
                                                             </a>
-                                                            <figcaption>{{ image.figcaption }}</figcaption>
+                                                            <figcaption>{{ image.figcaption|raw }}</figcaption>
                                                         </figure>
                                                     {% endfor %}
                                                 </div>
@@ -208,11 +208,11 @@
     {% if loggedIn %}
         <ul>
             <li><b>Aufrufe:</b>{{ article.called }}</li>
-            <li><b>Projekt:</b><a href="/project/detail?id={{ article.project.id }}">{{ article.project.name }}</a></li>
+            <li><b>Projekt:</b><a href="/project/detail?id={{ article.project.id }}&filter=called&page=1">{{ article.project.name }}</a></li>
             <li><b>Kategorien:</b>
                 <ul>
                     {% for category in article.categories.__serialize %}
-                        <li><a href="/category/detail?id={{ category.id }}">{{ category.name }}</a></li>
+                        <li><a href="/category/detail?id={{ category.id }}&filter=called&page=1">{{ category.name }}</a></li>
                     {% endfor %}
                 </ul>
             </li>

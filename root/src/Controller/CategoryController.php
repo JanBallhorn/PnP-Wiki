@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\FileUpload;
 use App\Model\Category;
+use App\Repository\ArticleRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\UserRepository;
 use DateMalformedStringException;
@@ -19,7 +20,8 @@ class CategoryController extends Controller
 
     public function __construct(
         private readonly CategoryRepository $categoryRepository = new CategoryRepository(),
-        private readonly UserRepository $userRepository = new UserRepository()
+        private readonly UserRepository $userRepository = new UserRepository(),
+        private readonly ArticleRepository $articleRepository = new ArticleRepository()
     ){}
 
     /**
@@ -97,12 +99,35 @@ class CategoryController extends Controller
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError|DateMalformedStringException
+     * @throws Exception
      */
-    public function detail(array $category): void
+    public function detail(array $categoryData): void
     {
-        $category = $this->categoryRepository->findById($category['id']);
-        $this->render('categoryDetail.twig', ['category' => $category]);
-
+        $category = $this->categoryRepository->findById($categoryData['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        $page = $categoryData['page'];
+        $filter = $categoryData['filter'];
+        if($filter === 'headline_down'){
+            $filter = 'headline DESC';
+        }
+        elseif($filter === 'published_new'){
+            $filter = 'published DESC';
+        }
+        elseif($filter === 'called'){
+            $filter = 'called DESC';
+        }
+        if($user !== null){
+            $articles = $this->articleRepository->findAllBetween(($page - 1) * 50, 50, $user->getId(), $filter, $category);
+            $articleNum = $this->articleRepository->getNumberOfArticles($user->getId(), $category);
+            $pages = (int)ceil($articleNum / 50);
+        }
+        else{
+            $articles = null;
+            $pages = null;
+        }
+        $filter = $categoryData['filter'];
+        $this->render('categoryDetail.twig', ['category' => $category, 'articles' => $articles, 'filter' => $filter, 'page' => $page, 'pages' => $pages]);
     }
 
     /**

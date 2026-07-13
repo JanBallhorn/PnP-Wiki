@@ -94,14 +94,37 @@ class ProjectController extends Controller
     /**
      * @throws Exception
      */
-    public function detail(array $project): void
+    public function detail(array $projectData): void
     {
-        $error = false;
-        if(isset($project['error'])){
-            $error = $project['error'];
+        $project = $this->projectRepository->findById($projectData['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        $page = $projectData['page'];
+        $filter = $projectData['filter'];
+        if($filter === 'headline_down'){
+            $filter = 'headline DESC';
         }
-        $project = $this->projectRepository->findById($project['id']);
-        $this->render("projectDetail.twig", ['project' => $project, 'deleteError' => $error]);
+        elseif($filter === 'published_new'){
+            $filter = 'published DESC';
+        }
+        elseif($filter === 'called'){
+            $filter = 'called DESC';
+        }
+        if($user !== null){
+            $articles = $this->articleRepository->findAllBetween(($page - 1) * 50, 50, $user->getId(), $filter, null, $project);
+            $articleNum = $this->articleRepository->getNumberOfArticles($user->getId(), null, $project);
+            $pages = (int)ceil($articleNum / 50);
+        }
+        else{
+            $articles = null;
+            $pages = null;
+        }
+        $filter = $projectData['filter'];
+        $error = false;
+        if(isset($projectData['error'])){
+            $error = $projectData['error'];
+        }
+        $this->render("projectDetail.twig", ['project' => $project, 'deleteError' => $error, 'articles' => $articles, 'filter' => $filter, 'page' => $page, 'pages' => $pages]);
     }
 
     /**
@@ -199,7 +222,7 @@ class ProjectController extends Controller
                     }
                 }
             }
-            header("Location: /project/detail?" . http_build_query(['name'=>$project->getName()]));
+            header("Location: /project/detail?" . http_build_query(['id' => $project->getid(), 'filter' => 'called', 'page' => 1]));
         }
         else{
             $projects = $this->projectRepository->findAll();
@@ -218,7 +241,7 @@ class ProjectController extends Controller
             header("Location: /project");
         }
         else{
-            header("Location: /project/detail?" . http_build_query(['id'=>$project->getId(), 'error'=>true]));
+            header("Location: /project/detail?" . http_build_query(['id'=>$project->getId(), 'error'=>true, 'filter' => 'called', 'page' => 1]));
         }
     }
 }

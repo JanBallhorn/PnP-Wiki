@@ -8,7 +8,7 @@
     {% endfor %}
     <li>
         <div class="project-link">
-            <a class="{% if project.private and wikiUser.id not in authorizedIds %}privateProject{% endif %} noUnderline" href="/project/detail?id={{ project.id }}">
+            <a class="{% if project.private and wikiUser.id not in authorizedIds %}privateProject{% endif %} noUnderline" href="/project/detail?id={{ project.id }}&filter=called&page=1">
                 {{ project.name }}
                 {% if project.private and wikiUser.id not in authorizedIds %}
                     <span>Privates Projekt von
@@ -48,8 +48,11 @@
 
 {% block mainContent %}
     {% if loggedIn %}
+        <div class="editButtons">
+            <a class="button" href="/project/create">Neues Projekt anlegen</a>
+        </div>
         <h1>Projekte</h1>
-        <p>Hier findest du alle Projekte und Subprojekte, in denen du nach Artikeln suchen kannst.</p><a class="button" href="/project/create">Neues Projekt anlegen</a>
+        <p>Hier findest du alle Projekte und Subprojekte, in denen du nach Artikeln suchen kannst.</p>
         <ul class="level1">
         {% for project in mainProjects %}
                 {{ recursiveProject(project, wikiUser) }}

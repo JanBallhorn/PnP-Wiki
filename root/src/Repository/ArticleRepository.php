@@ -59,10 +59,58 @@ class ArticleRepository extends Repository implements RepositoryInterface
     /**
      * @throws Exception
      */
-    public function findAllBetween(int $start, int $limit, int $userId, string $order = 'articles.id'): ?ArticleCollection
+    public function findAllBetween(int $start, int $limit, int $userId, string $order = 'articles.id', ?Category $categoryFilter = null, ?Project $projectFilter = null): ?ArticleCollection
     {
         //$query = "WITH T AS (SELECT *, (ROW_NUMBER() OVER (ORDER BY $order)) AS RN FROM `$this->table` WHERE private = 0 OR (private = 1 AND last_edit_by = $userId)) SELECT * FROM T WHERE RN BETWEEN $start AND $end";
-        $query = "SELECT  DISTINCT `$this->table`.id FROM `$this->table` LEFT JOIN article_authorized ON `$this->table`.id = article_authorized.article WHERE private = 0 OR (private = 1 AND article_authorized.user = $userId) ORDER BY $order LIMIT $limit OFFSET $start";
+        if (isset($categoryFilter)) {
+            $query =
+                "SELECT  DISTINCT `$this->table`.id 
+                FROM `$this->table` 
+                INNER JOIN `article_categories` 
+                    ON `$this->table`.id = `article_categories`.`article`
+                LEFT JOIN article_authorized 
+                    ON `$this->table`.id = article_authorized.article 
+                WHERE (private = 0 OR (private = 1 AND article_authorized.user = $userId))
+                    AND `article_categories`.`category` =". $categoryFilter->getId() .
+                " ORDER BY $order 
+                LIMIT $limit 
+                    OFFSET $start"
+            ;
+        } elseif (isset($projectFilter)) {
+            $projects = new ProjectCollection();
+            $projectIds = array();
+            $projects->rewind();
+            $projects->offsetSet(0, $projectFilter);
+            $projects->next();
+            $projects = $this->findAllChildProjects($projectFilter, $projects);
+            $projects->rewind();
+            for($i = 0; $i < count($projects); $i++){
+                $projectIds[] = $projects->current()->getId();
+                $projects->next();
+            }
+            $query =
+                "SELECT  DISTINCT `$this->table`.id 
+                FROM `$this->table` 
+                LEFT JOIN article_authorized 
+                    ON `$this->table`.id = article_authorized.article 
+                WHERE (private = 0 OR (private = 1 AND article_authorized.user = $userId))
+                    AND `$this->table`.project IN (" . implode(',', $projectIds) . ")
+                ORDER BY $order 
+                LIMIT $limit 
+                    OFFSET $start"
+            ;
+        } else {
+            $query =
+                "SELECT  DISTINCT `$this->table`.id 
+                FROM `$this->table` 
+                LEFT JOIN article_authorized 
+                    ON `$this->table`.id = article_authorized.article 
+                WHERE private = 0 OR (private = 1 AND article_authorized.user = $userId) 
+                ORDER BY $order 
+                LIMIT $limit 
+                    OFFSET $start"
+            ;
+        }
         $articles = new ArticleCollection();
         $articles->rewind();
         $this->findArticlesById($articles, $query);
@@ -93,6 +141,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         if($article !== null){
             if($category !== null){
                 $categories = $article->getCategories();
+                $categories->rewind();
                 for($i = 1; $i <= $categories->count(); $i++){
                     if($categories->current()->getId() === $category->getId()){
                         $articles->offsetSet($articles->key(), $article);
@@ -109,9 +158,23 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $articles->next();
             }
         }
-        $query = "SELECT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline = '$search'";
+        $query =
+            "SELECT articles.id 
+            FROM articles 
+            INNER JOIN article_alt_headline 
+                ON article_alt_headline.article = articles.id 
+            WHERE article_alt_headline.headline = '$search'"
+        ;
         if($category !== null){
-            $query = "SELECT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id INNER JOIN article_categories ON articles.id = article_categories.article WHERE article_alt_headline.headline = '$search' AND category = " . $category->getId();
+            $query =
+                "SELECT articles.id 
+                FROM articles 
+                INNER JOIN article_alt_headline 
+                    ON article_alt_headline.article = articles.id 
+                INNER JOIN article_categories 
+                    ON articles.id = article_categories.article 
+                WHERE article_alt_headline.headline = '$search' AND category = " . $category->getId()
+            ;
         }
         elseif ($project !== null){
             $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
@@ -124,9 +187,23 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $articles->offsetSet($articles->key(), $article);
             $articles->next();
         }
-        $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article WHERE tag = '$search'";
+        $query =
+            "SELECT DISTINCT articles.id 
+            FROM articles 
+            INNER JOIN article_tags 
+                ON articles.id = article_tags.article 
+            WHERE tag = '$search'"
+        ;
         if($category !== null){
-            $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_tags ON articles.id = article_tags.article INNER JOIN article_categories ON articles.id = article_categories.article WHERE tag = '$search' AND category = " . $category->getId();
+            $query =
+                "SELECT DISTINCT articles.id 
+                FROM articles 
+                INNER JOIN article_tags 
+                    ON articles.id = article_tags.article 
+                INNER JOIN article_categories 
+                    ON articles.id = article_categories.article 
+                WHERE tag = '$search' AND category = " . $category->getId()
+            ;
         }
         elseif ($project !== null){
             $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
@@ -139,14 +216,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         elseif ($project !== null){
             $query .= " AND articles.project IN (" . implode(',', $projectIds) . ")";
         }
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $result = $stmt->get_result()->fetch_object();
-        if(!empty($result)){
-            $article = $this->findOneBy('id', $result->id);
-            $articles->offsetSet($articles->key(), $article);
-            $articles->next();
-        }
+        $this->findArticlesById($articles, $query);
         $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id WHERE article_alt_headline.headline LIKE '%$search%'";
         if($category !== null){
             $query = "SELECT DISTINCT articles.id FROM articles INNER JOIN article_alt_headline ON article_alt_headline.article = articles.id INNER JOIN article_categories ON articles.id = article_categories.article WHERE article_alt_headline.headline LIKE '%$search%' AND category = " . $category->getId();
@@ -183,8 +253,51 @@ class ArticleRepository extends Repository implements RepositoryInterface
         return $articles;
     }
 
-    public function getNumberOfArticles(int $userId): ?int{
-        $query = "SELECT COUNT(id) as num FROM articles WHERE private = 0 OR (private = 1 AND last_edit = '$userId')";
+    /**
+     * @throws Exception
+     */
+    public function getNumberOfArticles(int $userId, ?Category $categoryFilter = null, ?Project $projectFilter = null): ?int
+    {
+        if (isset($categoryFilter)) {
+            $query =
+                "SELECT COUNT(articles.id) as num 
+                FROM articles 
+                INNER JOIN `article_categories` 
+                ON `$this->table`.id = `article_categories`.`article`
+                LEFT JOIN article_authorized 
+                    ON articles.id = article_authorized.article 
+                WHERE (private = 0 OR (private = 1 AND article_authorized.user = $userId))
+                    AND `article_categories`.`category` = ".$categoryFilter->getId()
+            ;
+        } elseif (isset($projectFilter)) {
+            $projects = new ProjectCollection();
+            $projectIds = array();
+            $projects->rewind();
+            $projects->offsetSet(0, $projectFilter);
+            $projects->next();
+            $projects = $this->findAllChildProjects($projectFilter, $projects);
+            $projects->rewind();
+            for($i = 0; $i < count($projects); $i++){
+                $projectIds[] = $projects->current()->getId();
+                $projects->next();
+            }
+            $query =
+                "SELECT COUNT(articles.id) as num 
+                FROM articles 
+                LEFT JOIN article_authorized 
+                    ON articles.id = article_authorized.article 
+                WHERE (private = 0 OR (private = 1 AND article_authorized.user = $userId))
+                    AND `$this->table`.project IN (" . implode(',', $projectIds) . ")"
+            ;
+        } else {
+            $query =
+                "SELECT COUNT(articles.id) as num 
+                FROM articles 
+                LEFT JOIN article_authorized 
+                    ON articles.id = article_authorized.article 
+                WHERE private = 0 OR (private = 1 AND article_authorized.user = $userId)"
+            ;
+        }
         $stmt = $this->db->prepare($query);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_object();
@@ -217,6 +330,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $authorized = $entity->getAuthorized();
             $editable = $entity->getEditable() === true ? 1 : 0;
             $called = $entity->getCalled();
+            $empty = $entity->getEmpty() === true ? 1 : 0;
         }
         if($id === 0){
             $query = "INSERT INTO `$this->table` (created_by, last_edit_by, headline, project, private, editable) VALUES(?, ?, ?, ?, ?, ?)";
@@ -224,9 +338,9 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("iisiii", $createdBy, $lastEditBy, $headline, $project, $private, $editable);
         }
         else{
-            $query = "UPDATE `$this->table` SET `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `headline` = ?, `project` = ?, `private` = ?, `editable` = ?, `called` = ? WHERE `id` = ?";
+            $query = "UPDATE `$this->table` SET `published` = ?, `created_by` = ?, `last_edit` = ?, `last_edit_by` = ?, `headline` = ?, `project` = ?, `private` = ?, `editable` = ?, `called` = ?, `empty` = ? WHERE `id` = ?";
             $stmt = $this->db->prepare($query);
-            $stmt->bind_param("sisisiiiii", $published, $createdBy, $lastEdit, $lastEditBy, $headline, $project, $private, $editable, $called, $id);
+            $stmt->bind_param("sisisiiiiii", $published, $createdBy, $lastEdit, $lastEditBy, $headline, $project, $private, $editable, $called, $empty, $id);
         }
         $success = $stmt->execute();
         if($success){
@@ -312,7 +426,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         if ($result->num_rows > 0) {
             while ($article = $result->fetch_object()) {
                 $article = $this->convertDataTypes($article);
-                $article = new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->authorized, $article->editable, $article->called);
+                $article = new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->authorized, $article->editable, $article->called, $article->empty);
                 $articles->offsetSet($articles->key(), $article);
                 $articles->next();
             }
@@ -331,7 +445,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $article = $result->fetch_object();
         if(!empty($article)){
             $article = $this->convertDataTypes($article);
-            return new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->authorized, $article->editable, $article->called);
+            return new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->authorized, $article->editable, $article->called, $article->empty);
         }
         else{
             return null;
@@ -353,6 +467,7 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $article->private = $article->private === 1;
         $article->authorized =$this->findAuthorized($article->id);
         $article->editable = $article->editable === 1;
+        $article->empty = $article->empty === 1;
         return $article;
     }
 
