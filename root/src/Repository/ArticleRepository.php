@@ -5,7 +5,6 @@ namespace App\Repository;
 
 use App\Collection\ArticleCollection;
 use App\Collection\CategoryCollection;
-use App\Collection\ProjectCollection;
 use App\Collection\UserCollection;
 use App\Model\Article;
 use App\Model\Category;
@@ -18,6 +17,11 @@ use InvalidArgumentException;
 class ArticleRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'articles';
+
+    /**
+     * @var array<int, int[]>
+     */
+    private array $projectIdsWithChildrenCache = [];
 
     public function __construct()
     {
@@ -390,16 +394,13 @@ class ArticleRepository extends Repository implements RepositoryInterface
      */
     private function findCollection(false|\mysqli_stmt $stmt): ?ArticleCollection
     {
-        $articles = new ArticleCollection();
         $result = $stmt->get_result();
         if ($result->num_rows > 0) {
-            while ($article = $result->fetch_object()) {
-                $article = $this->convertDataTypes($article);
-                $article = new Article($article->id, $article->published, $article->created_by, $article->last_edit, $article->last_edit_by, $article->headline, $article->project, $article->categories, $article->tags, $article->altHeadlines, $article->private, $article->authorized, $article->editable, $article->called, $article->empty);
-                $articles->offsetSet($articles->key(), $article);
-                $articles->next();
+            $rows = [];
+            while ($row = $result->fetch_object()) {
+                $rows[] = $row;
             }
-            return $articles;
+            return $this->hydrateMany($rows);
         }
         else {
             return null;
@@ -515,6 +516,103 @@ class ArticleRepository extends Repository implements RepositoryInterface
     }
 
     /**
+     * Groups a join table's rows by article id in a single query, e.g.
+     * article_tags(article, tag) -> [articleId => [tag, tag, ...]]. Used to
+     * hydrate several articles at once without one query per article per
+     * related table.
+     * @param int[] $articleIds
+     * @return array<int, array<int, mixed>>
+     */
+    private function groupByArticle(string $table, array $articleIds, string $valueColumn): array
+    {
+        $grouped = [];
+        if(empty($articleIds)){
+            return $grouped;
+        }
+        $placeholders = implode(',', array_fill(0, count($articleIds), '?'));
+        $types = str_repeat('i', count($articleIds));
+        $query = "SELECT `article`, `$valueColumn` FROM `$table` WHERE `article` IN ($placeholders)";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param($types, ...$articleIds);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while($row = $result->fetch_object()){
+            $grouped[(int)$row->article][] = $row->$valueColumn;
+        }
+        return $grouped;
+    }
+
+    /**
+     * Hydrates several raw article rows at once. Category/tag/alt-headline/
+     * authorized-user lookups are fetched once per related table for the
+     * whole batch (via groupByArticle()) instead of once per article, and
+     * created-by/last-edit-by/project entities go through the repositories'
+     * own by-id caches - this is what keeps a 50-article page from firing
+     * hundreds of individual queries.
+     * @param object[] $rows raw rows from `SELECT * FROM articles ...`
+     * @throws Exception
+     */
+    private function hydrateMany(array $rows): ArticleCollection
+    {
+        $articles = new ArticleCollection();
+        $articles->rewind();
+        if(empty($rows)){
+            return $articles;
+        }
+        $ids = array_map(static fn($row) => (int)$row->id, $rows);
+        $categoryIdsByArticle = $this->groupByArticle('article_categories', $ids, 'category');
+        $tagsByArticle = $this->groupByArticle('article_tags', $ids, 'tag');
+        $altHeadlinesByArticle = $this->groupByArticle('article_alt_headline', $ids, 'headline');
+        $authorizedUserIdsByArticle = $this->groupByArticle('article_authorized', $ids, 'user');
+        foreach($rows as $row){
+            $id = (int)$row->id;
+            $row->published = new DateTime($row->published);
+            $row->created_by = (new UserRepository())->findById($row->created_by);
+            $row->last_edit = new DateTime($row->last_edit);
+            $row->last_edit_by = (new UserRepository())->findById($row->last_edit_by);
+            $row->project = (new ProjectRepository())->findById($row->project);
+            $categories = null;
+            if(!empty($categoryIdsByArticle[$id])){
+                $categories = new CategoryCollection();
+                $categories->rewind();
+                foreach($categoryIdsByArticle[$id] as $categoryId){
+                    $categories->offsetSet($categories->key(), (new CategoryRepository())->findById($categoryId));
+                    $categories->next();
+                }
+            }
+            $authorized = null;
+            if(!empty($authorizedUserIdsByArticle[$id])){
+                $authorized = new UserCollection();
+                $authorized->rewind();
+                foreach($authorizedUserIdsByArticle[$id] as $userId){
+                    $authorized->offsetSet($authorized->key(), (new UserRepository())->findById($userId));
+                    $authorized->next();
+                }
+            }
+            $article = new Article(
+                $id,
+                $row->published,
+                $row->created_by,
+                $row->last_edit,
+                $row->last_edit_by,
+                $row->headline,
+                $row->project,
+                $categories,
+                $tagsByArticle[$id] ?? null,
+                $altHeadlinesByArticle[$id] ?? null,
+                $row->private === 1,
+                $authorized,
+                $row->editable === 1,
+                $row->called,
+                $row->empty === 1
+            );
+            $articles->offsetSet($articles->key(), $article);
+            $articles->next();
+        }
+        return $articles;
+    }
+
+    /**
      * @throws Exception
      */
     private function findArticlesById(ArticleCollection $articles, string $query, array $params = []): void
@@ -522,51 +620,68 @@ class ArticleRepository extends Repository implements RepositoryInterface
         $stmt = $this->db->prepare($query);
         $stmt->execute($params);
         $result = $stmt->get_result();
-        if ($result->num_rows > 0) {
-            while ($id = $result->fetch_object()) {
-                $article = $this->findOneBy('id', $id->id);
-                $articles->offsetSet($articles->key(), $article);
-                $articles->next();
+        $ids = [];
+        while ($row = $result->fetch_object()) {
+            $ids[] = (int)$row->id;
+        }
+        if(empty($ids)){
+            return;
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $types = str_repeat('i', count($ids));
+        $rowQuery = "SELECT * FROM `$this->table` WHERE `id` IN ($placeholders)";
+        $rowStmt = $this->db->prepare($rowQuery);
+        $rowStmt->bind_param($types, ...$ids);
+        $rowStmt->execute();
+        $rowsById = [];
+        $rowResult = $rowStmt->get_result();
+        while($row = $rowResult->fetch_object()){
+            $rowsById[(int)$row->id] = $row;
+        }
+        $orderedRows = [];
+        foreach($ids as $id){
+            if(isset($rowsById[$id])){
+                $orderedRows[] = $rowsById[$id];
             }
+        }
+        foreach($this->hydrateMany($orderedRows) as $article){
+            $articles->offsetSet($articles->key(), $article);
+            $articles->next();
         }
     }
 
     /**
-     * @throws Exception
-     */
-    private function findAllChildProjects(Project $project, ProjectCollection $projects): ProjectCollection
-    {
-        $childProjects = $project->getChildren();
-        if($childProjects !== null){
-            $childProjects->rewind();
-            for($i = 1; $i <= $childProjects->count(); $i++){
-                $projects->offsetSet($projects->key(), $childProjects->current());
-                $projects->next();
-                if($childProjects->current()->getChildren() !== null){
-                    $projects = $this->findAllChildProjects($childProjects->current(), $projects);
-                }
-                $childProjects->next();
-            }
-        }
-        return $projects;
-    }
-
-    /**
+     * Includes the project itself plus every descendant, however deep the
+     * tree goes. Previously this walked the tree in PHP, fully hydrating
+     * (creator, editor, authorized users, parent chain...) every project
+     * along the way just to read its id - one recursive CTE replaces all
+     * of that with a single query.
      * @return int[]
      */
     private function getProjectIdsWithChildren(Project $project): array
     {
-        $projects = new ProjectCollection();
-        $projects->rewind();
-        $projects->offsetSet(0, $project);
-        $projects->next();
-        $projects = $this->findAllChildProjects($project, $projects);
-        $projects->rewind();
-        $projectIds = array();
-        for($i = 0; $i < count($projects); $i++){
-            $projectIds[] = $projects->current()->getId();
-            $projects->next();
+        $projectId = $project->getId();
+        if(isset($this->projectIdsWithChildrenCache[$projectId])){
+            return $this->projectIdsWithChildrenCache[$projectId];
         }
+        $query =
+            "WITH RECURSIVE descendant_projects AS (
+                SELECT id FROM projects WHERE id = ?
+                UNION ALL
+                SELECT p.id FROM projects p
+                    INNER JOIN descendant_projects dp ON p.parent_project = dp.id
+            )
+            SELECT id FROM descendant_projects"
+        ;
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $projectId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $projectIds = [];
+        while($row = $result->fetch_object()){
+            $projectIds[] = (int)$row->id;
+        }
+        $this->projectIdsWithChildrenCache[$projectId] = $projectIds;
         return $projectIds;
     }
 }
