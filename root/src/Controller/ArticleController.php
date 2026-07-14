@@ -329,7 +329,7 @@ class ArticleController extends Controller
             $i = 1;
             foreach ($paragraphImages as $number => $image){
                 $imgData = base64_decode(str_replace(' ', '+', substr($image, strpos($image, ",")+1)));
-                $fileExtension = explode('/', mime_content_type($image))[1];
+                $fileExtension = $this->getFileExtensionFromDataUri($image);
                 $fileSize = strlen($imgData);
                 $uploader = new FileUpload(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name'] . '/', str_replace('/', '-', $element . '-' . $i) . '.' . $fileExtension, ['svg', 'jpeg', 'png', 'webp', 'gif'], 2000000, []);
                 $uploader->setFileSize($fileSize);
@@ -588,7 +588,7 @@ class ArticleController extends Controller
         $i = 1;
         foreach ($infoImages as $img){
             $imgData = base64_decode(str_replace(' ', '+', substr($img, strpos($img, ",")+1)));
-            $fileExtension = explode('/', mime_content_type($img))[1];
+            $fileExtension = $this->getFileExtensionFromDataUri($img);
             $fileSize = strlen($imgData);
             $uploader = new FileUpload(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'] . '/', str_replace('/', '-', $i) . '.' . $fileExtension, ['svg', 'jpeg', 'png', 'webp', 'gif'], 2000000, []);
             $uploader->setFileSize($fileSize);
@@ -718,5 +718,18 @@ class ArticleController extends Controller
         else{
             return false;
         }
+    }
+
+    /**
+     * mime_content_type() expects a file path and can't be used on a data
+     * URI string directly - it was silently failing here and leaving every
+     * upload without a usable extension. The MIME type is already declared
+     * in the URI header ("data:image/png;base64,...."), so it's parsed out
+     * directly instead.
+     */
+    private function getFileExtensionFromDataUri(string $dataUri): string
+    {
+        $mimeType = explode(';', $dataUri)[0];
+        return explode('/', $mimeType)[1] ?? '';
     }
 }
