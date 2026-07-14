@@ -14,6 +14,16 @@ class UserRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'users';
 
+    /**
+     * The same handful of users get looked up by id over and over while
+     * hydrating articles/projects (creator, last editor, authorized users).
+     * This cache is static so it's shared across the many short-lived
+     * "new UserRepository()" instances used throughout the app, and it's
+     * safe because it only lives for the duration of one request.
+     * @var array<int, ?User>
+     */
+    private static array $byIdCache = [];
+
     public function __construct()
     {
         $this->connectDB();
@@ -32,7 +42,10 @@ class UserRepository extends Repository implements RepositoryInterface
      */
     public function findById(int $id): ?User
     {
-        return $this->findOne($this->findByIdFunc($this->table, $id));
+        if(array_key_exists($id, self::$byIdCache)){
+            return self::$byIdCache[$id];
+        }
+        return self::$byIdCache[$id] = $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
     /**
@@ -81,6 +94,7 @@ class UserRepository extends Repository implements RepositoryInterface
                 $stmt->bind_param("ssssssisiisi", $firstname, $registrationDate, $lastname, $email, $username, $password, $verified, $token, $firstnamePublic, $lastnamePublic, $profileText, $id);
             }
             $stmt->execute();
+            unset(self::$byIdCache[$id]);
         }
     }
 
@@ -90,6 +104,7 @@ class UserRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", User::class));
         }
         else{
+            unset(self::$byIdCache[$entity->getId()]);
             $this->deleteFunc($this->table, $entity);
         }
     }

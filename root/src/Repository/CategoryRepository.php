@@ -13,6 +13,14 @@ class CategoryRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'categories';
 
+    /**
+     * Same rationale as UserRepository::$byIdCache - categories are looked
+     * up by id repeatedly while hydrating articles, this dedupes those
+     * lookups within one request.
+     * @var array<int, ?Category>
+     */
+    private static array $byIdCache = [];
+
     public function __construct()
     {
         $this->connectDB();
@@ -31,7 +39,10 @@ class CategoryRepository extends Repository implements RepositoryInterface
      */
     public function findById(int $id): ?Category
     {
-        return $this->findOne($this->findByIdFunc($this->table, $id));
+        if(array_key_exists($id, self::$byIdCache)){
+            return self::$byIdCache[$id];
+        }
+        return self::$byIdCache[$id] = $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
     /**
@@ -70,7 +81,7 @@ class CategoryRepository extends Repository implements RepositoryInterface
         $result = $stmt->get_result();
         if ($result->num_rows > 0) {
             while ($category = $result->fetch_object()) {
-                $category = $this->findOneBy("id", $category->id);
+                $category = $this->findById($category->id);
                 $categories->offsetSet($categories->key(), $category);
                 $categories->next();
             }
@@ -107,6 +118,7 @@ class CategoryRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("sssisisi", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $icon, $id);
         }
         $stmt->execute();
+        unset(self::$byIdCache[$id]);
     }
 
     public function delete(object $entity): void
@@ -115,6 +127,7 @@ class CategoryRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Category::class));
         }
         else{
+            unset(self::$byIdCache[$entity->getId()]);
             $this->deleteFunc($this->table, $entity);
         }
     }

@@ -15,6 +15,15 @@ class ProjectRepository extends Repository implements RepositoryInterface
 {
     private string $table = 'projects';
 
+    /**
+     * Same rationale as UserRepository::$byIdCache. Also breaks a lot of
+     * redundant work when hydrating parent_project chains and walking
+     * project trees, since the same ancestor project gets looked up again
+     * and again from different branches/children.
+     * @var array<int, ?Project>
+     */
+    private static array $byIdCache = [];
+
     public function __construct()
     {
         $this->connectDB();
@@ -33,7 +42,10 @@ class ProjectRepository extends Repository implements RepositoryInterface
      */
     public function findById(int $id): ?Project
     {
-        return $this->findOne($this->findByIdFunc($this->table, $id));
+        if(array_key_exists($id, self::$byIdCache)){
+            return self::$byIdCache[$id];
+        }
+        return self::$byIdCache[$id] = $this->findOne($this->findByIdFunc($this->table, $id));
     }
 
     /**
@@ -106,6 +118,7 @@ class ProjectRepository extends Repository implements RepositoryInterface
             $stmt->bind_param("sssisiiiii", $name, $description, $published, $createdBy, $lastEdit, $lastEditBy, $parentProject, $private, $searched, $id);
         }
         $success = $stmt->execute();
+        unset(self::$byIdCache[$id]);
         if($success) {
             $newProject = $id === 0;
             if (!$newProject) {
@@ -136,6 +149,7 @@ class ProjectRepository extends Repository implements RepositoryInterface
             throw new InvalidArgumentException(sprintf("Entity must be instance of %s", Project::class));
         }
         else{
+            unset(self::$byIdCache[$entity->getId()]);
             $this->deleteFunc($this->table, $entity);
         }
     }
