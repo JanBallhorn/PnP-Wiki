@@ -49,13 +49,17 @@ class Ajax
     }
 
     /**
+     * Only templates inside Views/fragments are reachable here - that
+     * directory holds nothing but the small partials this endpoint is
+     * meant to render, so a template name coming straight from the
+     * request can't reach the rest of the application's templates.
      * @throws SyntaxError
      * @throws RuntimeError
      * @throws LoaderError
      */
     function ajaxRender($template, $data): string
     {
-        $loader = new FilesystemLoader(__DIR__ . '/Views');
+        $loader = new FilesystemLoader(__DIR__ . '/Views/fragments');
         $twig = new Environment($loader, ['debug' => true]);
         return $twig->render($template, $data);
     }
@@ -113,7 +117,7 @@ if(isset($_POST['errorType']) && $_POST['errorType'] === 'altHeadlineDuplicate')
     echo json_encode(['duplicate' => $result, 'origAlts' => $origAlts]);
 }
 
-if(isset($_POST['type']) && $_POST['type'] === 'render'){
+if(isset($_POST['type']) && $_POST['type'] === 'render' && preg_match('/^[A-Za-z0-9_-]+\.twig$/', $_POST['template'])){
     $ajax = new Ajax();
     if($_POST['template'] === 'newSource.twig'){
         $data['sources'] = $ajax->getSources()->__serialize();
