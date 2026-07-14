@@ -88,7 +88,12 @@ class ProfileController extends Controller
      * @throws Exception
      */
     public function save(array $profileData): void{
-        $user = $this->userRepository->findOneBy('username', $profileData['username']);
+        if(!$this->checkLogin()){
+            header("Location: /login");
+            return;
+        }
+        $ownUsername = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $ownUsername);
         $user->setFirstnamePublic(isset($profileData['firstnamePublic']));
         $user->setLastnamePublic(isset($profileData['lastnamePublic']));
         $user->setProfileText($profileData['profileText']);
