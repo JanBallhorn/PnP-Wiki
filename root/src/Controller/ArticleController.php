@@ -165,6 +165,10 @@ class ArticleController extends Controller
         $article = $this->articleRepository->findById($articleData['id']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
+        if(!$article->getEditable() && $user->getId() !== $article->getLastEditBy()->getId()){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $sameHeadline = $this->articleRepository->findOneBy('headline', $articleData['headline']);
         $sameAltHeadline = false;
         $altHeadlines = explode(",", $articleData['altHeadlines']);
@@ -301,6 +305,13 @@ class ArticleController extends Controller
             header("Location: /");
             return;
         }
+        $article = $this->articleRepository->findOneBy('headline', $articleData['name']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$article->getEditable() && $user->getId() !== $article->getLastEditBy()->getId()){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $articleImages = json_decode($articleData['images'], true);
         if(!file_exists(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name'])){
             mkdir(__DIR__ . '/../../../externalImages/articleImg/' . $articleData['name']);
@@ -330,14 +341,11 @@ class ArticleController extends Controller
                 $i++;
             }
         }
-        $username = $this->getUsernameFromToken($this->getCookie());
-        $user = $this->userRepository->findOneBy('username', $username);
         foreach ($uploads as $upload){
             $file = fopen($upload->getFile(), 'w');
             fwrite($file, $upload->getTmpFile());
             fclose($file);
         }
-        $article = $this->articleRepository->findOneBy('headline', $articleData['name']);
         if($article->getEmpty()){
             $article->setEmpty(false);
             $this->articleRepository->save($article);
@@ -557,6 +565,13 @@ class ArticleController extends Controller
             header("Location: /");
             return;
         }
+        $article = $this->articleRepository->findOneBy('headline', $info['name']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$article->getEditable() && $user->getId() !== $article->getLastEditBy()->getId()){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $infoImages = json_decode($info['images'], true);
         if(!file_exists(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name'])){
             mkdir(__DIR__ . '/../../../externalImages/articleInfo/' . $info['name']);
@@ -589,7 +604,6 @@ class ArticleController extends Controller
             fwrite($file, $upload->getTmpFile());
             fclose($file);
         }
-        $article = $this->articleRepository->findOneBy('headline', $info['name']);
         if($article->getEmpty()){
             $article->setEmpty(false);
             $this->articleRepository->save($article);

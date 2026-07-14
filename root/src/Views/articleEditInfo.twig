@@ -10,7 +10,7 @@
 
 {% block mainContent %}
     {% if loggedIn %}
-        {% if article.editable or wikiUser.id == article.lastEditBy.username %}
+        {% if article.editable or wikiUser.id == article.lastEditBy.id %}
             <div class="editButtons">
                 <a href="/article/editParagraphs?id={{ article.id }}" title="Artikelinhalte anpassen"><i class="fa-solid fa-pen-to-square"></i></a>
                 <a href="/article/editInfo?id={{ article.id }}" title="Steckbrief anlegen/bearbeiten"><i class="fa-solid fa-list"></i></a>
