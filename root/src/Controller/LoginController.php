@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Model\User;
 use App\Repository\UserRepository;
 use Exception;
 use Twig\Error\LoaderError;
@@ -37,7 +38,6 @@ class LoginController extends Controller
     {
         $email = $this->userRepository->findOneBy('email', $loginData['user']);
         $username = $this->userRepository->findOneBy('username', $loginData['user']);
-        $password = hash('sha256', $loginData['password']);
         if(!empty($email)){
             $user = $email;
         }
@@ -46,8 +46,9 @@ class LoginController extends Controller
         }
         else{
             $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);
+            return;
         }
-        if(isset($user) && $user->getPassword() === $password){
+        if($this->verifyPassword($loginData['password'], $user)){
             if($user->getVerified()){
                 if(isset($loginData['remember'])){
                     $remember = true;
@@ -68,5 +69,25 @@ class LoginController extends Controller
         else{
             $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);
         }
+    }
+
+    /**
+     * Verifies the password against the stored hash. Accounts registered
+     * before the switch to password_hash() still have a plain sha256 hash
+     * stored; those are verified against the legacy scheme once and then
+     * transparently upgraded so every login after this one uses
+     * password_hash()/password_verify().
+     */
+    private function verifyPassword(string $plainPassword, User $user): bool
+    {
+        if(password_verify($plainPassword, $user->getPassword())){
+            return true;
+        }
+        if(hash_equals($user->getPassword(), hash('sha256', $plainPassword))){
+            $user->setPassword(password_hash($plainPassword, PASSWORD_DEFAULT));
+            $this->userRepository->save($user);
+            return true;
+        }
+        return false;
     }
 }
