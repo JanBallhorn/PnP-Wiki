@@ -111,16 +111,7 @@ class CategoryController extends Controller
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $page = $categoryData['page'];
-        $filter = $categoryData['filter'];
-        if($filter === 'headline_down'){
-            $filter = 'headline DESC';
-        }
-        elseif($filter === 'published_new'){
-            $filter = 'published DESC';
-        }
-        elseif($filter === 'called'){
-            $filter = 'called DESC';
-        }
+        $filter = $this->resolveArticleOrder($categoryData['filter']);
         if($user !== null){
             $articles = $this->articleRepository->findAllBetween(($page - 1) * 50, 50, $user->getId(), $filter, $category);
             $articleNum = $this->articleRepository->getNumberOfArticles($user->getId(), $category);

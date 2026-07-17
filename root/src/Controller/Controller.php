@@ -7,6 +7,9 @@ use App\Repository\ArticleRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
+use DOMDocument;
+use DOMElement;
+use DOMNode;
 use Exception;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Lcobucci\JWT\Encoding\JoseEncoder;
@@ -95,6 +98,84 @@ abstract class Controller
         }
         echo $twig->render($view, $twigParams);
     }
+    /**
+     * Whitelists the `filter` request param into a fixed ORDER BY expression.
+     * Never pass request input straight into a query's ORDER BY clause -
+     * unlike WHERE values, it can't be parameterized via bind_param.
+     */
+    protected function resolveArticleOrder(string $filter): string
+    {
+        return match ($filter) {
+            'headline' => 'headline',
+            'headline_down' => 'headline DESC',
+            'published' => 'published',
+            'published_new' => 'published DESC',
+            'called' => 'called DESC',
+            default => 'articles.id',
+        };
+    }
+
+    /**
+     * Strips script-execution vectors (script/style/iframe/etc. tags, event-handler
+     * attributes, javascript:/data: URLs) from user-submitted HTML before it's stored,
+     * while preserving the formatting markup the paragraph/info editors produce
+     * (bold, links, tables, headings, spoiler spans, alignment styles, ...).
+     * Every value that later gets rendered with Twig's `|raw` filter must go through
+     * this first - `|raw` performs no escaping of its own.
+     */
+    protected function sanitizeHtml(?string $html): ?string
+    {
+        if($html === null || trim($html) === ''){
+            return $html;
+        }
+        $deniedTags = ['script', 'style', 'iframe', 'object', 'embed', 'applet', 'form', 'input',
+            'button', 'textarea', 'select', 'option', 'link', 'meta', 'base', 'svg', 'math', 'noscript'];
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="UTF-8">' . '<div id="sanitize-root">' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        $root = $doc->documentElement;
+        if($root === null){
+            return '';
+        }
+        $this->sanitizeHtmlNode($root, $deniedTags);
+        $result = '';
+        foreach ($root->childNodes as $child) {
+            $result .= $doc->saveHTML($child);
+        }
+        return $result;
+    }
+
+    private function sanitizeHtmlNode(DOMNode $node, array $deniedTags): void
+    {
+        foreach (iterator_to_array($node->childNodes) as $child) {
+            if(!$child instanceof DOMElement){
+                continue;
+            }
+            if(in_array(strtolower($child->tagName), $deniedTags, true)){
+                $node->removeChild($child);
+                continue;
+            }
+            foreach (iterator_to_array($child->attributes) as $attr) {
+                $name = strtolower($attr->name);
+                if(str_starts_with($name, 'on') || in_array($name, ['srcdoc', 'formaction'], true)){
+                    $child->removeAttribute($attr->name);
+                    continue;
+                }
+                if(in_array($name, ['href', 'src', 'action'], true)){
+                    $normalized = strtolower(trim(preg_replace('/[\x00-\x1F\s]+/', '', $attr->value)));
+                    if(preg_match('/^(javascript|vbscript|data):/', $normalized)){
+                        $child->removeAttribute($attr->name);
+                    }
+                }
+                if($name === 'style' && preg_match('/expression\s*\(|javascript:|vbscript:/i', $attr->value)){
+                    $child->removeAttribute($attr->name);
+                }
+            }
+            $this->sanitizeHtmlNode($child, $deniedTags);
+        }
+    }
+
     protected function checkLogin(): bool
     {
         return $this->getVerifiedToken($this->getCookie()) !== null;

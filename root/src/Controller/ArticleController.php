@@ -18,6 +18,7 @@ use App\Model\Paragraph;
 use App\Model\ParagraphContent;
 use App\Model\ParagraphGallery;
 use App\Model\Source;
+use App\Model\User;
 use App\Repository\ArticleInfoRepository;
 use App\Repository\ArticleRepository;
 use App\Repository\ArticleSourceRepository;
@@ -145,6 +146,12 @@ class ArticleController extends Controller
     public function edit(array $article): void
     {
         $article = $this->articleRepository->findById($article['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanEditArticle($user, $article)){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $projects = $this->getNonPrivate($this->projectRepository->findAll('name'));
         $this->render('editArticle.twig', [
             'article' => $article,
@@ -165,7 +172,7 @@ class ArticleController extends Controller
         $article = $this->articleRepository->findById($articleData['id']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
-        if(!$article->getEditable() && $user->getId() !== $article->getLastEditBy()->getId()){
+        if(!$this->userCanEditArticle($user, $article)){
             header("Location: /article?" . http_build_query(['id' => $article->getId()]));
             return;
         }
@@ -273,6 +280,45 @@ class ArticleController extends Controller
     }
 
     /**
+     * True unless the article is private and the user isn't logged in or isn't on
+     * its authorized list - mirrors the gate article.twig uses to decide whether to
+     * show a private article's content at all.
+     */
+    private function userCanAccessArticle(?User $user, Article $article): bool
+    {
+        if(!$article->getPrivate()){
+            return true;
+        }
+        if($user === null){
+            return false;
+        }
+        $authorized = $article->getAuthorized();
+        if($authorized === null){
+            return false;
+        }
+        foreach ($authorized as $authorizedUser){
+            if($authorizedUser->getId() === $user->getId()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Access to a private article's edit/delete actions requires being authorized on
+     * top of the existing editable-flag/last-editor rule - otherwise any logged-in
+     * user could reach a private article's content and settings through the edit
+     * routes even without being on its authorized list.
+     */
+    private function userCanEditArticle(?User $user, Article $article): bool
+    {
+        if($user === null || !$this->userCanAccessArticle($user, $article)){
+            return false;
+        }
+        return $article->getEditable() || $user->getId() === $article->getLastEditBy()->getId();
+    }
+
+    /**
      * @throws Exception
      */
     public function delete(array $article): void
@@ -282,6 +328,12 @@ class ArticleController extends Controller
             return;
         }
         $article = $this->articleRepository->findById($article['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanEditArticle($user, $article)){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $this->articleRepository->delete($article);
         header("Location: /");
     }
@@ -292,6 +344,12 @@ class ArticleController extends Controller
     public function editParagraphs(array $article): void
     {
         $article = $this->articleRepository->findById($article['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanEditArticle($user, $article)){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $sources = $this->sourceRepository->findAll('name');
         $this->render('articleEditParagraphs.twig', ['article' => $article, 'sources' => $sources]);
     }
@@ -308,7 +366,7 @@ class ArticleController extends Controller
         $article = $this->articleRepository->findOneBy('headline', $articleData['name']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
-        if(!$article->getEditable() && $user->getId() !== $article->getLastEditBy()->getId()){
+        if(!$this->userCanEditArticle($user, $article)){
             header("Location: /article?" . http_build_query(['id' => $article->getId()]));
             return;
         }
@@ -478,11 +536,11 @@ class ArticleController extends Controller
                         }
                     }
                     $value = implode("", $value);
-                    $text = $value;
+                    $text = $this->sanitizeHtml($value);
                     foreach ($uploads as $upload){
                         if(str_contains($upload->getFileName(), substr($element, 0, strpos($element,'text')))){
                             $img = 'articleImg/' . $articleData['name'] . '/' . $upload->getFileName();
-                            $figcaption = $articleData[substr($element, 0, strpos($element,'text')) . 'figcaption'][0];
+                            $figcaption = $this->sanitizeHtml($articleData[substr($element, 0, strpos($element,'text')) . 'figcaption'][0]);
                             break;
                         }
                     }
@@ -498,7 +556,7 @@ class ArticleController extends Controller
                         if(str_contains($upload->getFileName(), $curEl)){
                             preg_match_all('!\d+!', $upload->getFileName(), $matches);
                             $imgOrder = $matches[0][2] - 1;
-                            $figcaption = $articleData[$curEl . 'figcaption'][$imgOrder];
+                            $figcaption = $this->sanitizeHtml($articleData[$curEl . 'figcaption'][$imgOrder]);
                             $contents = $this->paragraphContentRepository->findBy('paragraph', $paragraph->getId(), 'sequence');
                             preg_match_all('!\d+!', $curEl, $matches);
                             $conNum = $matches[0][1] - 1;
@@ -553,6 +611,12 @@ class ArticleController extends Controller
     public function editInfo(array $article): void
     {
         $article = $this->articleRepository->findById($article['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanEditArticle($user, $article)){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $this->render('articleEditInfo.twig', ['article' => $article]);
     }
 
@@ -568,7 +632,7 @@ class ArticleController extends Controller
         $article = $this->articleRepository->findOneBy('headline', $info['name']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
-        if(!$article->getEditable() && $user->getId() !== $article->getLastEditBy()->getId()){
+        if(!$this->userCanEditArticle($user, $article)){
             header("Location: /article?" . http_build_query(['id' => $article->getId()]));
             return;
         }
@@ -617,7 +681,7 @@ class ArticleController extends Controller
                 $infos = $info['rowInfo' . ($number + 1)];
                 foreach ($topics as $topicNumber => $topic){
                     if(!empty($topic) || !empty($infos[$topicNumber])){
-                        $infoContent = new ArticleInfoContent(0, $topic, $infos[$topicNumber], $headline, $topicNumber + 1);
+                        $infoContent = new ArticleInfoContent(0, $this->sanitizeHtml($topic), $this->sanitizeHtml($infos[$topicNumber]), $headline, $topicNumber + 1);
                         $infoContents->offsetSet($infoContents->key(), $infoContent);
                         $infoContents->next();
                     }
@@ -625,7 +689,7 @@ class ArticleController extends Controller
             }
         }
         foreach ($uploads as $number => $upload){
-            $infoImg = new ArticleInfoGallery(0, 'articleInfo/' . $info['name'] . '/' . $upload->getFileName(), $info['pcfigcaption'][$number], $number + 1);
+            $infoImg = new ArticleInfoGallery(0, 'articleInfo/' . $info['name'] . '/' . $upload->getFileName(), $this->sanitizeHtml($info['pcfigcaption'][$number]), $number + 1);
             $infoGallery->offsetSet($infoGallery->key(), $infoImg);
             $infoGallery->next();
         }
@@ -650,6 +714,12 @@ class ArticleController extends Controller
         }
         $info = $this->articleInfoRepository->findById($info['id']);
         $article = $info->getArticle();
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanEditArticle($user, $article)){
+            header("Location: /article?" . http_build_query(['id' => $article->getId()]));
+            return;
+        }
         $this->articleInfoRepository->delete($info);
         header("Location: /article?" . http_build_query(['id' => $article->getId()]));
     }
@@ -665,16 +735,7 @@ class ArticleController extends Controller
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $page = $filterData['page'];
-        $filter = $filterData['filter'];
-        if($filter === 'headline_down'){
-            $filter = 'headline DESC';
-        }
-        elseif($filter === 'published_new'){
-            $filter = 'published DESC';
-        }
-        elseif($filter === 'called'){
-            $filter = 'called DESC';
-        }
+        $filter = $this->resolveArticleOrder($filterData['filter']);
         if($user !== null){
             $articles = $this->articleRepository->findAllBetween(($page - 1) * 50, 50, $user->getId(), $filter);
             $articleNum = $this->articleRepository->getNumberOfArticles($user->getId());
