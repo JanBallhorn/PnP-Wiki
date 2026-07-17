@@ -1,5 +1,6 @@
 whitelist.json
 db_credentials.txt
+.env
 externalImages/*
 imprint.twig
 privacy.twig

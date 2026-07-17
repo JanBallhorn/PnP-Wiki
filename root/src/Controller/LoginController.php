@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\LoginThrottle;
 use App\Model\User;
 use App\Repository\UserRepository;
 use Exception;
@@ -36,6 +37,12 @@ class LoginController extends Controller
      */
     public function login(array $loginData): void
     {
+        $identifier = trim($loginData['user'] ?? '');
+        $throttle = new LoginThrottle();
+        if($identifier === '' || $throttle->isBlocked($identifier)){
+            $this->render($this->template, ['loginError' => true, 'rateLimited' => true, 'user' => $loginData['user'] ?? '']);
+            return;
+        }
         $email = $this->userRepository->findOneBy('email', $loginData['user']);
         $username = $this->userRepository->findOneBy('username', $loginData['user']);
         if(!empty($email)){
@@ -45,11 +52,13 @@ class LoginController extends Controller
             $user = $username;
         }
         else{
+            $throttle->recordFailure($identifier);
             $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);
             return;
         }
         if($this->verifyPassword($loginData['password'], $user)){
             if($user->getVerified()){
+                $throttle->clear($identifier);
                 if(isset($loginData['remember'])){
                     $remember = true;
                 }
@@ -67,6 +76,7 @@ class LoginController extends Controller
             }
         }
         else{
+            $throttle->recordFailure($identifier);
             $this->render($this->template, ['loginError' => true, 'user' => $loginData['user']]);
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Collection\UserCollection;
+use App\Env;
 use App\Repository\ArticleRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\ProjectRepository;
@@ -182,7 +183,11 @@ abstract class Controller
     }
     private function signingKey(): InMemory
     {
-        return InMemory::plainText("8VwxeMAGDkoz1nSuWD1tESkCOGgPk5Il");
+        $secret = Env::get('JWT_SECRET');
+        if($secret === null || $secret === ''){
+            throw new \RuntimeException('JWT_SECRET is not configured - see .env');
+        }
+        return InMemory::plainText($secret);
     }
     /**
      * Parses the given token and verifies its signature and expiry. Returns
@@ -263,7 +268,14 @@ abstract class Controller
         else{
             $extratime = 86400;
         }
-        setcookie("login", $token, time() + $extratime, "/", "wiki.verplant-durch-aventurien.de", true, true);
+        setcookie("login", $token, [
+            'expires' => time() + $extratime,
+            'path' => '/',
+            'domain' => 'wiki.verplant-durch-aventurien.de',
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ]);
     }
     protected function getCookie(): ?string
     {

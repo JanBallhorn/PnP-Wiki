@@ -2,6 +2,7 @@
 
 namespace App;
 use App\Collection\SourceCollection;
+use App\Controller\Controller;
 use App\Repository\ArticleRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\SourceRepository;
@@ -15,7 +16,7 @@ use Twig\Loader\FilesystemLoader;
 
 require_once __DIR__ . '/../inc/autoload.php';
 require_once __DIR__ . '/../vendor/autoload.php';
-class Ajax
+class Ajax extends Controller
 {
     protected mysqli $db;
 
@@ -82,6 +83,9 @@ class Ajax
      */
     function getPrivateAndAuth($projectName): ?array
     {
+        if(!$this->checkLogin()){
+            return null;
+        }
         $project = (new ProjectRepository())->findOneBy("name", $projectName);
         if($project !== null){
             return ["private" => $project->getPrivate(), "auth" => $project->getAuthorized()];

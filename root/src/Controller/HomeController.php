@@ -22,9 +22,12 @@ class HomeController extends Controller
      * @throws Exception
      */
     public function __construct(){
-        if($this->getCookie() !== null){
+        $user = null;
+        if($this->checkLogin()){
             $username = $this->getUsernameFromToken($this->getCookie());
             $user = (new UserRepository())->findOneBy('username', $username);
+        }
+        if($user !== null){
             $projects = (new ProjectRepository())->findAllBetween(0, 5, $user->getId(), 'searched DESC');
             $categories = (new CategoryRepository())->findPopularCategories();
             $popularArticles = (new ArticleRepository())->findAllBetween(0, 5, $user->getId(), 'called DESC');

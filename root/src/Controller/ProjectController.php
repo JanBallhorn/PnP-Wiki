@@ -96,6 +96,32 @@ class ProjectController extends Controller
     }
 
     /**
+     * True unless the project is private and the user isn't logged in or isn't on
+     * its authorized list - mirrors ArticleController's userCanAccessArticle(),
+     * since projects have no separate "editable" flag: any logged-in user may edit
+     * a non-private project, same as they may view it.
+     */
+    private function userCanAccessProject(?User $user, Project $project): bool
+    {
+        if(!$project->getPrivate()){
+            return true;
+        }
+        if($user === null){
+            return false;
+        }
+        $authorized = $project->getAuthorized();
+        if($authorized === null){
+            return false;
+        }
+        foreach ($authorized as $authorizedUser){
+            if($authorizedUser->getId() === $user->getId()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @throws Exception
      */
     public function detail(array $projectData): void
@@ -103,6 +129,10 @@ class ProjectController extends Controller
         $project = $this->projectRepository->findById($projectData['id']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanAccessProject($user, $project)){
+            header("Location: /project");
+            return;
+        }
         $page = $projectData['page'];
         $filter = $this->resolveArticleOrder($projectData['filter']);
         if($user !== null){
@@ -130,8 +160,14 @@ class ProjectController extends Controller
      */
     public function edit(array $project): void
     {
-        $projects = $this->getNonPrivate($this->projectRepository->findAll());
         $project = $this->projectRepository->findById($project['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanAccessProject($user, $project)){
+            header("Location: /project");
+            return;
+        }
+        $projects = $this->getNonPrivate($this->projectRepository->findAll());
         $this->render("editProject.twig", ['projects' => $projects->__serialize(), 'project' => $project]);
     }
 
@@ -147,8 +183,34 @@ class ProjectController extends Controller
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
         $project = $this->projectRepository->findById($projectData['id']);
+        if(!$this->userCanAccessProject($user, $project)){
+            header("Location: /project");
+            return;
+        }
         $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $sameProject = $this->projectRepository->findOneBy('name', $projectData['name']);
+        if(($sameProject === null || $sameProject->getId() === $project->getId()) && ($parentProject !== null || $projectData['parentProject'] === '')) {
+            $this->applyProjectUpdate($projectData, $project, $user);
+            header("Location: /project/detail?" . http_build_query(['id' => $project->getid(), 'filter' => 'called', 'page' => 1]));
+        }
+        else{
+            $projects = $this->projectRepository->findAll();
+            $this->render("editProject.twig", ['projects' => $projects->__serialize(), 'project' => $project]);
+        }
+    }
+
+    /**
+     * Saves the validated update and cascades private/authorized changes to the
+     * project's articles and child projects. Access to the whole subtree was already
+     * verified once by update() against the top-level project the user requested to
+     * edit; child projects here are the system propagating that already-authorized
+     * change downward, not a new access point, so this recurses into itself rather
+     * than back into update() - a child may not yet have the user on its own
+     * authorized list at this point, which is exactly what the cascade is fixing.
+     */
+    private function applyProjectUpdate(array $projectData, Project $project, User $user): void
+    {
+        $parentProject = $this->projectRepository->findOneBy('name', $projectData['parentProject']);
         $oldPrivateState = $project->getPrivate();
         $oldAuthorizedState = $project->getAuthorized();
         $private = false;
@@ -190,42 +252,35 @@ class ProjectController extends Controller
         $project->setParentProject($parentProject);
         $project->setPrivate($private);
         $project->setAuthorized($authorized);
-        if(($sameProject === null || $sameProject->getId() === $project->getId()) && ($parentProject !== null || $projectData['parentProject'] === '')) {
-            $this->projectRepository->save($project);
-            if($oldPrivateState !== $private || !$authorizedComparison){
-                $articles = $this->articleRepository->findBy('project', $project->getId());
-                if($articles !== null){
-                    $articles->rewind();
-                    for($i = 0; $i < $articles->count(); $i++){
-                        $article = $articles->current();
-                        $article->setPrivate($private);
-                        $article->setAuthorized($authorized);
-                        $this->articleRepository->save($article);
-                        $articles->next();
-                    }
-                }
-                $childProjects = $project->getChildren();
-                if($childProjects !== null){
-                    $childProjects->rewind();
-                    for($i = 0; $i < $childProjects->count(); $i++){
-                        $childProject = $childProjects->current();
-                        $this->update([
-                            'id' => $childProject->getId(),
-                            'name' => $childProject->getName(),
-                            'description' => $childProject->getDescription(),
-                            'parentProject' => $childProject->getParentProject()->getName(),
-                            'private' => $private,
-                            'authorized' => $authorized
-                        ]);
-                        $childProjects->next();
-                    }
+        $this->projectRepository->save($project);
+        if($oldPrivateState !== $private || !$authorizedComparison){
+            $articles = $this->articleRepository->findBy('project', $project->getId());
+            if($articles !== null){
+                $articles->rewind();
+                for($i = 0; $i < $articles->count(); $i++){
+                    $article = $articles->current();
+                    $article->setPrivate($private);
+                    $article->setAuthorized($authorized);
+                    $this->articleRepository->save($article);
+                    $articles->next();
                 }
             }
-            header("Location: /project/detail?" . http_build_query(['id' => $project->getid(), 'filter' => 'called', 'page' => 1]));
-        }
-        else{
-            $projects = $this->projectRepository->findAll();
-            $this->render("editProject.twig", ['projects' => $projects->__serialize(), 'project' => $project]);
+            $childProjects = $project->getChildren();
+            if($childProjects !== null){
+                $childProjects->rewind();
+                for($i = 0; $i < $childProjects->count(); $i++){
+                    $childProject = $childProjects->current();
+                    $this->applyProjectUpdate([
+                        'id' => $childProject->getId(),
+                        'name' => $childProject->getName(),
+                        'description' => $childProject->getDescription(),
+                        'parentProject' => $childProject->getParentProject()->getName(),
+                        'private' => $private,
+                        'authorized' => $authorized
+                    ], $childProject, $user);
+                    $childProjects->next();
+                }
+            }
         }
     }
 
@@ -239,6 +294,12 @@ class ProjectController extends Controller
             return;
         }
         $project = $this->projectRepository->findById($project['id']);
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = $this->userRepository->findOneBy('username', $username);
+        if(!$this->userCanAccessProject($user, $project)){
+            header("Location: /project");
+            return;
+        }
         if($project->getChildren() === null){
             $this->projectRepository->delete($project);
             header("Location: /project");

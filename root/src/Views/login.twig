@@ -4,7 +4,9 @@
 
 {% block mainContent %}
     <h1>Anmeldung</h1>
-    {% if loginError %}
+    {% if rateLimited %}
+        <h4 class="error">Zu viele fehlgeschlagene Anmeldeversuche. Bitte versuche es in einigen Minuten erneut.</h4>
+    {% elseif loginError %}
         <h4 class="error">Keine Übereinstimmung mit einem Account mit diesen Anmeldedaten.</h4>
     {% elseif verificationError %}
         <h4 class="error">Ihr Account wurde nicht verifiziert.</h4>
