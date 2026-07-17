@@ -114,7 +114,7 @@ class ArticleController extends Controller
                 }
             }
         }
-        if($sameHeadline === null && !empty($article['project']) && isset($article['category'])){
+        if($sameHeadline === null && !empty($article['project']) && isset($article['category']) && $this->isPathSafeHeadline($article['headline'])){
             $converted = $this->convertFormData($article);
             $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $converted['project'], $converted['categories'], $converted['tags'], $altHeadlines, $converted['private'], $converted['authorized'], isset($article['editable']), 0, true);
             $this->articleRepository->save($article);
@@ -219,7 +219,7 @@ class ArticleController extends Controller
                 $allOtherAltHeadlines[] = $altHeadline;
             }
         }
-        if($sameHeadline === false && $sameAltHeadline !== true && !empty($articleData['project']) && isset($articleData['category'])){
+        if($sameHeadline === false && $sameAltHeadline !== true && !empty($articleData['project']) && isset($articleData['category']) && $this->isPathSafeHeadline($articleData['headline'])){
             $converted = $this->convertFormData($articleData);
             $article->setLastEdit(new DateTime());
             $article->setLastEditBy($user);
@@ -277,6 +277,18 @@ class ArticleController extends Controller
             }
         }
         return array('categories' => $categories, 'project' => $project, 'tags' => $tags, 'private' => $private, 'authorized' => $authorized);
+    }
+
+    /**
+     * The article headline is used verbatim as a directory name under externalImages/
+     * (see saveParagraphs()/saveInfo()) - without this, a headline containing "/" or
+     * "\" lets an article's own image folder resolve outside externalImages entirely,
+     * so mkdir/glob/unlink there can create or delete files anywhere the web server
+     * user can reach.
+     */
+    private function isPathSafeHeadline(string $headline): bool
+    {
+        return trim($headline) !== '' && !str_contains($headline, '/') && !str_contains($headline, '\\') && !str_contains($headline, "\0");
     }
 
     /**
@@ -366,7 +378,7 @@ class ArticleController extends Controller
         $article = $this->articleRepository->findOneBy('headline', $articleData['name']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
-        if(!$this->userCanEditArticle($user, $article)){
+        if(!$this->userCanEditArticle($user, $article) || !$this->isPathSafeHeadline($articleData['name'])){
             header("Location: /article?" . http_build_query(['id' => $article->getId()]));
             return;
         }
@@ -632,7 +644,7 @@ class ArticleController extends Controller
         $article = $this->articleRepository->findOneBy('headline', $info['name']);
         $username = $this->getUsernameFromToken($this->getCookie());
         $user = $this->userRepository->findOneBy('username', $username);
-        if(!$this->userCanEditArticle($user, $article)){
+        if(!$this->userCanEditArticle($user, $article) || !$this->isPathSafeHeadline($info['name'])){
             header("Location: /article?" . http_build_query(['id' => $article->getId()]));
             return;
         }
@@ -773,7 +785,7 @@ class ArticleController extends Controller
     private function prepareUpload(FileUpload $uploader): FileUpload|false
     {
         $uploader->setFile($uploader->getFileName());
-        if($uploader->checkFileSize() && $uploader->checkIfCorrectFileType()){
+        if($uploader->checkFileSize() && $uploader->checkIfCorrectFileType() && $uploader->checkContentMatchesDeclaredType()){
             return $uploader;
         }
         else{

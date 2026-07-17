@@ -201,7 +201,7 @@ class CategoryController extends Controller
     private function prepareUpload(FileUpload $uploader): FileUpload|false
     {
         $uploader->setFile($uploader->getFileName());
-        if($uploader->checkFileSize() && $uploader->checkIfCorrectFileType()){
+        if($uploader->checkFileSize() && $uploader->checkIfCorrectFileType() && $uploader->checkContentMatchesDeclaredType()){
             return $uploader;
         }
         else{
