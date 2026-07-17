@@ -61,7 +61,7 @@ class Ajax extends Controller
     function ajaxRender($template, $data): string
     {
         $loader = new FilesystemLoader(__DIR__ . '/Views/fragments');
-        $twig = new Environment($loader, ['debug' => true]);
+        $twig = new Environment($loader);
         return $twig->render($template, $data);
     }
 

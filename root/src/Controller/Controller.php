@@ -26,7 +26,6 @@ use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFunction;
 
@@ -43,8 +42,7 @@ abstract class Controller
     protected function render(string $view, array $params = []): void
     {
         $loader = new FilesystemLoader(__DIR__ . '/../Views');
-        $twig = new Environment($loader, ['debug' => true]);
-        $twig->addExtension(new DebugExtension());
+        $twig = new Environment($loader);
         $function = new TwigFunction('encodeImg', [$this, 'encodeImg']);
         $twig->addFunction($function);
         $function = new TwigFunction('replaceSpoiler', function($string){

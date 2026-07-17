@@ -52,6 +52,7 @@ class SearchController extends Controller
         if($articles->current() !== null){
             $username = $this->getUsernameFromToken($this->getCookie());
             $user = $this->userRepository->findOneBy('username', $username);
+            $userId = $user?->getId();
             for($i = 0; $i < $articles->count(); $i++){
                 $id = $articles->current()->getId();
                 if($articles->current()->getPrivate()){
@@ -62,7 +63,7 @@ class SearchController extends Controller
                         $authorizedIds[] = $authorized->current()->getId();
                         $authorized->next();
                     }
-                    if(!in_array($user->getId(), $authorizedIds) || in_array($id, $ids)){
+                    if($userId === null || !in_array($userId, $authorizedIds) || in_array($id, $ids)){
                         $offsets[] = $articles->key();
                     }
                     else{
