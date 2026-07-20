@@ -69,7 +69,7 @@ class LoginController extends Controller
                 $username = $user->getUsername();
                 $token = $this->buildToken($username, $userId, $remember);
                 $this->createCookie($token, $remember);
-                header('Location: ' . $this->url . '/profile?' . http_build_query(['id'=>$userId]));
+                header('Location: ' . $this->url() . '/profile?' . http_build_query(['id'=>$userId]));
             }
             else{
                 $this->render($this->template, ['verificationError' => true, 'user' => $loginData['user']]);

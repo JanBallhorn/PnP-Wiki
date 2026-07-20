@@ -520,7 +520,7 @@ class ArticleController extends Controller
                     for ($i = 1; $i <= count($value); $i++){
                         $replace = "";
                         if($i === 4 * $j + 1 && $i !== count($value)){
-                            $replace = "<a class='createNewArticle' href='https://wiki.verplant-durch-aventurien.de/article/create?name=" . urlencode($value[$i]) . "' target='_blank'>";
+                            $replace = "<a class='createNewArticle' href='" . $this->url() . "/article/create?name=" . urlencode($value[$i]) . "' target='_blank'>";
                         }
                         elseif($i === 4 * $j + 3){
                             $replace = "</a>";

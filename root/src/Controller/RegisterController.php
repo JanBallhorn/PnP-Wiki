@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Env;
 use App\Model\User;
 use App\Repository\UserRepository;
 use DateTime;
@@ -45,13 +46,11 @@ class RegisterController extends Controller
         $passwordLength = strlen($userData['password']);
         if(empty($sameEmail) && empty($sameUsername) && $usernameLength > 3 && $passwordLength > 5) {
             $this->userRepository->save($user);
-            $whiteListFile = fopen(__DIR__ . "/../../inc/whitelist.json", "r");
-            $whiteList = fread($whiteListFile, filesize(__DIR__ . "/../../inc/whitelist.json"));
-            $whiteList = json_decode($whiteList, false);
-            if(in_array($userData['email'], $whiteList)){
+            $whiteList = array_map('trim', explode(',', Env::getRequired('REGISTER_WHITELIST')));
+            if(in_array($userData['email'], $whiteList, true)){
                 $this->sendMail($user);
             }
-            header('Location: ' . $this->url . '/register/thanks');
+            header('Location: ' . $this->url() . '/register/thanks');
         }
         elseif($passwordLength <= 5){
             $this->render($this->template, ['registerError' => true, 'passwordError' => true, 'firstname' => $userData['firstname'], 'lastname' => $userData['lastname'], 'email' => $userData['email'], 'username' => $userData['username']]);
@@ -98,17 +97,18 @@ class RegisterController extends Controller
     }
     private function sendMail(User $user): void
     {
+        $mailFrom = Env::getRequired('MAIL_FROM');
         $mailText = "<h1>Vielen Dank für Ihre Registrierung</h1>
         <p>Klicken Sie auf den folgenden Link, um ihren Account zu verifizieren:</p>
-        <a href='https://wiki.verplant-durch-aventurien.de/register/verify?" . http_build_query(['token'=>$user->getToken()]) . "'>Hier verifizieren</a>
+        <a href='" . $this->url() . "/register/verify?" . http_build_query(['token'=>$user->getToken()]) . "'>Hier verifizieren</a>
         ";
         $email = $user->getEmail();
         $subject = "Verifizierung Ihres Accounts für Pen and Paper Wiki";
         $header[] = 'MIME-Version: 1.0';
         $header[] = 'Content-type: text/html; charset=utf-8';
-        $header[] = "From: PnP Wiki <wiki@verplant-durch-aventurien.de>";
-        $header[] = "Reply-To: wiki@verplant-durch-aventurien.de";
-        $header[] = "Return-Path: wiki@verplant-durch-aventurien.de";
+        $header[] = "From: PnP Wiki <{$mailFrom}>";
+        $header[] = "Reply-To: {$mailFrom}";
+        $header[] = "Return-Path: {$mailFrom}";
         mail($email, $subject, $mailText, implode("\r\n", $header));
     }
 }

@@ -31,7 +31,10 @@ use Twig\TwigFunction;
 
 abstract class Controller
 {
-    protected string $url = "https://wiki.verplant-durch-aventurien.de";
+    protected function url(): string
+    {
+        return Env::getRequired('BASE_URL');
+    }
 
     /**
      * @throws RuntimeError
@@ -181,11 +184,7 @@ abstract class Controller
     }
     private function signingKey(): InMemory
     {
-        $secret = Env::get('JWT_SECRET');
-        if($secret === null || $secret === ''){
-            throw new \RuntimeException('JWT_SECRET is not configured - see .env');
-        }
-        return InMemory::plainText($secret);
+        return InMemory::plainText(Env::getRequired('JWT_SECRET'));
     }
     /**
      * Parses the given token and verifies its signature and expiry. Returns
@@ -229,7 +228,7 @@ abstract class Controller
             $expires = $now->add(\DateInterval::createFromDateString('1 day'));
         }
         $token = $tokenBuilder
-            ->issuedBy($this->url)
+            ->issuedBy($this->url())
             ->relatedTo($username)
             ->identifiedBy($userId)
             ->issuedAt($now)
@@ -261,15 +260,15 @@ abstract class Controller
     protected function createCookie(string $token, bool $remember): void
     {
         if($remember === true){
-            $extratime = 15768000;
+            $extratime = (int) Env::getRequired('COOKIE_LIFETIME_REMEMBER');
         }
         else{
-            $extratime = 86400;
+            $extratime = (int) Env::getRequired('COOKIE_LIFETIME_DEFAULT');
         }
         setcookie("login", $token, [
             'expires' => time() + $extratime,
             'path' => '/',
-            'domain' => 'wiki.verplant-durch-aventurien.de',
+            'domain' => Env::getRequired('COOKIE_DOMAIN'),
             'secure' => true,
             'httponly' => true,
             'samesite' => 'Lax',
@@ -282,7 +281,7 @@ abstract class Controller
     protected function destroyCookie(): void
     {
         if(isset($_COOKIE["login"])){
-            setcookie("login", "", time() - 3600, "/", "wiki.verplant-durch-aventurien.de", true);
+            setcookie("login", "", time() - 3600, "/", Env::getRequired('COOKIE_DOMAIN'), true);
         }
     }
     public function encodeImg(string $img): string

@@ -1,4 +1,3 @@
-whitelist.json
 db_credentials.txt
 .env
 externalImages/*

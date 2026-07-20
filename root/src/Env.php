@@ -4,9 +4,10 @@ namespace App;
 
 /**
  * Reads simple KEY=value pairs from a .env file one level above DOCUMENT_ROOT -
- * same location/convention as db_credentials.txt (see Database.php) - so secrets
- * that don't belong in source control (e.g. the JWT signing key) have somewhere
- * to live without a new deployment step of their own.
+ * outside the web root and out of source control - so configuration that varies
+ * per environment or must stay secret (base URL, cookie domain, mail sender,
+ * DB credentials, the JWT signing key) lives in one place. Replaces the former
+ * db_credentials.txt (see Database.php).
  */
 class Env
 {
@@ -16,6 +17,21 @@ class Env
     {
         self::load();
         return self::$values[$key] ?? null;
+    }
+
+    /**
+     * Like get(), but throws when the key is missing or empty - for values the
+     * application cannot run correctly without (secrets, DB credentials, the
+     * public base URL). Fails loudly at the point of use instead of silently
+     * degrading (e.g. unsigned tokens, cookies on the wrong domain).
+     */
+    public static function getRequired(string $key): string
+    {
+        $value = self::get($key);
+        if($value === null || $value === ''){
+            throw new \RuntimeException("Environment variable {$key} is not configured - see .env");
+        }
+        return $value;
     }
 
     private static function load(): void

@@ -10,13 +10,10 @@ class Database
 
     private function __construct()
     {
-        $location = dirname($_SERVER['DOCUMENT_ROOT']);
-        $file = fopen($location . '/db_credentials.txt', 'r');
-        $host = chop(fgets($file));
-        $user = chop(fgets($file));
-        $password = chop(fgets($file));
-        $dbname = chop(fgets($file));
-        fclose($file);
+        $host = Env::getRequired('DB_HOST');
+        $user = Env::getRequired('DB_USER');
+        $password = Env::getRequired('DB_PASSWORD');
+        $dbname = Env::getRequired('DB_NAME');
         $this->conn = new mysqli($host, $user, $password, $dbname);
         if ($this->conn->connect_error) {
             die("Connection failed: " . $this->conn->connect_error);
