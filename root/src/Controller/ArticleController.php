@@ -22,6 +22,7 @@ use App\Model\User;
 use App\Repository\ArticleInfoRepository;
 use App\Repository\ArticleRepository;
 use App\Repository\ArticleSourceRepository;
+use App\Repository\CategoryInfoTemplateRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\ParagraphContentRepository;
 use App\Repository\ParagraphGalleryRepository;
@@ -49,6 +50,7 @@ class ArticleController extends Controller
         private readonly ArticleInfoRepository $articleInfoRepository = new ArticleInfoRepository(),
         private readonly SourceRepository $sourceRepository = new SourceRepository(),
         private readonly ArticleSourceRepository $articleSourceRepository = new ArticleSourceRepository(),
+        private readonly CategoryInfoTemplateRepository $templateRepository = new CategoryInfoTemplateRepository(),
     ){}
 
     /**
@@ -115,11 +117,15 @@ class ArticleController extends Controller
             }
         }
         if($sameHeadline === null && !empty($article['project']) && isset($article['category']) && $this->isPathSafeHeadline($article['headline'])){
+            $useTemplate = isset($article['useTemplate']);
             $converted = $this->convertFormData($article);
             $article = new Article(0, new DateTime(), $user, new DateTime(), $user, $article['headline'], $converted['project'], $converted['categories'], $converted['tags'], $altHeadlines, $converted['private'], $converted['authorized'], isset($article['editable']), 0, true);
             $this->articleRepository->save($article);
-            $articleId = $this->articleRepository->findOneBy('headline', $article->getHeadline())->getId();
-            header("Location: /article?" . http_build_query(['id' => $articleId]));
+            $savedArticle = $this->articleRepository->findOneBy('headline', $article->getHeadline());
+            if($useTemplate){
+                $this->applyInfoTemplate($savedArticle);
+            }
+            header("Location: /article?" . http_build_query(['id' => $savedArticle->getId()]));
         }
         else{
             $projects = $this->projectRepository->findAll('name');
@@ -135,7 +141,8 @@ class ArticleController extends Controller
                 'altHeadlines' => $article['altHeadlines'],
                 'tags' => $article['tags'],
                 'private' => isset($article['private']),
-                'editable' => isset($article['editable'])
+                'editable' => isset($article['editable']),
+                'useTemplate' => isset($article['useTemplate'])
             ]);
         }
     }
@@ -277,6 +284,49 @@ class ArticleController extends Controller
             }
         }
         return array('categories' => $categories, 'project' => $project, 'tags' => $tags, 'private' => $private, 'authorized' => $authorized);
+    }
+
+    /**
+     * Builds an empty infobox from the merged templates of the article's
+     * categories (deduped by field name, submitted order preserved) and saves
+     * it, so a template-created article starts with the fields to fill in. The
+     * main headline defaults to the article headline. Does nothing when none of
+     * the categories defines a template. The article stays flagged empty - it's
+     * still a stub until real content is added.
+     * @throws Exception
+     */
+    private function applyInfoTemplate(Article $article): void
+    {
+        $categories = $article->getCategories();
+        if($categories === null){
+            return;
+        }
+        $infoContents = new ArticleInfoContentCollection();
+        $seenTopics = [];
+        $sequences = [];
+        foreach ($categories as $category){
+            $rows = $this->templateRepository->findBy('category', $category->getId(), 'sequence');
+            if($rows === null){
+                continue;
+            }
+            foreach ($rows as $row){
+                $topic = $row->getTopic();
+                if(isset($seenTopics[$topic])){
+                    continue;
+                }
+                $seenTopics[$topic] = true;
+                $headline = $row->getHeadline();
+                $sequences[$headline] = ($sequences[$headline] ?? 0) + 1;
+                $infoContent = new ArticleInfoContent(0, $topic, '', $headline, $sequences[$headline]);
+                $infoContents->offsetSet($infoContents->key(), $infoContent);
+                $infoContents->next();
+            }
+        }
+        if($infoContents->count() === 0){
+            return;
+        }
+        $info = new ArticleInfo(0, $article, $article->getHeadline(), $infoContents, new ArticleInfoGalleryCollection());
+        $this->articleInfoRepository->save($info);
     }
 
     /**

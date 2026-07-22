@@ -32,6 +32,32 @@
                     <span class="error fileType {% if errorFileType != true %}hide{% endif %}">Falscher Dateityp.</span>
                 </span>
             </label>
+            <fieldset class="infoTemplate">
+                <legend>Infobox-Vorlage</legend>
+                <p class="info">Felder, die neue Artikel dieser Kategorie automatisch in der Infobox erhalten (z.B. Gruppe „Allgemeines", Feld „Geburtstag"). Die Werte werden später im Artikel ausgefüllt.</p>
+                <div class="templateRows">
+                    {% if template is defined and template is not null %}
+                        {% for row in template.__serialize %}
+                            <div class="templateRow">
+                                <div>
+                                    <label>Gruppe/Abschnitt
+                                        <input name="templateGroup[]" maxlength="300" value="{{ row.headline }}">
+                                    </label>
+                                    <label>Feldname
+                                        <input name="templateTopic[]" maxlength="300" value="{{ row.topic }}">
+                                    </label>
+                                </div>
+                                <div class="controlButtons">
+                                    <button type="button" class="moveUp" title="Nach oben"><i class="fa-solid fa-caret-up"></i></button>
+                                    <button type="button" class="delete" title="Feld entfernen"><i class="fa-solid fa-xmark"></i></button>
+                                    <button type="button" class="moveDown" title="Nach unten"><i class="fa-solid fa-caret-down"></i></button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <button type="button" class="newTemplateRow button">+<br/>Feld hinzufügen</button>
+            </fieldset>
         </form>
         <input class="button" type="submit" value="Kategorie speichern" name="submit" form="createCategory">
         <p>Mit * versehende Felder müssen ausgefüllt sein.</p>

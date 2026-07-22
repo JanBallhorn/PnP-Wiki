@@ -57,6 +57,10 @@
                     Andere sollen diesen Artikel bearbeiten dürfen
                 </label>
                 <label>
+                    <input type="checkbox" name="useTemplate" {% if useTemplate is not defined or useTemplate %}checked{% endif %}>
+                    Infobox-Vorlage der gewählten Kategorie(n) übernehmen
+                </label>
+                <label>
                     <input type="checkbox" name="private" {% if private %}checked{% endif %}>
                     Dieser Artikel soll privat sein (Private Artikel können nur von dir gesehen und bearbeitet werden.)
                 </label>

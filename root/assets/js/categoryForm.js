@@ -1,4 +1,4 @@
-import {checkDuplicate, showMaxLength, checkFileType, checkFileSize} from "./formCheck.js";
+import {checkDuplicate, showMaxLength, checkFileType, checkFileSize, getTemplate} from "./formCheck.js";
 $(function (){
     let elName = $("input[name='name']");
     let elFile = $("input[name='fileUpload']");
@@ -32,4 +32,19 @@ $(function (){
         checkFileType($(this), 'image/svg+xml');
         checkFileSize($(this), 20000);
     })
+    $(".newTemplateRow").on("click", function (){
+        let lastGroup = $(".templateRow").last().find("input[name='templateGroup[]']").val() || "";
+        getTemplate($(".templateRows"), "newTemplateRow.twig", [lastGroup], true);
+    });
+    $(document).on("click", ".templateRow .delete", function (){
+        $(this).closest(".templateRow").remove();
+    });
+    $(document).on("click", ".templateRow .moveUp", function (){
+        let row = $(this).closest(".templateRow");
+        row.prev(".templateRow").before(row);
+    });
+    $(document).on("click", ".templateRow .moveDown", function (){
+        let row = $(this).closest(".templateRow");
+        row.next(".templateRow").after(row);
+    });
 });

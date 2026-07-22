@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
+use App\Collection\CategoryInfoTemplateCollection;
 use App\FileUpload;
 use App\Model\Category;
+use App\Model\CategoryInfoTemplate;
 use App\Repository\ArticleRepository;
+use App\Repository\CategoryInfoTemplateRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\UserRepository;
 use DateMalformedStringException;
@@ -21,7 +24,8 @@ class CategoryController extends Controller
     public function __construct(
         private readonly CategoryRepository $categoryRepository = new CategoryRepository(),
         private readonly UserRepository $userRepository = new UserRepository(),
-        private readonly ArticleRepository $articleRepository = new ArticleRepository()
+        private readonly ArticleRepository $articleRepository = new ArticleRepository(),
+        private readonly CategoryInfoTemplateRepository $templateRepository = new CategoryInfoTemplateRepository()
     ){}
 
     /**
@@ -84,6 +88,8 @@ class CategoryController extends Controller
             }
             $category = new Category(0, $categoryData['name'], $categoryData['description'], new DateTime(), $user, new DateTime(), $user, $icon);
             $this->categoryRepository->save($category);
+            $newCategory = $this->categoryRepository->findOneBy('name', $categoryData['name']);
+            $this->saveTemplate($newCategory->getId(), $categoryData);
             header("Location: /category");
         }
         else{
@@ -133,7 +139,8 @@ class CategoryController extends Controller
     public function edit(array $category): void
     {
         $category = $this->categoryRepository->findById($category['id']);
-        $this->render('editCategory.twig', ['category' => $category]);
+        $template = $this->templateRepository->findBy('category', $category->getId(), 'sequence');
+        $this->render('editCategory.twig', ['category' => $category, 'template' => $template]);
     }
 
     /**
@@ -160,10 +167,12 @@ class CategoryController extends Controller
             $icon = "categoryIcons/" . $upload->getFileName();
             $category->setIcon($icon);
             $this->categoryRepository->save($category);
+            $this->saveTemplate($category->getId(), $categoryData);
             header("Location: /category");
         }
         elseif(($sameCategory === null || $sameCategory->getId() === $category->getId()) && !isset($upload)){
             $this->categoryRepository->save($category);
+            $this->saveTemplate($category->getId(), $categoryData);
             header("Location: /category");
         }
         else{
@@ -198,6 +207,34 @@ class CategoryController extends Controller
         $this->categoryRepository->delete($category);
         header("Location: /category");
     }
+    /**
+     * Parses the infobox template rows from the category form (parallel
+     * templateGroup[]/templateTopic[] arrays) into template entities and
+     * replaces the category's stored template. Rows without a field name are
+     * dropped; sequence follows the submitted order.
+     */
+    private function saveTemplate(int $categoryId, array $data): void
+    {
+        $rows = new CategoryInfoTemplateCollection();
+        $topics = $data['templateTopic'] ?? [];
+        $groups = $data['templateGroup'] ?? [];
+        if(is_array($topics)){
+            $sequence = 1;
+            foreach ($topics as $index => $topic){
+                $topic = trim($topic);
+                $group = trim($groups[$index] ?? '');
+                if($topic === ''){
+                    continue;
+                }
+                $row = new CategoryInfoTemplate(0, $categoryId, $this->sanitizeHtml($group), $this->sanitizeHtml($topic), $sequence);
+                $rows->offsetSet($rows->key(), $row);
+                $rows->next();
+                $sequence++;
+            }
+        }
+        $this->templateRepository->saveForCategory($categoryId, $rows);
+    }
+
     private function prepareUpload(FileUpload $uploader): FileUpload|false
     {
         $uploader->setFile($uploader->getFileName());
