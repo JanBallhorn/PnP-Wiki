@@ -59,3 +59,11 @@ Feature-Übersicht des Pen-&-Paper-Wikis: was umgesetzt ist und was geplant/offe
 
 ### Editor
 - [ ] **TinyMCE anpassen / eigene Elemente** – die TinyMCE-Editoren anpassen oder ähnliche Elemente selbst nachbauen/einbetten.
+- [ ] **Spoiler & Platzhalter-Links überarbeiten** – die Funktionsweise der Spoiler-Funktion und der Platzhalter-Links für noch nicht existierende Artikel neu aufsetzen. Vermutlich Teil des Editor-Reworks.
+- [ ] **Verlinkungs-Hilfe beim Schreiben** – beim Verfassen automatisch prüfen, ob zum gerade geschriebenen Wort bereits ein Artikel existiert, und die Verlinkung anbieten. Verwandt mit der Such-Autocomplete und den Aliasen.
+
+### Benachrichtigungen / Engagement
+- [ ] **Erinnerungs-Newsletter** – Nutzer per E-Mail erinnern, einen Artikel zu schreiben, wenn sie über einen bestimmten Zeitraum keinen verfasst haben.
+
+### Statistiken
+- [ ] **Statistiken allgemein** – Auswertungen/Kennzahlen rund um Wiki, Artikel und Nutzeraktivität (Umfang noch zu konkretisieren).
