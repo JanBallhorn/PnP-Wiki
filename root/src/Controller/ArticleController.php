@@ -858,6 +858,7 @@ class ArticleController extends Controller
             $articles = null;
             $pages = null;
         }
+        $this->encodeArticleCategoryIcons($articles);
         $this->render('articleList.twig', ['articles' => $articles, 'filter' => $filterData['filter'], 'page' => $page, 'pages' => $pages]);
     }
 

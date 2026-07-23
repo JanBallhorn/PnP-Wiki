@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Collection\ArticleCollection;
 use App\Collection\UserCollection;
 use App\Env;
 use App\Repository\ArticleRepository;
@@ -295,6 +296,37 @@ abstract class Controller
             $imgType = image_type_to_mime_type(exif_imagetype($image));
         }
         return "data:" . $imgType . ";base64," . base64_encode(file_get_contents($image));
+    }
+
+    /**
+     * Replaces each article category's stored icon path with an inline
+     * base64 data-URI so the icons show up in article overviews - the SVGs
+     * live outside the web root and can't be linked directly (same reason
+     * CategoryController::index() encodes them). Skips icons that are already
+     * encoded: the repository hands out shared cached Category instances, so
+     * an icon may already have been converted by an earlier call (e.g. the
+     * home page encodes two article lists); re-encoding would try to read the
+     * data-URI as a file path.
+     */
+    public function encodeArticleCategoryIcons(?ArticleCollection $articles): void
+    {
+        if($articles === null){
+            return;
+        }
+        foreach($articles as $article){
+            $categories = $article->getCategories();
+            if($categories === null){
+                continue;
+            }
+            foreach($categories as $category){
+                $icon = $category->getIcon();
+                if($icon === null || str_starts_with($icon, 'data:')){
+                    continue;
+                }
+                $category->setIcon($this->encodeImg($icon));
+            }
+        }
+        $articles->rewind();
     }
 
     /**

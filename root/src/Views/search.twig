@@ -27,8 +27,22 @@
                         {% for article in articles.__serialize %}
                             <li {% if article.empty %}class="emptyArticle"{% endif %}>
                                 <a href="/article?id={{ article.id }}" class="article">
-                                    <h3>{{ article.headline }}</h3>
-                                    <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                                    <div class="articleText">
+                                        <h3>{{ article.headline }}</h3>
+                                        <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                                    </div>
+                                    {% if article.categories %}
+                                        <span class="articleCategories">
+                                            {% for category in article.categories.__serialize %}
+                                                <span class="articleCategory">
+                                                    {% if category.icon %}
+                                                        <img src="{{ category.icon }}" alt="{{ category.name }}">
+                                                    {% endif %}
+                                                    {{ category.name }}
+                                                </span>
+                                            {% endfor %}
+                                        </span>
+                                    {% endif %}
                                 </a>
                             </li>
                         {% endfor %}

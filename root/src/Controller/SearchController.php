@@ -82,6 +82,7 @@ class SearchController extends Controller
                 $articles->offsetUnset($offset);
             }
         }
+        $this->encodeArticleCategoryIcons($articles);
         if(isset($query['category'])){
             $category = $this->categoryRepository->findById($query['category']);
             $this->render('categoryDetail.twig', [

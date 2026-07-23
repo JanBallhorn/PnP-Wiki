@@ -149,6 +149,7 @@ class ProjectController extends Controller
         if(isset($projectData['error'])){
             $error = $projectData['error'];
         }
+        $this->encodeArticleCategoryIcons($articles);
         $this->render("projectDetail.twig", ['project' => $project, 'deleteError' => $error, 'articles' => $articles, 'filter' => $filter, 'page' => $page, 'pages' => $pages]);
     }
 

@@ -919,6 +919,32 @@ LISTS
     margin-bottom: 0;
     height: 100%;
 }
+.content ul li a.article{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.article .articleCategories{
+    display: flex;
+    flex-flow: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    text-align: right;
+}
+.article .articleCategory{
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.article .articleCategories img{
+    height: 1.5em;
+    width: 1.5em;
+    object-fit: contain;
+    filter: var(--svg-filter);
+    flex-shrink: 0;
+}
 
 /******************************************
 ARTICLES

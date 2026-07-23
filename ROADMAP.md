@@ -55,7 +55,7 @@ Feature-Übersicht des Pen-&-Paper-Wikis: was umgesetzt ist und was geplant/offe
 - [ ] **Sammel-/Begriffsklärungsseiten** – Seiten, die mehrere ähnliche Artikel unter einem Begriff bündeln und vergleichbar nebeneinanderstellen (analog zu Wikipedias Begriffsklärung, z. B. „Objekt" → „Sache", „Objekt (Grammatik)", „Objekt (Programmierung)"). Offen: wie die Zuordnung entsteht (manuell gepflegt vs. automatisch über gleiche/ähnliche Überschriften – hängt mit den Aliasen zusammen).
 
 ### Darstellung / UI
-- [ ] **Kategorie-Icons in Übersichten** – in den Artikel-Übersichten (inkl. Suchergebnissen) das Icon der Kategorie anzeigen, um Artikel schneller einordnen zu können. Icons existieren bereits pro Kategorie, sind beim Anlegen aber optional → Fallback für Kategorien ohne Icon nötig (Platzhalter/kein Icon).
+- [x] **Kategorie-Icons in Übersichten** – Icon **und** Name der Kategorie(n) rechtsbündig in allen Artikel-Übersichten (Artikelliste, Suche, Kategorie-Detail, Projekt-Detail, Startseite). Icons liegen außerhalb des Webroots und werden im Controller per `encodeArticleCategoryIcons()` als base64-Data-URI eingebettet. Fallback: Kategorien ohne Icon zeigen nur den Namen.
 
 ### Editor
 - [ ] **TinyMCE anpassen / eigene Elemente** – die TinyMCE-Editoren anpassen oder ähnliche Elemente selbst nachbauen/einbetten.

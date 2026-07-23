@@ -133,6 +133,7 @@ class CategoryController extends Controller
             $pages = null;
         }
         $filter = $categoryData['filter'];
+        $this->encodeArticleCategoryIcons($articles);
         $this->render('categoryDetail.twig', ['category' => $category, 'articles' => $articles, 'filter' => $filter, 'page' => $page, 'pages' => $pages]);
     }
 

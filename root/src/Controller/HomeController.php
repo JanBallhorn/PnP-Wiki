@@ -32,6 +32,8 @@ class HomeController extends Controller
             $categories = (new CategoryRepository())->findPopularCategories();
             $popularArticles = (new ArticleRepository())->findAllBetween(0, 5, $user->getId(), 'called DESC');
             $newArticles = (new ArticleRepository())->findAllBetween(0, 5, $user->getId(), 'published DESC');
+            $this->encodeArticleCategoryIcons($popularArticles);
+            $this->encodeArticleCategoryIcons($newArticles);
             $this->render($this->template, [
                 'projects' => $projects,
                 'categories' => $categories,
