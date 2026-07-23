@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Collection\CategoryInfoTemplateCollection;
+use App\Collection\CategorySectionTemplateCollection;
 use App\FileUpload;
 use App\Model\Category;
 use App\Model\CategoryInfoTemplate;
+use App\Model\CategorySectionTemplate;
 use App\Repository\ArticleRepository;
 use App\Repository\CategoryInfoTemplateRepository;
+use App\Repository\CategorySectionTemplateRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\UserRepository;
 use DateMalformedStringException;
@@ -25,7 +28,8 @@ class CategoryController extends Controller
         private readonly CategoryRepository $categoryRepository = new CategoryRepository(),
         private readonly UserRepository $userRepository = new UserRepository(),
         private readonly ArticleRepository $articleRepository = new ArticleRepository(),
-        private readonly CategoryInfoTemplateRepository $templateRepository = new CategoryInfoTemplateRepository()
+        private readonly CategoryInfoTemplateRepository $templateRepository = new CategoryInfoTemplateRepository(),
+        private readonly CategorySectionTemplateRepository $sectionTemplateRepository = new CategorySectionTemplateRepository()
     ){}
 
     /**
@@ -90,6 +94,7 @@ class CategoryController extends Controller
             $this->categoryRepository->save($category);
             $newCategory = $this->categoryRepository->findOneBy('name', $categoryData['name']);
             $this->saveTemplate($newCategory->getId(), $categoryData);
+            $this->saveSectionTemplate($newCategory->getId(), $categoryData);
             header("Location: /category");
         }
         else{
@@ -140,7 +145,8 @@ class CategoryController extends Controller
     {
         $category = $this->categoryRepository->findById($category['id']);
         $template = $this->templateRepository->findBy('category', $category->getId(), 'sequence');
-        $this->render('editCategory.twig', ['category' => $category, 'template' => $template]);
+        $sectionTemplate = $this->sectionTemplateRepository->findBy('category', $category->getId(), 'sequence');
+        $this->render('editCategory.twig', ['category' => $category, 'template' => $template, 'sectionTemplate' => $sectionTemplate]);
     }
 
     /**
@@ -168,11 +174,13 @@ class CategoryController extends Controller
             $category->setIcon($icon);
             $this->categoryRepository->save($category);
             $this->saveTemplate($category->getId(), $categoryData);
+            $this->saveSectionTemplate($category->getId(), $categoryData);
             header("Location: /category");
         }
         elseif(($sameCategory === null || $sameCategory->getId() === $category->getId()) && !isset($upload)){
             $this->categoryRepository->save($category);
             $this->saveTemplate($category->getId(), $categoryData);
+            $this->saveSectionTemplate($category->getId(), $categoryData);
             header("Location: /category");
         }
         else{
@@ -233,6 +241,32 @@ class CategoryController extends Controller
             }
         }
         $this->templateRepository->saveForCategory($categoryId, $rows);
+    }
+
+    /**
+     * Parses the section template rows (sectionHeadline[]) from the category
+     * form into template entities and replaces the category's stored section
+     * template. Rows without a headline are dropped; sequence follows the
+     * submitted order.
+     */
+    private function saveSectionTemplate(int $categoryId, array $data): void
+    {
+        $rows = new CategorySectionTemplateCollection();
+        $headlines = $data['sectionHeadline'] ?? [];
+        if(is_array($headlines)){
+            $sequence = 1;
+            foreach ($headlines as $headline){
+                $headline = trim($headline);
+                if($headline === ''){
+                    continue;
+                }
+                $row = new CategorySectionTemplate(0, $categoryId, $this->sanitizeHtml($headline), $sequence);
+                $rows->offsetSet($rows->key(), $row);
+                $rows->next();
+                $sequence++;
+            }
+        }
+        $this->sectionTemplateRepository->saveForCategory($categoryId, $rows);
     }
 
     private function prepareUpload(FileUpload $uploader): FileUpload|false

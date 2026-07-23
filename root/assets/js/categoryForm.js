@@ -47,4 +47,18 @@ $(function (){
         let row = $(this).closest(".templateRow");
         row.next(".templateRow").after(row);
     });
+    $(".newSectionRow").on("click", function (){
+        getTemplate($(".sectionRows"), "newSectionRow.twig", [""], true);
+    });
+    $(document).on("click", ".sectionRow .delete", function (){
+        $(this).closest(".sectionRow").remove();
+    });
+    $(document).on("click", ".sectionRow .moveUp", function (){
+        let row = $(this).closest(".sectionRow");
+        row.prev(".sectionRow").before(row);
+    });
+    $(document).on("click", ".sectionRow .moveDown", function (){
+        let row = $(this).closest(".sectionRow");
+        row.next(".sectionRow").after(row);
+    });
 });

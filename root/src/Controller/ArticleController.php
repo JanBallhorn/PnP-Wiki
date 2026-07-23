@@ -23,6 +23,7 @@ use App\Repository\ArticleInfoRepository;
 use App\Repository\ArticleRepository;
 use App\Repository\ArticleSourceRepository;
 use App\Repository\CategoryInfoTemplateRepository;
+use App\Repository\CategorySectionTemplateRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\ParagraphContentRepository;
 use App\Repository\ParagraphGalleryRepository;
@@ -51,6 +52,7 @@ class ArticleController extends Controller
         private readonly SourceRepository $sourceRepository = new SourceRepository(),
         private readonly ArticleSourceRepository $articleSourceRepository = new ArticleSourceRepository(),
         private readonly CategoryInfoTemplateRepository $templateRepository = new CategoryInfoTemplateRepository(),
+        private readonly CategorySectionTemplateRepository $sectionTemplateRepository = new CategorySectionTemplateRepository(),
     ){}
 
     /**
@@ -124,6 +126,7 @@ class ArticleController extends Controller
             $savedArticle = $this->articleRepository->findOneBy('headline', $article->getHeadline());
             if($useTemplate){
                 $this->applyInfoTemplate($savedArticle);
+                $this->applySectionTemplate($savedArticle, $user);
             }
             header("Location: /article?" . http_build_query(['id' => $savedArticle->getId()]));
         }
@@ -327,6 +330,54 @@ class ArticleController extends Controller
         }
         $info = new ArticleInfo(0, $article, $article->getHeadline(), $infoContents, new ArticleInfoGalleryCollection());
         $this->articleInfoRepository->save($info);
+    }
+
+    /**
+     * Builds the article's paragraph skeleton from the merged section templates
+     * of its categories (deduped by headline, submitted order preserved): an
+     * empty introduction (sequence 1) plus one empty paragraph per template
+     * section (sequence 2..n, headline only). The introduction gets one blank
+     * content row because the paragraph editor reads contents[0] for it. Does
+     * nothing when no category defines section headlines; the article stays
+     * flagged empty until real content is added.
+     * @throws Exception
+     */
+    private function applySectionTemplate(Article $article, User $user): void
+    {
+        $categories = $article->getCategories();
+        if($categories === null){
+            return;
+        }
+        $headlines = [];
+        $seen = [];
+        foreach ($categories as $category){
+            $rows = $this->sectionTemplateRepository->findBy('category', $category->getId(), 'sequence');
+            if($rows === null){
+                continue;
+            }
+            foreach ($rows as $row){
+                $headline = $row->getHeadline();
+                if(isset($seen[$headline])){
+                    continue;
+                }
+                $seen[$headline] = true;
+                $headlines[] = $headline;
+            }
+        }
+        if(count($headlines) === 0){
+            return;
+        }
+        $introduction = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, "", 1);
+        $this->paragraphRepository->save($introduction);
+        $savedIntro = $this->paragraphRepository->findBy('article', $article->getId(), 'sequence')->offsetGet(0);
+        $introContent = new ParagraphContent(0, $savedIntro, "", null, null, false, 1);
+        $this->paragraphContentRepository->save($introContent);
+        $sequence = 2;
+        foreach ($headlines as $headline){
+            $section = new Paragraph(0, new DateTime(), $user, new DateTime(), $user, $article, $headline, $sequence);
+            $this->paragraphRepository->save($section);
+            $sequence++;
+        }
     }
 
     /**

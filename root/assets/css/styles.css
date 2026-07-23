@@ -1137,12 +1137,12 @@ MEDIA QUERIES
     }
 }
 
-/* Kategorie-Infobox-Vorlage (Template-Designer) */
-.infoTemplate .info{
+/* Kategorie-Vorlagen (Infobox- & Abschnitts-Designer) */
+.infoTemplate .info, .sectionTemplate .info{
     width: 100%;
     margin-bottom: 0.5rem;
 }
-.infoTemplate .templateRows{
+.infoTemplate .templateRows, .sectionTemplate .sectionRows{
     width: 100%;
     display: flex;
     flex-flow: column;
@@ -1151,10 +1151,10 @@ MEDIA QUERIES
     background-color: var(--body-bg);
     border: 2px solid var(--box-bg);
 }
-.infoTemplate .templateRows:empty{
+.infoTemplate .templateRows:empty, .sectionTemplate .sectionRows:empty{
     display: none;
 }
-.templateRow{
+.templateRow, .sectionRow{
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1164,47 +1164,54 @@ MEDIA QUERIES
     border: 2px solid var(--box-bg);
     position: relative;
 }
-.templateRow > div:first-child{
+.templateRow > div:first-child, .sectionRow > div:first-child{
     display: flex;
     gap: 0.75rem;
     width: calc(100% - 6em);
 }
-.templateRow label{
-    width: 50%;
+.templateRow label, .sectionRow label{
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
 }
-.templateRow .controlButtons{
+.templateRow label{
+    width: 50%;
+}
+.sectionRow label{
+    width: 100%;
+}
+.templateRow .controlButtons, .sectionRow .controlButtons{
     width: 6em;
     flex-flow: row;
     justify-content: space-between;
     padding: 0;
 }
-.templateRow .controlButtons button{
+.templateRow .controlButtons button, .sectionRow .controlButtons button{
     font-size: 1.6em;
     cursor: pointer;
     line-height: 1;
 }
 .templateRow:first-child .moveUp,
-.templateRow:last-child .moveDown{
+.templateRow:last-child .moveDown,
+.sectionRow:first-child .moveUp,
+.sectionRow:last-child .moveDown{
     visibility: hidden;
 }
-.infoTemplate .newTemplateRow{
+.infoTemplate .newTemplateRow, .sectionTemplate .newSectionRow{
     margin-top: 0.75rem;
 }
 @media screen and (max-width: 700px){
-    .templateRow{
+    .templateRow, .sectionRow{
         flex-flow: column;
         align-items: stretch;
     }
-    .templateRow > div:first-child{
+    .templateRow > div:first-child, .sectionRow > div:first-child{
         width: 100%;
         flex-flow: column;
     }
     .templateRow label{
         width: 100%;
     }
-    .templateRow .controlButtons{
+    .templateRow .controlButtons, .sectionRow .controlButtons{
         width: 100%;
         justify-content: flex-end;
         gap: 1.5rem;
