@@ -46,8 +46,8 @@ Feature-Übersicht des Pen-&-Paper-Wikis: was umgesetzt ist und was geplant/offe
 - **Vollständiger CSRF-Token-Schutz** über alle Formulare. Zurückgestellt (2026-07-18): `SameSite=Lax` gilt als ausreichend; voller Rollout würde ~20 Templates + JS betreffen. Nur bei Bedarf angehen.
 
 ### Suche
-- [ ] **Alternative Überschriften (Aliase) für Artikel** – ein Artikel kann mehrere Überschriften haben. Wenn ein Alias einen Treffer erzeugt, soll der zugehörige Artikel in der Such-Übersicht angezeigt werden.
-- [ ] **Such-Vorschläge per Ajax (Autocomplete)** – während des Tippens Treffer vorschlagen, z. B. „bor" → „Bornland". Sollte auch die Aliase aus dem Punkt oben berücksichtigen.
+- [x] **Alternative Überschriften (Aliase) für Artikel** – Eingabe, Speicherung (`article_alt_headline`) und Suche waren bereits vorhanden. Ergänzt: Suchergebnisse zeigen bei Alias-Treffern „gefunden über: {Alias}", und der Artikel lässt sich unter dem Alias aufrufen (`?alias=…`, serverseitig validiert) mit Hinweis auf den Originaltitel.
+- [x] **Such-Vorschläge per Ajax (Autocomplete)** – Dropdown ab 2 Zeichen (`type=suggest` in `Ajax.php`, `ArticleRepository::suggest()`), Präfix-Match auf Titel + Alias, private Artikel gefiltert. Auswahl springt direkt zum Artikel (Alias-Treffer inkl. `&alias=…`). Frontend: `searchSuggest.js`, global in `base.twig`.
 
 ### Artikel-Verknüpfung *(größere Features)*
 - [ ] **Zeitstrahl** – Artikel entlang einer Zeitachse verknüpfen und darstellen.

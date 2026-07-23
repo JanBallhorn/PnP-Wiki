@@ -83,13 +83,15 @@ class SearchController extends Controller
             }
         }
         $this->encodeArticleCategoryIcons($articles);
+        $matchedAliases = $this->resolveMatchedAliases($articles, $query['search']);
         if(isset($query['category'])){
             $category = $this->categoryRepository->findById($query['category']);
             $this->render('categoryDetail.twig', [
                 'category' => $category,
                 'searched' => true,
                 'articles' => $articles,
-                'query' => $query['search']
+                'query' => $query['search'],
+                'matchedAliases' => $matchedAliases
             ]);
         }
         elseif (isset($query['project'])){
@@ -100,15 +102,45 @@ class SearchController extends Controller
                 'project' => $project,
                 'searched' => true,
                 'articles' => $articles,
-                'query' => $query['search']
+                'query' => $query['search'],
+                'matchedAliases' => $matchedAliases
             ]);
         }
         else{
             $this->render('search.twig', [
                 'searched' => true,
                 'articles' => $articles,
-                'query' => $query['search']
+                'query' => $query['search'],
+                'matchedAliases' => $matchedAliases
             ]);
         }
+    }
+
+    /**
+     * For each result, works out which alt headline caused the hit so the
+     * template can show why the article appears. Only set when the search
+     * term is not already in the main headline; if the hit came from a tag or
+     * body text (not an alias) the article is simply left out of the map.
+     * @return array<int, string> article id => matched alias
+     */
+    private function resolveMatchedAliases(iterable $articles, string $search): array
+    {
+        $searchTerm = mb_strtolower(trim($search));
+        $matchedAliases = [];
+        foreach($articles as $article){
+            if($searchTerm === '' || str_contains(mb_strtolower($article->getHeadline()), $searchTerm)){
+                continue;
+            }
+            foreach(($article->getAltHeadlines() ?? []) as $alt){
+                if(str_contains(mb_strtolower($alt), $searchTerm)){
+                    $matchedAliases[$article->getId()] = $alt;
+                    break;
+                }
+            }
+        }
+        if($articles instanceof \Iterator){
+            $articles->rewind();
+        }
+        return $matchedAliases;
     }
 }

@@ -237,6 +237,70 @@ class ArticleRepository extends Repository implements RepositoryInterface
     }
 
     /**
+     * Prefix-matches articles by headline or alt headline for the search
+     * autocomplete. Only returns articles the given user may see (public, or
+     * private and authorized). Alias hits carry the matched alt headline in
+     * 'alias' so the dropdown can show why the article was suggested; headline
+     * hits have alias = null. Deduped by article id, headline hits first.
+     * @return array<int, array{id:int, headline:string, alias:?string}>
+     */
+    public function suggest(string $query, int $userId, int $limit = 8): array
+    {
+        $prefix = $query . '%';
+        $suggestions = [];
+        $seen = [];
+
+        $headlineQuery =
+            "SELECT DISTINCT a.id, a.headline
+            FROM articles a
+            LEFT JOIN article_authorized auth
+                ON a.id = auth.article AND auth.user = ?
+            WHERE (a.private = 0 OR (a.private = 1 AND auth.user IS NOT NULL))
+                AND a.headline LIKE ?
+            ORDER BY a.headline
+            LIMIT ?"
+        ;
+        $stmt = $this->db->prepare($headlineQuery);
+        $stmt->bind_param("isi", $userId, $prefix, $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while($row = $result->fetch_object()){
+            $seen[(int)$row->id] = true;
+            $suggestions[] = ['id' => (int)$row->id, 'headline' => $row->headline, 'alias' => null];
+        }
+
+        if(count($suggestions) < $limit){
+            $aliasQuery =
+                "SELECT a.id, a.headline, alt.headline AS alias
+                FROM articles a
+                INNER JOIN article_alt_headline alt
+                    ON a.id = alt.article
+                LEFT JOIN article_authorized auth
+                    ON a.id = auth.article AND auth.user = ?
+                WHERE (a.private = 0 OR (a.private = 1 AND auth.user IS NOT NULL))
+                    AND alt.headline LIKE ?
+                ORDER BY alt.headline
+                LIMIT ?"
+            ;
+            $stmt = $this->db->prepare($aliasQuery);
+            $stmt->bind_param("isi", $userId, $prefix, $limit);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            while($row = $result->fetch_object()){
+                if(isset($seen[(int)$row->id])){
+                    continue;
+                }
+                $seen[(int)$row->id] = true;
+                $suggestions[] = ['id' => (int)$row->id, 'headline' => $row->headline, 'alias' => $row->alias];
+                if(count($suggestions) >= $limit){
+                    break;
+                }
+            }
+        }
+        return array_slice($suggestions, 0, $limit);
+    }
+
+    /**
      * @throws Exception
      */
     public function getNumberOfArticles(int $userId, ?Category $categoryFilter = null, ?Project $projectFilter = null): ?int

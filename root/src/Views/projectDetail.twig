@@ -36,10 +36,13 @@
                 {% else %}
                     {% for article in articles.__serialize %}
                         <li {% if article.empty %}class="emptyArticle"{% endif %}>
-                            <a href="/article?id={{ article.id }}" class="article">
+                            <a href="/article?id={{ article.id }}{% if matchedAliases is defined and matchedAliases[article.id] is defined %}&alias={{ matchedAliases[article.id]|url_encode }}{% endif %}" class="article">
                                 <div class="articleText">
                                     <h3>{{ article.headline }}</h3>
                                     <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                                    {% if matchedAliases is defined and matchedAliases[article.id] is defined %}
+                                        <p class="matchedAlias">gefunden über: {{ matchedAliases[article.id] }}</p>
+                                    {% endif %}
                                 </div>
                                 {% if article.categories %}
                                     <span class="articleCategories">
@@ -76,10 +79,13 @@
                 <ul>
                     {% for article in articles.__serialize %}
                         <li {% if article.empty %}class="emptyArticle"{% endif %}>
-                            <a href="/article?id={{ article.id }}" class="article">
+                            <a href="/article?id={{ article.id }}{% if matchedAliases is defined and matchedAliases[article.id] is defined %}&alias={{ matchedAliases[article.id]|url_encode }}{% endif %}" class="article">
                                 <div class="articleText">
                                     <h3>{{ article.headline }}</h3>
                                     <p>Erstellt am {{ article.published|date("d.m.Y - H:i:s") }} von {{ article.createdBy.username }}</p>
+                                    {% if matchedAliases is defined and matchedAliases[article.id] is defined %}
+                                        <p class="matchedAlias">gefunden über: {{ matchedAliases[article.id] }}</p>
+                                    {% endif %}
                                 </div>
                                 {% if article.categories %}
                                     <span class="articleCategories">

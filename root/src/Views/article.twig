@@ -1,6 +1,6 @@
 {% extends "base.twig" %}
 
-{% block title %}{{ article.headline }} - {% endblock %}
+{% block title %}{% if alias is defined and alias %}{{ alias }}{% else %}{{ article.headline }}{% endif %} - {% endblock %}
 
 {% block head %}
     {{ parent() }}
@@ -30,7 +30,12 @@
                 <a href="/article/edit?id={{ article.id }}" title="Artikel bearbeiten"><i class="fa-solid fa-gear"></i></a>
             </div>
         {% endif %}
-        <h1>{{ article.headline }}</h1>
+        {% if alias is defined and alias %}
+            <h1>{{ alias }}</h1>
+            <p class="aliasNote">Originaltitel: <a href="/article?id={{ article.id }}">{{ article.headline }}</a></p>
+        {% else %}
+            <h1>{{ article.headline }}</h1>
+        {% endif %}
         <div class="articleContent">
             <div class="mainArticleContent">
                 {% set info = article.info %}

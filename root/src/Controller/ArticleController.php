@@ -60,8 +60,15 @@ class ArticleController extends Controller
      */
     public function index(array $article): void
     {
+        $requestedAlias = $article['alias'] ?? null;
         $article = $this->articleRepository->findById($article['id']);
-        $this->render('article.twig', ['article' => $article]);
+        // only honour the alias if it really is one of this article's alt
+        // headlines, so a crafted ?alias= can't inject an arbitrary heading
+        $alias = null;
+        if($requestedAlias !== null && $article !== null && in_array($requestedAlias, $article->getAltHeadlines() ?? [], true)){
+            $alias = $requestedAlias;
+        }
+        $this->render('article.twig', ['article' => $article, 'alias' => $alias]);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Controller\Controller;
 use App\Repository\ArticleRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\SourceRepository;
+use App\Repository\UserRepository;
 use Exception;
 use mysqli;
 use Twig\Environment;
@@ -79,6 +80,27 @@ class Ajax extends Controller
     }
 
     /**
+     * Returns search autocomplete suggestions for the current user. Requires
+     * login and a query of at least 2 characters; private articles the user
+     * is not authorized for are filtered out in the repository.
+     * @return array<int, array{id:int, headline:string, alias:?string}>
+     * @throws Exception
+     */
+    function suggest(string $query): array
+    {
+        $query = trim($query);
+        if(!$this->checkLogin() || mb_strlen($query) < 2){
+            return [];
+        }
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = (new UserRepository())->findOneBy('username', $username);
+        if($user === null){
+            return [];
+        }
+        return (new ArticleRepository())->suggest($query, $user->getId());
+    }
+
+    /**
      * @throws Exception
      */
     function getPrivateAndAuth($projectName): ?array
@@ -139,6 +161,10 @@ if(isset($_POST['type']) && $_POST['type'] === 'render' && preg_match('/^[A-Za-z
 
 if(isset($_POST['type']) && $_POST['type'] === 'track'){
     (new Ajax())->trackVisits($_POST['article']);
+}
+
+if(isset($_POST['type']) && $_POST['type'] === 'suggest'){
+    echo json_encode((new Ajax())->suggest($_POST['query'] ?? ''));
 }
 
 if(isset($_POST['type']) && $_POST['type'] === 'privateAndAuth'){
