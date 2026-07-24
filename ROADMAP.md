@@ -67,4 +67,5 @@ Feature-Übersicht des Pen-&-Paper-Wikis: was umgesetzt ist und was geplant/offe
 - [ ] **Erinnerungs-Newsletter** – Nutzer per E-Mail erinnern, einen Artikel zu schreiben, wenn sie über einen bestimmten Zeitraum keinen verfasst haben.
 
 ### Statistiken
-- [ ] **Statistiken allgemein** – Auswertungen/Kennzahlen rund um Wiki, Artikel und Nutzeraktivität (Umfang noch zu konkretisieren).
+- [x] **Statistiken v1** – eigene Seite `/statistics` mit vier Auswertungen: Autoren-Rangliste (nicht-leere Artikel, aktueller Monat + gesamt, alle Nutzer), Wachstum seit Beginn (kumulierte Linie, mit/ohne leere Artikel, Inline-SVG), Artikel pro Kategorie und meistgenutzte Quellen (je Balken + Top-N-Donut mit „Sonstige"). Neues Flag `users.test_user` blendet Test-Konten und deren Artikel aus. Aggregate zählen private Artikel mit (keine Artikel namentlich). *Ausbau folgt (weitere Kennzahlen, Hover-Tooltips).*
+  - *DB:* Spalte `users.test_user TINYINT(1) DEFAULT 0` muss angelegt sein.

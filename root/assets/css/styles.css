@@ -1296,3 +1296,191 @@ MEDIA QUERIES
         gap: 1.5rem;
     }
 }
+
+/******************************************
+STATISTICS
+******************************************/
+.statsPage{
+    --stat-series-1: #2a78d6;
+    --stat-series-2: #eb6834;
+    --stat-grid: #e1e0d9;
+    --stat-axis: #898781;
+    --stat-slice-1: #2a78d6;
+    --stat-slice-2: #eb6834;
+    --stat-slice-3: #1baf7a;
+    --stat-slice-4: #eda100;
+    --stat-slice-5: #e87ba4;
+    --stat-slice-6: #008300;
+    --stat-slice-7: #4a3aa7;
+    --stat-slice-8: #e34948;
+    --stat-slice-other: #b8b7b0;
+}
+:root.dark .statsPage{
+    --stat-series-1: #3987e5;
+    --stat-series-2: #d95926;
+    --stat-grid: #2c2c2a;
+    --stat-slice-1: #3987e5;
+    --stat-slice-2: #d95926;
+    --stat-slice-3: #199e70;
+    --stat-slice-4: #c98500;
+    --stat-slice-5: #d55181;
+    --stat-slice-6: #008300;
+    --stat-slice-7: #9085e9;
+    --stat-slice-8: #e66767;
+    --stat-slice-other: #6b6a64;
+}
+.statBlock{
+    margin-bottom: 2.5rem;
+}
+.statBlock .statHint{
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--stat-axis);
+}
+.statTwoCol{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+.statTwoCol .statCol{
+    flex: 1 1 20rem;
+    min-width: 0;
+}
+.statBars{
+    list-style: none;
+    margin-top: 0.5rem;
+    display: grid;
+    grid-template-columns: minmax(7em, 12em) 1fr auto;
+    align-items: center;
+    gap: 0.45rem 0.7rem;
+}
+.statBars li{
+    display: contents;
+}
+.statBars .statLabel{
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.statBars .statType{
+    color: var(--stat-axis);
+    font-size: 0.85em;
+}
+.statBar{
+    background-color: var(--box-bg);
+    border-radius: 0.2rem;
+    height: 0.9rem;
+    overflow: hidden;
+}
+.statBarFill{
+    display: block;
+    height: 100%;
+    min-width: 2px;
+    background-color: var(--stat-series-1);
+    border-radius: 0.2rem;
+}
+.statBars .statValue{
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.statEmpty{
+    color: var(--stat-axis);
+    font-style: italic;
+}
+.growthSvg{
+    width: 75%;
+    height: auto;
+    display: block;
+    margin: 0.5rem auto 0;
+}
+.growthSvg .statGrid{
+    stroke: var(--stat-grid);
+    stroke-width: 1;
+}
+.growthSvg .statAxisLabel{
+    fill: var(--stat-axis);
+    font-size: 11px;
+}
+.growthSvg .statLineTotal{
+    stroke: var(--stat-series-1);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+.growthSvg .statLineNon{
+    stroke: var(--stat-series-2);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+.statLegend{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-top: 0.5rem;
+}
+.statLegendItem{
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.statSwatch{
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 0.2rem;
+    display: inline-block;
+}
+.statSwatch.swatch1{ background-color: var(--stat-series-1); }
+.statSwatch.swatch2{ background-color: var(--stat-series-2); }
+.statChartRow{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 2.5rem;
+    align-items: flex-start;
+}
+.statChartRow .statBarsWrap{
+    flex: 1 1 22rem;
+    min-width: 0;
+}
+.donutWrap{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.25rem;
+    align-items: center;
+}
+.donut{
+    width: 11rem;
+    height: 11rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+    -webkit-mask: radial-gradient(circle, transparent 0 54%, #000 55%);
+    mask: radial-gradient(circle, transparent 0 54%, #000 55%);
+}
+.donutLegend{
+    list-style: none;
+    margin: 0;
+    display: grid;
+    gap: 0.3rem;
+    min-width: 9rem;
+}
+.donutLegend li{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.donutSwatch{
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 0.2rem;
+    flex-shrink: 0;
+    display: inline-block;
+}
+.donutLegend .donutName{
+    flex: 1;
+}
+.donutLegend .donutVal{
+    color: var(--stat-axis);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}

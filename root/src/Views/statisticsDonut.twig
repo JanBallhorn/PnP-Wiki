@@ -1,0 +1,28 @@
+{% if donut is not empty %}
+    {% set total = 0 %}
+    {% for s in donut %}{% set total = total + s.count %}{% endfor %}
+    {% if total < 1 %}{% set total = 1 %}{% endif %}
+    {% set sliceColors = ['var(--stat-slice-1)', 'var(--stat-slice-2)', 'var(--stat-slice-3)', 'var(--stat-slice-4)', 'var(--stat-slice-5)', 'var(--stat-slice-6)', 'var(--stat-slice-7)', 'var(--stat-slice-8)'] %}
+    {% set acc = 0 %}
+    {% set stops = [] %}
+    {% for s in donut %}
+        {% set color = s.other|default(false) ? 'var(--stat-slice-other)' : sliceColors[loop.index0] %}
+        {% set startDeg = acc / total * 360 %}
+        {% set acc = acc + s.count %}
+        {% set endDeg = acc / total * 360 %}
+        {% set stops = stops|merge([color ~ ' ' ~ (startDeg|round(2)) ~ 'deg ' ~ (endDeg|round(2)) ~ 'deg']) %}
+    {% endfor %}
+    <div class="donutWrap">
+        <div class="donut" style="background: conic-gradient({{ stops|join(', ') }});"></div>
+        <ul class="donutLegend">
+            {% for s in donut %}
+                {% set color = s.other|default(false) ? 'var(--stat-slice-other)' : sliceColors[loop.index0] %}
+                <li>
+                    <span class="donutSwatch" style="background: {{ color }};"></span>
+                    <span class="donutName">{{ s.name }}</span>
+                    <span class="donutVal">{{ s.count }} · {{ (s.count / total * 100)|round }}%</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}

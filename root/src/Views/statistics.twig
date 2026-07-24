@@ -1,0 +1,147 @@
+{% extends "base.twig" %}
+
+{% block title %}Statistiken - {% endblock %}
+
+{% block mainContent %}
+    {% if loggedIn %}
+        <h1>Statistiken</h1>
+        <p>Auswertungen rund um das Wiki. Aggregierte Zahlen zählen alle Artikel; einzelne private Artikel werden nirgends namentlich genannt.</p>
+        <div class="statsPage">
+
+            {# a. Autoren-Rangliste #}
+            <section class="statBlock">
+                <h2>Aktivste Autoren <span class="statHint">(nach nicht-leeren Artikeln)</span></h2>
+                <div class="statTwoCol">
+                    <div class="statCol">
+                        <h3>Diesen Monat</h3>
+                        {% if rankingMonth is not empty %}
+                            {% set max = (rankingMonth|first).count %}
+                            <ul class="statBars">
+                                {% for row in rankingMonth %}
+                                    <li>
+                                        <span class="statLabel">{{ loop.index }}. {{ row.username }}</span>
+                                        <span class="statBar"><span class="statBarFill" style="width: {{ max > 0 ? (row.count / max * 100)|round(1) : 0 }}%"></span></span>
+                                        <span class="statValue">{{ row.count }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="statEmpty">Diesen Monat wurde noch kein Artikel erstellt.</p>
+                        {% endif %}
+                    </div>
+                    <div class="statCol">
+                        <h3>Insgesamt</h3>
+                        {% if rankingTotal is not empty %}
+                            {% set max = (rankingTotal|first).count %}
+                            <ul class="statBars">
+                                {% for row in rankingTotal %}
+                                    <li>
+                                        <span class="statLabel">{{ loop.index }}. {{ row.username }}</span>
+                                        <span class="statBar"><span class="statBarFill" style="width: {{ max > 0 ? (row.count / max * 100)|round(1) : 0 }}%"></span></span>
+                                        <span class="statValue">{{ row.count }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="statEmpty">Noch keine Artikel vorhanden.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            {# b. Wachstum seit Beginn #}
+            <section class="statBlock growthChart">
+                <h2>Wachstum seit Beginn</h2>
+                {% if growth|length >= 2 %}
+                    {% set n = growth|length %}
+                    {% set maxVal = growthAxis.max %}
+                    {% set padL = 44 %}{% set padT = 16 %}{% set plotW = 580 %}{% set plotH = 248 %}
+                    {% set baseY = padT + plotH %}
+                    {% set ptsTotal = [] %}{% set ptsNon = [] %}
+                    {% for row in growth %}
+                        {% set x = padL + loop.index0 * plotW / (n - 1) %}
+                        {% set yT = padT + plotH * (1 - row.total / maxVal) %}
+                        {% set yN = padT + plotH * (1 - row.nonEmpty / maxVal) %}
+                        {% set ptsTotal = ptsTotal|merge([(x|round(1)) ~ ',' ~ (yT|round(1))]) %}
+                        {% set ptsNon = ptsNon|merge([(x|round(1)) ~ ',' ~ (yN|round(1))]) %}
+                    {% endfor %}
+                    {% set labelEvery = (n / 12)|round(0, 'ceil') %}
+                    {% if labelEvery < 1 %}{% set labelEvery = 1 %}{% endif %}
+                    <svg class="growthSvg" viewBox="0 0 640 300" role="img" aria-label="Kumulierte Artikelzahl über die Zeit" preserveAspectRatio="xMidYMid meet">
+                        {% for tick in growthAxis.ticks %}
+                            {% set gy = padT + plotH * (1 - tick / maxVal) %}
+                            <line class="statGrid" x1="{{ padL }}" y1="{{ gy|round(1) }}" x2="{{ padL + plotW }}" y2="{{ gy|round(1) }}"/>
+                            <text class="statAxisLabel" x="{{ padL - 6 }}" y="{{ (gy + 4)|round(1) }}" text-anchor="end">{{ tick }}</text>
+                        {% endfor %}
+                        {% for row in growth %}
+                            {% if loop.index0 % labelEvery == 0 or loop.last %}
+                                {% set x = padL + loop.index0 * plotW / (n - 1) %}
+                                <text class="statAxisLabel" x="{{ x|round(1) }}" y="{{ baseY + 18 }}" text-anchor="middle">{{ row.month|slice(5, 2) }}/{{ row.month|slice(2, 2) }}</text>
+                            {% endif %}
+                        {% endfor %}
+                        <polyline class="statLineTotal" fill="none" points="{{ ptsTotal|join(' ') }}"/>
+                        <polyline class="statLineNon" fill="none" points="{{ ptsNon|join(' ') }}"/>
+                    </svg>
+                    <div class="statLegend">
+                        <span class="statLegendItem"><span class="statSwatch swatch1"></span>Alle Artikel ({{ growth[n - 1].total }})</span>
+                        <span class="statLegendItem"><span class="statSwatch swatch2"></span>Ohne leere ({{ growth[n - 1].nonEmpty }})</span>
+                    </div>
+                {% else %}
+                    <p class="statEmpty">Noch nicht genug Daten für eine Verlaufskurve.</p>
+                {% endif %}
+            </section>
+
+            {# c. Artikel pro Kategorie #}
+            <section class="statBlock">
+                <h2>Artikel pro Kategorie</h2>
+                {% if perCategory is not empty %}
+                    <div class="statChartRow">
+                        {% include 'statisticsDonut.twig' with {donut: categoryDonut} %}
+                        <div class="statBarsWrap">
+                            {% set max = (perCategory|first).count %}
+                            <ul class="statBars">
+                                {% for row in perCategory %}
+                                    <li>
+                                        <span class="statLabel">{{ row.name }}</span>
+                                        <span class="statBar"><span class="statBarFill" style="width: {{ max > 0 ? (row.count / max * 100)|round(1) : 0 }}%"></span></span>
+                                        <span class="statValue">{{ row.count }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="statEmpty">Noch keine Kategorien mit Artikeln.</p>
+                {% endif %}
+            </section>
+
+            {# d. Meistgenutzte Quellen #}
+            <section class="statBlock">
+                <h2>Meistgenutzte Quellen <span class="statHint">(Anzahl zitierender Artikel)</span></h2>
+                {% if sources is not empty %}
+                    {% set sourceTypeLabels = {'book': 'Buch/PDF', 'web': 'Webseite'} %}
+                    <div class="statChartRow">
+                        {% include 'statisticsDonut.twig' with {donut: sourceDonut} %}
+                        <div class="statBarsWrap">
+                            {% set max = (sources|first).count %}
+                            <ul class="statBars">
+                                {% for row in sources|slice(0, 12) %}
+                                    <li>
+                                        <span class="statLabel">{{ row.name }}{% if row.type %} <span class="statType">{{ sourceTypeLabels[row.type]|default(row.type) }}</span>{% endif %}</span>
+                                        <span class="statBar"><span class="statBarFill" style="width: {{ max > 0 ? (row.count / max * 100)|round(1) : 0 }}%"></span></span>
+                                        <span class="statValue">{{ row.count }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="statEmpty">Noch keine Quellen in Artikeln hinterlegt.</p>
+                {% endif %}
+            </section>
+
+        </div>
+    {% else %}
+        {{ _self.notLoggedIn() }}
+    {% endif %}
+{% endblock %}
