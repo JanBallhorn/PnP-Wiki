@@ -99,6 +99,40 @@ abstract class Controller
             }, $string);
         });
         $twig->addFunction($function);
+        // Rewrites links that point at our OWN domain(s) to relative paths, so an
+        // internal link keeps you on whatever environment you're viewing (local
+        // stays local, live stays live) instead of jumping to the hard-coded host
+        // some old links carry. Links to other domains (Wikipedia etc.) are left
+        // absolute and untouched. Own hosts = SITE_HOSTS plus the BASE_URL host.
+        $function = new TwigFunction('relativizeInternalLinks', function($string){
+            if(!is_string($string) || stripos($string, 'http') === false){
+                return $string;
+            }
+            $ownHosts = array_filter(array_map('trim', explode(',', (string)(Env::get('SITE_HOSTS') ?? ''))));
+            $baseHost = parse_url(Env::getRequired('BASE_URL'), PHP_URL_HOST);
+            if(is_string($baseHost) && $baseHost !== ''){
+                $ownHosts[] = $baseHost;
+            }
+            $ownHosts = array_values(array_unique(array_map('strtolower', $ownHosts)));
+            if(count($ownHosts) === 0){
+                return $string;
+            }
+            return preg_replace_callback('/\\bhref\\s*=\\s*(["\'])([^"\']*)\\1/i', function($m) use ($ownHosts){
+                $quote = $m[1];
+                $host = parse_url($m[2], PHP_URL_HOST);
+                if(!is_string($host) || !in_array(strtolower($host), $ownHosts, true)){
+                    return $m[0]; // relative already, or a foreign domain -> leave as is
+                }
+                $path = parse_url($m[2], PHP_URL_PATH);
+                $query = parse_url($m[2], PHP_URL_QUERY);
+                $fragment = parse_url($m[2], PHP_URL_FRAGMENT);
+                $rel = (is_string($path) && $path !== '' ? $path : '/')
+                    . (is_string($query) ? '?' . $query : '')
+                    . (is_string($fragment) ? '#' . $fragment : '');
+                return 'href=' . $quote . $rel . $quote;
+            }, $string);
+        });
+        $twig->addFunction($function);
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();
         $twigParams["baseCategories"] = (new CategoryRepository())->findPopularCategories();

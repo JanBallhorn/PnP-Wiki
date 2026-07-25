@@ -130,7 +130,7 @@
                                                 </figure>
                                             </div>
                                         {% endif %}
-                                        {{ addLinkTitles(content.text)|raw }}
+                                        {{ addLinkTitles(relativizeInternalLinks(content.text))|raw }}
                                     </div>
                                 {% endif %}
                             </div>
