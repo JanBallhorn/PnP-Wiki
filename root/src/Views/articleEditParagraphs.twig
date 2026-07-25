@@ -5,31 +5,7 @@
 {% block head %}
     {{ parent() }}
     <script src="../../assets/js/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
-    <script>
-        tinymce.init({
-            selector: 'textarea.tinymce',
-            relative_urls: false,
-            remove_script_host: false,
-            license_key: 'gpl',
-            plugins: [ 'link','lists','table','code','charmap' ],
-            toolbar: [
-                { name: 'history', items: [ 'undo', 'redo' ] },
-                { name: 'styles', items: [ 'styles' ] },
-                { name: 'formatting', items: [ 'bold', 'italic','underline' ] },
-                { name: 'alignment', items: [ 'alignleft', 'aligncenter', 'alignright', 'alignjustify' ] },
-                { name: 'indentation', items: [ 'outdent', 'indent' ] },
-                { name: 'specialChars', items: ['charmap']},
-                { name: 'lists', items: [ 'numlist', 'bullist' ] },
-                { name: 'links', items: [ 'link', 'unlink' ] },
-                { name: 'code', items: ['code']}
-            ],
-            language: 'de',
-            promotion: false,
-            skin: 'tinymce-5',
-            content_css: 'tinymce-5'
-        });
-    </script>
-    <script src="../../assets/js/paragraphsForm.js" type="module"></script>
+    <script src="../../assets/js/paragraphsForm.js?v=9" type="module"></script>
 {% endblock %}
 
 {% block mainContent %}
@@ -88,7 +64,7 @@
                                             <div class="contentElement text" data-position="{{ content.sequence }}">
                                                 <div>
                                                     <label>Inhalt
-                                                        <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ replaceNewArticleLink(replaceSpoiler(content.text)) }}</textarea>
+                                                        <textarea name="p{{ paragraph.sequence }}c{{ content.sequence }}text" class="tinymce">{{ addLinkTitles(content.text) }}</textarea>
                                                     </label>
                                                     <label class="button">
                                                         <i class="fa-solid fa-upload"></i>Bild-Upload
@@ -130,7 +106,7 @@
                                 <div class="contentElement" data-position="1">
                                     <div>
                                         <label>Inhalt
-                                            <textarea name="p1c1text" class="tinymce">{{ replaceNewArticleLink(replaceSpoiler(paragraph.contents.__serialize[0].text)) }}</textarea>
+                                            <textarea name="p1c1text" class="tinymce">{{ addLinkTitles(paragraph.contents.__serialize[0].text) }}</textarea>
                                         </label>
                                     </div>
                                 </div>
@@ -231,15 +207,27 @@
 {% endblock %}
 
 {% block asideRight %}
-    <p>Umschließe einen Abschnitt oder ein Wort wie folgt:</p>
+    <p>Nutze die Buttons in der Editor-Leiste:</p>
     <ul>
         <li>
-            <p>||abc||</p>
-            <p>Um einen Spoiler zu verbergen</p>
+            <p><b>Spoiler</b></p>
+            <p>Markierten Text im Satz als Spoiler verbergen.</p>
         </li>
         <li>
-            <p>??abc??</p>
-            <p>Um zu signalisieren, dass es hierfür noch keinen Artikel gibt, aber einer gewünscht ist.</p>
+            <p><b>Spoiler-Block</b></p>
+            <p>Ganze Absätze als Spoiler verbergen (auch über mehrere Zeilen).</p>
+        </li>
+        <li>
+            <p><b>Artikel-Link</b></p>
+            <p>Gezielt auf einen bestehenden Wiki-Artikel verlinken (Suche nach Name oder Alias).</p>
+        </li>
+        <li>
+            <p><b>Wunschartikel</b></p>
+            <p>Auf einen noch nicht existierenden, gewünschten Artikel verweisen.</p>
+        </li>
+        <li>
+            <p><b>Auto-Link</b></p>
+            <p>Wörter im Text, zu denen es bereits einen Artikel gibt, automatisch verlinken. Beim Darüberfahren zeigt der Link den echten Ziel-Artikel.</p>
         </li>
     </ul>
 {% endblock %}

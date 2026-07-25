@@ -2,6 +2,7 @@ import {checkFileSize, checkFileType, showMaxLength, getTemplate, searchSelect, 
 
 const images = {};
 $(function () {
+    initMce();
     getImages();
     newParagraph();
     newText();
@@ -9,6 +10,15 @@ $(function () {
     singleImgUpload();
     galleryImgUpload();
     newSource();
+    // Re-init TinyMCE when the site's dark/light toggle changes: a skin can't be
+    // swapped on a live editor, so tear the editors down (content is synced back
+    // to the textareas) and rebuild them with the now-current theme.
+    $("#darkmode").on("change.mceTheme", function (){
+        if(window.tinymce){
+            tinymce.remove();
+            initMce();
+        }
+    });
     const intervalControlButtons = setInterval(function (){
         controlButtons();
         searchSelect();
@@ -42,7 +52,9 @@ function getImages(){
 }
 
 function newParagraph(){
-    $(".newParagraph").on("click", function () {
+    // Delegated so it works for current AND future buttons - no timing race
+    // waiting for Ajax-rendered markup to appear.
+    $(document).off("click.newParagraph", ".newParagraph").on("click.newParagraph", ".newParagraph", function () {
         let lastEl = 1;
         $(".paragraph").each(function (){
             if($(this).attr("data-position") > lastEl){
@@ -51,35 +63,29 @@ function newParagraph(){
         })
         lastEl++;
         getTemplate($(this),'newParagraph.twig', [lastEl]);
-        $(".newText").off("click");
-        $(".newGallery").off("click");
-        setTimeout(function (){
-            newText();
-            newGallery();
-        }, 100);
     });
 }
 
 function newText(){
-    $(".newText").on("click", function (){
+    $(document).off("click.newText", ".newText").on("click.newText", ".newText", function (){
         let data = defineContentParams($(this).closest('.paragraph').attr("data-position"));
-        getTemplate($(".paragraph[data-position='" + data[1] + "'] .newButtons"), 'newText.twig', data);
-        initMce();
-        $(".imgUpload").off("change");
-        setTimeout(function (){
+        // Init TinyMCE and (re)bind the upload handler only AFTER the new textarea
+        // is actually in the DOM - otherwise the fresh block stays a plain textarea.
+        getTemplate($(".paragraph[data-position='" + data[1] + "'] .newButtons"), 'newText.twig', data, false, function (){
+            initMce();
+            $(".imgUpload").off("change");
             singleImgUpload();
-        }, 200);
+        });
     });
 }
 
 function newGallery(){
-    $(".newGallery").on("click", function (){
+    $(document).off("click.newGallery", ".newGallery").on("click.newGallery", ".newGallery", function (){
         let data = defineContentParams($(this).closest('.paragraph').attr("data-position"));
-        getTemplate($(".paragraph[data-position='" + data[1] + "'] .newButtons"), 'newGallery.twig', data);
-        $(".galleryUpload").off("change");
-        setTimeout(function (){
+        getTemplate($(".paragraph[data-position='" + data[1] + "'] .newButtons"), 'newGallery.twig', data, false, function (){
+            $(".galleryUpload").off("change");
             galleryImgUpload();
-        }, 200);
+        });
     });
 }
 
@@ -128,11 +134,18 @@ function galleryImgUpload(){
 }
 
 function initMce(){
-    $.getScript('/tinymce/tinymce.min.js', function() {
+    const init = function (){
+        // Match the site's dark/light theme (darkmode.js stores it in
+        // localStorage and toggles a class on <html>). Read localStorage
+        // directly so we don't depend on that class already being set.
+        const dark = (localStorage.getItem('preferred-theme')
+            || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
         tinymce.init({
             selector: 'textarea.tinymce',
             license_key: 'gpl',
-            plugins: [ 'link','lists','table' ],
+            relative_urls: false,
+            remove_script_host: false,
+            plugins: [ 'link','lists','table','charmap' ],
             toolbar: [
                 { name: 'history', items: [ 'undo', 'redo' ] },
                 { name: 'styles', items: [ 'styles' ] },
@@ -140,14 +153,238 @@ function initMce(){
                 { name: 'alignment', items: [ 'alignleft', 'aligncenter', 'alignright', 'alignjustify' ] },
                 { name: 'indentation', items: [ 'outdent', 'indent' ] },
                 { name: 'lists', items: [ 'numlist', 'bullist' ] },
-                { name: 'links', items: [ 'link', 'unlink' ] }
+                { name: 'specialChars', items: [ 'charmap' ] },
+                { name: 'links', items: [ 'link', 'unlink' ] },
+                { name: 'wiki', items: [ 'spoilerinline', 'spoilerblock', 'articlelink', 'wunschartikel', 'linkscan' ] }
             ],
+            // wrap so the extra buttons stay visible instead of hiding in the overflow menu
+            toolbar_mode: 'wrap',
             language: 'de',
             promotion: false,
-            skin: 'tinymce-5',
-            content_css: 'tinymce-5'
+            skin: dark ? 'tinymce-5-dark' : 'tinymce-5',
+            content_css: dark ? 'tinymce-5-dark' : 'tinymce-5',
+            // The default format dropdown, only WITHOUT Heading 1/2 (h1 = article
+            // title, h2 = paragraph headline - not valid inside content). Titles
+            // are the default keys so the German language pack still translates them.
+            style_formats: [
+                { title: 'Headings', items: [
+                    { title: 'Heading 3', format: 'h3' },
+                    { title: 'Heading 4', format: 'h4' },
+                    { title: 'Heading 5', format: 'h5' },
+                    { title: 'Heading 6', format: 'h6' }
+                ]},
+                { title: 'Inline', items: [
+                    { title: 'Bold', format: 'bold' },
+                    { title: 'Italic', format: 'italic' },
+                    { title: 'Underline', format: 'underline' },
+                    { title: 'Strikethrough', format: 'strikethrough' },
+                    { title: 'Superscript', format: 'superscript' },
+                    { title: 'Subscript', format: 'subscript' },
+                    { title: 'Code', format: 'code' }
+                ]},
+                { title: 'Blocks', items: [
+                    { title: 'Paragraph', format: 'p' },
+                    { title: 'Blockquote', format: 'blockquote' },
+                    { title: 'Div', format: 'div' },
+                    { title: 'Pre', format: 'pre' }
+                ]},
+                { title: 'Align', items: [
+                    { title: 'Left', format: 'alignleft' },
+                    { title: 'Center', format: 'aligncenter' },
+                    { title: 'Right', format: 'alignright' },
+                    { title: 'Justify', format: 'alignjustify' }
+                ]}
+            ],
+            // Spoilers are real elements now (no more || markers): span inline,
+            // div as a wrapper so a spoiler can span several paragraphs.
+            formats: {
+                spoilerInline: { inline: 'span', classes: 'spoiler' },
+                spoilerBlock: { block: 'div', classes: 'spoiler', wrapper: true }
+            },
+            extended_valid_elements: 'span[class],div[class],a[href|target|class|rel|title]',
+            // Base spoiler/link styling, plus - in dark mode - force the editing
+            // surface to the site's near-black palette so it matches the page
+            // instead of the tinymce skin's lighter grey.
+            content_style: '.spoiler{background:rgba(120,120,120,0.25);border-bottom:2px dotted #888;} div.spoiler{display:block;padding:0.3em;border:2px dashed #888;} .createNewArticle{color:#d90000;}'
+                + (dark ? ' body{background-color:#191919;color:#f1f1f1;} a{color:#9d9dff;} .createNewArticle{color:#f66;}' : ''),
+            setup: function (editor) {
+                setupWikiButtons(editor);
+            }
         });
+    };
+    // Fast path: the <head> already loaded TinyMCE synchronously.
+    if(window.tinymce){
+        init();
+        return;
+    }
+    // Recovery path (mainly the slow local env, where the blocking <head>
+    // script can fail to load): inject a REAL <script> tag from the correct
+    // location and init on load. We must not use $.getScript here - it evals
+    // the file instead of adding a tag, so TinyMCE can't detect its baseURL
+    // and the skin/lang/content_css never load (result: plain textarea). The
+    // old fallback also pointed at /tinymce/ which no longer exists and returns
+    // an HTML 404 page that then blows up when eval'd.
+    let script = document.getElementById('tinymceLib');
+    if(script){
+        script.addEventListener('load', init);
+        return;
+    }
+    script = document.createElement('script');
+    script.id = 'tinymceLib';
+    script.src = '/assets/js/tinymce/tinymce.min.js';
+    script.referrerPolicy = 'origin';
+    script.addEventListener('load', init);
+    document.head.appendChild(script);
+}
+
+function setupWikiButtons(editor){
+    const ajaxPath = "../../src/Ajax.php";
+
+    function spoilerToggle(name, tooltip){
+        return {
+            text: tooltip,
+            tooltip: tooltip,
+            onAction: function (){ editor.execCommand('mceToggleFormat', false, name); },
+            onSetup: function (api){
+                const handle = editor.formatter.formatChanged(name, function (state){ api.setActive(state); });
+                return function (){ if(handle && handle.unbind){ handle.unbind(); } };
+            }
+        };
+    }
+
+    editor.ui.registry.addToggleButton('spoilerinline', spoilerToggle('spoilerInline', 'Spoiler'));
+    editor.ui.registry.addToggleButton('spoilerblock', spoilerToggle('spoilerBlock', 'Spoiler-Block'));
+
+    editor.ui.registry.addButton('wunschartikel', {
+        text: 'Wunschartikel',
+        tooltip: 'Verweis auf einen noch nicht existierenden Artikel',
+        onAction: function (){
+            const selected = editor.selection.getContent({ format: 'text' });
+            editor.windowManager.open({
+                title: 'Wunschartikel verlinken',
+                body: { type: 'panel', items: [ { type: 'input', name: 'name', label: 'Artikelname' } ] },
+                initialData: { name: selected },
+                buttons: [
+                    { type: 'cancel', text: 'Abbrechen' },
+                    { type: 'submit', text: 'Einfügen', primary: true }
+                ],
+                onSubmit: function (dialog){
+                    const name = (dialog.getData().name || '').trim();
+                    if(name !== ''){
+                        const text = selected !== '' ? selected : name;
+                        const href = '/article/create?name=' + encodeURIComponent(name);
+                        editor.insertContent('<a class="createNewArticle" href="' + href + '" target="_blank">' + editor.dom.encode(text) + '</a>');
+                    }
+                    dialog.close();
+                }
+            });
+        }
     });
+
+    editor.ui.registry.addButton('articlelink', {
+        text: 'Artikel-Link',
+        tooltip: 'Auf einen bestehenden Wiki-Artikel verlinken',
+        onAction: function (){ openArticleLinkDialog(editor, ajaxPath); }
+    });
+
+    editor.ui.registry.addButton('linkscan', {
+        text: 'Auto-Link',
+        tooltip: 'Bekannte Artikel im Text automatisch verlinken',
+        onAction: function (){
+            const html = editor.getContent();
+            const articleId = new URLSearchParams(window.location.search).get('id') || '';
+            $.post(ajaxPath, { type: 'linkscan', html: html, article: articleId }, function (data){
+                let res;
+                try { res = typeof data === 'string' ? JSON.parse(data) : data; }
+                catch (e) { res = null; }
+                if(res && typeof res.html === 'string'){
+                    editor.undoManager.transact(function (){ editor.setContent(res.html); });
+                    editor.notificationManager.open({ text: res.count + ' Artikel verlinkt', type: 'success', timeout: 3000 });
+                }
+            });
+        }
+    });
+}
+
+// Dialog to link an EXISTING wiki article (internal link) via the same
+// prefix search the search bar uses. Two-step: enter a query -> "Suchen"
+// (or Enter) lists matches -> pick one -> "Einfügen". The inserted link
+// carries the real article headline as title, so hovering it - here and in
+// the public view - shows exactly which article it points to.
+function openArticleLinkDialog(editor, ajaxPath){
+    const selected = editor.selection.getContent({ format: 'text' }).trim();
+
+    function insertLink(id, label, title){
+        const href = '/article?id=' + encodeURIComponent(id);
+        const text = (label !== '' ? label : title);
+        editor.insertContent('<a href="' + href + '" title="' + editor.dom.encode(title) + '">' + editor.dom.encode(text) + '</a>');
+    }
+
+    function config(query, results){
+        const items = [ { type: 'input', name: 'query', label: 'Artikel suchen (Name oder Alias)' } ];
+        if(results === null){
+            items.push({ type: 'htmlpanel', html: '<p style="margin:2px 0;color:#888">Suchbegriff eingeben und „Suchen“ (oder Enter) drücken.</p>' });
+        }
+        else if(results.length === 0){
+            items.push({ type: 'htmlpanel', html: '<p style="margin:2px 0;color:#b00">Kein Artikel gefunden.</p>' });
+        }
+        else{
+            items.push({
+                type: 'selectbox',
+                name: 'article',
+                label: 'Treffer',
+                items: results.map(function (r){
+                    return { text: r.alias ? (r.alias + ' → ' + r.headline) : r.headline, value: String(r.id) };
+                })
+            });
+        }
+        items.push({ type: 'input', name: 'label', label: 'Angezeigter Text (optional)' });
+        return {
+            title: 'Artikel verlinken',
+            body: { type: 'panel', items: items },
+            initialData: {
+                query: query,
+                label: selected,
+                article: (results && results.length) ? String(results[0].id) : ''
+            },
+            buttons: [
+                { type: 'cancel', text: 'Abbrechen' },
+                { type: 'custom', name: 'search', text: 'Suchen' },
+                { type: 'submit', text: 'Einfügen', primary: true }
+            ],
+            onAction: function (dialog, details){
+                if(details.name === 'search'){
+                    search(dialog, (dialog.getData().query || '').trim());
+                }
+            },
+            onSubmit: function (dialog){
+                const data = dialog.getData();
+                // Enter with a selected article inserts; otherwise treat it as a search.
+                if(data.article){
+                    const chosen = (results || []).find(function (r){ return String(r.id) === String(data.article); });
+                    insertLink(data.article, (data.label || '').trim(), chosen ? chosen.headline : '');
+                    dialog.close();
+                }
+                else{
+                    search(dialog, (data.query || '').trim());
+                }
+            }
+        };
+    }
+
+    function search(dialog, query){
+        if(query.length < 2){
+            return;
+        }
+        $.post(ajaxPath, { type: 'suggest', query: query }, function (data){
+            let res;
+            try { res = typeof data === 'string' ? JSON.parse(data) : data; }
+            catch (e) { res = []; }
+            dialog.redial(config(query, res || []));
+        });
+    }
+
+    editor.windowManager.open(config(selected, null));
 }
 
 function parseImages(){

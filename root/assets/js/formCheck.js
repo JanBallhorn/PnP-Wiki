@@ -93,7 +93,7 @@ function checkCheckboxCollectionChecked(el){
     }
 }
 
-function getTemplate(el, template, data = [], append = false){
+function getTemplate(el, template, data = [], append = false, callback = null){
     let ajaxPath = "../../src/Ajax.php";
     $.post(ajaxPath,
         {
@@ -109,6 +109,12 @@ function getTemplate(el, template, data = [], append = false){
             }
             else{
                 $(finalResult).insertBefore(el);
+            }
+            // Run AFTER the new markup is in the DOM - callers that init TinyMCE
+            // or (re)bind change handlers on the fresh element rely on this, since
+            // the $.post is async and the element does not exist before now.
+            if(typeof callback === 'function'){
+                callback();
             }
         }
     );

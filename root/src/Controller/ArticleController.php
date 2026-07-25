@@ -608,36 +608,8 @@ class ArticleController extends Controller
                 $figcaption = null;
                 $gallery = false;
                 if(str_contains($element, 'text')){
-                    $value = explode("||", $value);
-                    $j = 0;
-                    for ($i = 1; $i <= count($value); $i++){
-                        $replace = "";
-                        if($i === 4 * $j + 1 && $i !== count($value)){
-                            $replace = "<span class='spoiler'>";
-                        }
-                        elseif($i === 4 * $j + 3){
-                            $replace = "</span>";
-                            $j++;
-                        }
-                        array_splice($value, $i, 0, $replace);
-                        $i++;
-                    }
-                    $value = implode("", $value);
-                    $value = explode("??", $value);
-                    $j = 0;
-                    for ($i = 1; $i <= count($value); $i++){
-                        $replace = "";
-                        if($i === 4 * $j + 1 && $i !== count($value)){
-                            $replace = "<a class='createNewArticle' href='" . $this->url() . "/article/create?name=" . urlencode($value[$i]) . "' target='_blank'>";
-                        }
-                        elseif($i === 4 * $j + 3){
-                            $replace = "</a>";
-                            $j++;
-                        }
-                        array_splice($value, $i, 0, $replace);
-                        $i++;
-                    }
-                    $value = implode("", $value);
+                    // TinyMCE stores real spoiler/link markup directly now; the old
+                    // || / ?? marker round-trip is gone (it shifted/dropped on save).
                     $value = preg_split('/<h3[A-Za-z0-9="\\s-]*>/', $value);
                     for ($i = 0; $i < count($value); $i++){
                         if($i !== 0){

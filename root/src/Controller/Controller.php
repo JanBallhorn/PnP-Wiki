@@ -46,21 +46,8 @@ abstract class Controller
     protected function render(string $view, array $params = []): void
     {
         $loader = new FilesystemLoader(__DIR__ . '/../Views');
-        $twig = new Environment($loader);
+        $twig = new Environment($loader, ['cache' => sys_get_temp_dir() . '/wiki_twig', 'auto_reload' => true]);
         $function = new TwigFunction('encodeImg', [$this, 'encodeImg']);
-        $twig->addFunction($function);
-        $function = new TwigFunction('replaceSpoiler', function($string){
-            $string = str_replace("<span class='spoiler'>", "||", $string);
-            return str_replace("</span>", "||", $string);
-        });
-        $twig->addFunction($function);
-        $function = new TwigFunction('replaceNewArticleLink', function($string){
-            preg_match_all("|<a class='createNewArticle'[^<]*</a>|", $string, $matches);
-            foreach ($matches[0] as $match) {
-                $string = str_replace($match, '??' . strip_tags($match) . '??', $string);
-            }
-            return $string;
-        });
         $twig->addFunction($function);
         $function = new TwigFunction('getContentHeadlines', function($string){
             $headlines = array();
@@ -81,6 +68,36 @@ abstract class Controller
         });
         $twig->addFunction($function);
         $function = new TwigFunction('getNonPrivate', [$this, 'getNonPrivate']);
+        $twig->addFunction($function);
+        // Adds a hover title (the target's current headline) to internal links
+        // that don't have one yet - so links stored before the title feature
+        // still reveal their target on hover, without a DB migration.
+        $function = new TwigFunction('addLinkTitles', function($string){
+            if(!is_string($string) || $string === '' || stripos($string, 'article?id=') === false){
+                return $string;
+            }
+            if(!preg_match_all('/href\\s*=\\s*["\'][^"\']*article\\?id=(\\d+)/i', $string, $ids)){
+                return $string;
+            }
+            $map = (new ArticleRepository())->headlinesByIds(array_map('intval', $ids[1]));
+            if(count($map) === 0){
+                return $string;
+            }
+            return preg_replace_callback('/<a\\b([^>]*)>/i', function($m) use ($map){
+                $attrs = $m[1];
+                if(preg_match('/\\btitle\\s*=/i', $attrs)){
+                    return $m[0];
+                }
+                if(!preg_match('/\\bhref\\s*=\\s*["\'][^"\']*article\\?id=(\\d+)/i', $attrs, $h)){
+                    return $m[0];
+                }
+                $id = (int)$h[1];
+                if(!isset($map[$id])){
+                    return $m[0];
+                }
+                return '<a' . $attrs . ' title="' . htmlspecialchars($map[$id], ENT_QUOTES) . '">';
+            }, $string);
+        });
         $twig->addFunction($function);
         $twigParams = [];
         $twigParams["loggedIn"] = $this->checkLogin();

@@ -62,7 +62,7 @@ class Ajax extends Controller
     function ajaxRender($template, $data): string
     {
         $loader = new FilesystemLoader(__DIR__ . '/Views/fragments');
-        $twig = new Environment($loader);
+        $twig = new Environment($loader, ['cache' => sys_get_temp_dir() . '/wiki_twig', 'auto_reload' => true]);
         return $twig->render($template, $data);
     }
 
@@ -98,6 +98,87 @@ class Ajax extends Controller
             return [];
         }
         return (new ArticleRepository())->suggest($query, $user->getId());
+    }
+
+    /**
+     * Auto-links the first occurrence of every known article title/alias found
+     * in the given HTML: whole-word, case-insensitive, never inside an
+     * existing link, never the article being edited. Returns the modified HTML
+     * and how many links were added.
+     * @return array{html:string, count:int}
+     * @throws Exception
+     */
+    function linkArticles(string $html, int $currentId): array
+    {
+        if(!$this->checkLogin() || trim($html) === ''){
+            return ['html' => $html, 'count' => 0];
+        }
+        $username = $this->getUsernameFromToken($this->getCookie());
+        $user = (new UserRepository())->findOneBy('username', $username);
+        if($user === null){
+            return ['html' => $html, 'count' => 0];
+        }
+        $candidates = (new ArticleRepository())->linkCandidates($user->getId());
+        $filtered = [];
+        foreach($candidates as $c){
+            // skip the current article, empties, and titles not present at all
+            if($c['id'] === $currentId || $c['text'] === '' || mb_stripos($html, $c['text']) === false){
+                continue;
+            }
+            $filtered[] = $c;
+        }
+        // longest first so multi-word titles win over their parts
+        usort($filtered, static fn($a, $b) => mb_strlen($b['text']) <=> mb_strlen($a['text']));
+
+        $doc = new \DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML('<?xml encoding="UTF-8">' . '<div id="linkscan-root">' . $html . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        $root = $doc->documentElement;
+        if($root === null){
+            return ['html' => $html, 'count' => 0];
+        }
+        $xpath = new \DOMXPath($doc);
+        $linked = [];
+        $count = 0;
+        foreach($filtered as $c){
+            if(isset($linked[$c['id']])){
+                continue;
+            }
+            $pattern = '/(?<![\p{L}\p{N}_])' . preg_quote($c['text'], '/') . '(?![\p{L}\p{N}_])/ui';
+            $textNodes = $xpath->query('.//text()[not(ancestor::a)]', $root);
+            foreach($textNodes as $node){
+                if(preg_match($pattern, $node->nodeValue, $m, PREG_OFFSET_CAPTURE)){
+                    $offset = $m[0][1];
+                    $matchStr = $m[0][0];
+                    $before = substr($node->nodeValue, 0, $offset);
+                    $after = substr($node->nodeValue, $offset + strlen($matchStr));
+                    $parent = $node->parentNode;
+                    $link = $doc->createElement('a');
+                    $link->setAttribute('href', '/article?id=' . $c['id']);
+                    // canonical headline as tooltip: an alias match still reveals
+                    // the real target article on hover (editor and public view)
+                    $link->setAttribute('title', $c['title']);
+                    $link->appendChild($doc->createTextNode($matchStr));
+                    if($before !== ''){
+                        $parent->insertBefore($doc->createTextNode($before), $node);
+                    }
+                    $parent->insertBefore($link, $node);
+                    if($after !== ''){
+                        $parent->insertBefore($doc->createTextNode($after), $node);
+                    }
+                    $parent->removeChild($node);
+                    $linked[$c['id']] = true;
+                    $count++;
+                    break;
+                }
+            }
+        }
+        $result = '';
+        foreach($root->childNodes as $child){
+            $result .= $doc->saveHTML($child);
+        }
+        return ['html' => $result, 'count' => $count];
     }
 
     /**
@@ -165,6 +246,10 @@ if(isset($_POST['type']) && $_POST['type'] === 'track'){
 
 if(isset($_POST['type']) && $_POST['type'] === 'suggest'){
     echo json_encode((new Ajax())->suggest($_POST['query'] ?? ''));
+}
+
+if(isset($_POST['type']) && $_POST['type'] === 'linkscan'){
+    echo json_encode((new Ajax())->linkArticles($_POST['html'] ?? '', (int)($_POST['article'] ?? 0)));
 }
 
 if(isset($_POST['type']) && $_POST['type'] === 'privateAndAuth'){

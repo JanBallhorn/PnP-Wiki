@@ -301,6 +301,72 @@ class ArticleRepository extends Repository implements RepositoryInterface
     }
 
     /**
+     * All article titles and alt headlines the given user may see, as
+     * [{text, id, title}], for the editor's auto-link scan. "text" is what to
+     * match (headline or alias); "title" is always the canonical article
+     * headline, so an alias match can still show the real article on hover.
+     * Private articles the user is not authorized for are excluded.
+     * @return array<int, array{text:string, id:int, title:string}>
+     */
+    public function linkCandidates(int $userId): array
+    {
+        $candidates = [];
+        $titleQuery =
+            "SELECT a.id, a.headline AS text, a.headline AS title
+            FROM articles a
+            LEFT JOIN article_authorized auth ON a.id = auth.article AND auth.user = ?
+            WHERE a.private = 0 OR (a.private = 1 AND auth.user IS NOT NULL)";
+        $stmt = $this->db->prepare($titleQuery);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while($row = $result->fetch_object()){
+            $candidates[] = ['text' => $row->text, 'id' => (int)$row->id, 'title' => $row->title];
+        }
+        $aliasQuery =
+            "SELECT a.id, alt.headline AS text, a.headline AS title
+            FROM article_alt_headline alt
+            INNER JOIN articles a ON alt.article = a.id
+            LEFT JOIN article_authorized auth ON a.id = auth.article AND auth.user = ?
+            WHERE a.private = 0 OR (a.private = 1 AND auth.user IS NOT NULL)";
+        $stmt = $this->db->prepare($aliasQuery);
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while($row = $result->fetch_object()){
+            $candidates[] = ['text' => $row->text, 'id' => (int)$row->id, 'title' => $row->title];
+        }
+        return $candidates;
+    }
+
+    /**
+     * Maps the given article ids to their current headline. Used to enrich
+     * already-stored internal links (article?id=X) with a hover title at render
+     * time, so links authored before that feature existed still show their
+     * target on hover.
+     * @param array<int, int> $ids
+     * @return array<int, string> id => headline
+     */
+    public function headlinesByIds(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+        if(count($ids) === 0){
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $types = str_repeat('i', count($ids));
+        $stmt = $this->db->prepare("SELECT id, headline FROM articles WHERE id IN ($placeholders)");
+        $stmt->bind_param($types, ...$ids);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $map = [];
+        while($row = $result->fetch_object()){
+            $map[(int)$row->id] = $row->headline;
+        }
+        return $map;
+    }
+
+    /**
      * @throws Exception
      */
     public function getNumberOfArticles(int $userId, ?Category $categoryFilter = null, ?Project $projectFilter = null): ?int
@@ -408,7 +474,8 @@ class ArticleRepository extends Repository implements RepositoryInterface
             $stmt = $this->db->prepare($query);
             $categories->rewind();
             for($i = 1; $i <= $categories->count(); $i++){
-                $stmt->bind_param("ii", $id, $categories->current()->getId());
+                $categoryId = $categories->current()->getId();
+                $stmt->bind_param("ii", $id, $categoryId);
                 $stmt->execute();
                 $categories->next();
             }
@@ -435,7 +502,8 @@ class ArticleRepository extends Repository implements RepositoryInterface
                 $stmt = $this->db->prepare($query);
                 $authorized->rewind();
                 for($i = 1; $i <= $authorized->count(); $i++){
-                    $stmt->bind_param("ii", $id, $authorized->current()->getId());
+                    $authorizedId = $authorized->current()->getId();
+                    $stmt->bind_param("ii", $id, $authorizedId);
                     $stmt->execute();
                     $authorized->next();
                 }

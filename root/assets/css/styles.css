@@ -535,8 +535,70 @@ form .paragraph + hr{
     margin: 0!important;
     padding: 0!important;
 }
-.tox-menu .tox-collection__item[aria-label="Überschrift 1"], .tox-menu .tox-collection__item[aria-label="Überschrift 2"]{
-    display: none;
+/* Recolour the TinyMCE dark skin to the site's near-black palette so the editor
+   matches the page. Skin CSS is injected after this file, hence !important. */
+html.dark .tox.tox-tinymce{
+    border-color: var(--box-bg2) !important;
+}
+html.dark .tox .tox-editor-header,
+html.dark .tox .tox-menubar,
+html.dark .tox .tox-toolbar,
+html.dark .tox .tox-toolbar__primary,
+html.dark .tox .tox-toolbar-overlord,
+html.dark .tox .tox-sidebar-wrap,
+html.dark .tox .tox-statusbar,
+html.dark .tox .tox-edit-area__iframe{
+    background-color: var(--main-bg) !important;
+    border-color: var(--box-bg2) !important;
+}
+html.dark .tox .tox-mbtn,
+html.dark .tox .tox-tbtn,
+html.dark .tox .tox-tbtn__select-label,
+html.dark .tox .tox-mbtn__select-label,
+html.dark .tox .tox-statusbar,
+html.dark .tox .tox-statusbar a,
+html.dark .tox .tox-statusbar__path-item{
+    color: var(--txt) !important;
+}
+html.dark .tox .tox-tbtn svg,
+html.dark .tox .tox-mbtn svg{
+    fill: var(--txt) !important;
+}
+/* buttons themselves are transparent so they blend into the black toolbar
+   (the skin gives them its own dark-blue fill otherwise) */
+html.dark .tox .tox-tbtn,
+html.dark .tox .tox-mbtn,
+html.dark .tox .tox-split-button,
+html.dark .tox .tox-tbtn--select{
+    background-color: transparent !important;
+}
+html.dark .tox .tox-tbtn:hover,
+html.dark .tox .tox-tbtn--enabled,
+html.dark .tox .tox-tbtn--active,
+html.dark .tox .tox-mbtn:hover,
+html.dark .tox .tox-mbtn--active,
+html.dark .tox .tox-split-button:hover{
+    background-color: var(--box-bg2) !important;
+}
+/* dropdown menus (format list, special-characters dialog) portal to <body> */
+html.dark .tox .tox-menu,
+html.dark .tox-menu,
+html.dark .tox .tox-dialog,
+html.dark .tox-dialog{
+    background-color: var(--body-bg) !important;
+    border-color: var(--box-bg2) !important;
+}
+html.dark .tox-collection__item,
+html.dark .tox-dialog,
+html.dark .tox-dialog__header,
+html.dark .tox-dialog__title,
+html.dark .tox-label,
+html.dark .tox-dialog label{
+    color: var(--txt) !important;
+}
+html.dark .tox-collection__item--active,
+html.dark .tox-collection__item--enabled{
+    background-color: var(--box-bg2) !important;
 }
 select/*[name="filter"]*/{
     background-color: var(--main-bg);
@@ -1168,6 +1230,15 @@ ARTICLES
 .mainArticleContent .spoiler.shown{
     background-color: var(--body-bg);
     color: var(--txt);
+}
+/* block spoiler: hide descendant text too (beats the global *:not(svg) color) */
+div.spoiler{
+    display: block;
+    padding: 0.3rem 0.5rem;
+    margin: 0.5rem 0;
+}
+.content .spoiler:not(.shown) *{
+    color: transparent;
 }
 .mainArticleContent .contentText ul{
     list-style-type: unset;
