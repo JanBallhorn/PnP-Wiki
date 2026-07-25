@@ -4,10 +4,14 @@
         "ext-mysqli": "*",
         "lcobucci/jwt": "^5.3",
       "ext-exif": "*",
-      "ext-fileinfo": "*",
-      "ext-http": "*"
+      "ext-fileinfo": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.3"
+    },
+    "config": {
+        "platform": {
+            "php": "8.4"
+        }
     }
 }
