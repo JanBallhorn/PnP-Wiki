@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# Git push-to-deploy hook for the wiki.
+#
+# Install on the server:
+#   1. copy this file to  <bare-repo>/hooks/post-receive
+#   2. chmod +x <bare-repo>/hooks/post-receive
+#   3. set TARGET below to the live project directory (the one that contains
+#      root/, externalImages/ and .env)
+#
+# It checks out the pushed BRANCH into TARGET (tracked files only — untracked
+# files like .env, externalImages/, vendor/, imprint.twig, privacy.twig are left
+# untouched) and installs PHP dependencies.
+set -e
+
+# --- config -----------------------------------------------------------------
+TARGET="/var/www/wiki"   # dir holding root/, externalImages/, .env
+BRANCH="main"
+# ----------------------------------------------------------------------------
+
+GIT_DIR_ABS=$(cd "$(dirname "$0")/.." && pwd)
+
+while read -r oldrev newrev ref; do
+    if [ "$ref" != "refs/heads/$BRANCH" ]; then
+        echo "post-receive: $ref pushed — only '$BRANCH' deploys, skipping."
+        continue
+    fi
+    echo "post-receive: deploying '$BRANCH' -> $TARGET"
+    git --git-dir="$GIT_DIR_ABS" --work-tree="$TARGET" checkout -f "$BRANCH"
+
+    if command -v composer >/dev/null 2>&1; then
+        echo "post-receive: composer install"
+        ( cd "$TARGET/root" && composer install --no-dev --no-interaction --optimize-autoloader --ignore-platform-req=ext-http )
+    else
+        echo "post-receive: WARNING composer not found — run 'composer install' in $TARGET/root manually."
+    fi
+    echo "post-receive: done."
+done
