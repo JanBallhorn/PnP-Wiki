@@ -269,8 +269,11 @@ abstract class Controller
         setcookie("login", $token, [
             'expires' => time() + $extratime,
             'path' => '/',
-            'domain' => Env::getRequired('COOKIE_DOMAIN'),
-            'secure' => true,
+            // empty domain => host-only cookie, needed on localhost where a
+            // "Domain=localhost" attribute is rejected by browsers
+            'domain' => Env::get('COOKIE_DOMAIN') ?? '',
+            // secure by default; only disabled for local plain-HTTP development
+            'secure' => (Env::get('COOKIE_SECURE') ?? 'true') !== 'false',
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
@@ -282,7 +285,8 @@ abstract class Controller
     protected function destroyCookie(): void
     {
         if(isset($_COOKIE["login"])){
-            setcookie("login", "", time() - 3600, "/", Env::getRequired('COOKIE_DOMAIN'), true);
+            $secure = (Env::get('COOKIE_SECURE') ?? 'true') !== 'false';
+            setcookie("login", "", time() - 3600, "/", Env::get('COOKIE_DOMAIN') ?? '', $secure);
         }
     }
     public function encodeImg(string $img): string

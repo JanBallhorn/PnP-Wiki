@@ -1,0 +1,38 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8090:80"
+    volumes:
+      # Whole project is mounted so DOCUMENT_ROOT is /var/www/html/root and the
+      # app finds .env + externalImages one level above it, as in production.
+      - .:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: wiki
+      MARIADB_USER: wiki
+      MARIADB_PASSWORD: wiki
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db-data:/var/lib/mysql
+      # *.sql / *.sh here are imported once, on first start with an empty volume.
+      - ./docker/db-init:/docker-entrypoint-initdb.d
+    ports:
+      # Host 3307 (3306 is usually taken by a local XAMPP/MySQL) -> container 3306
+      - "3307:3306"
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "8091:80"
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+
+volumes:
+  db-data:

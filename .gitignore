@@ -1,5 +1,6 @@
 db_credentials.txt
 .env
+.env.prod
 externalImages/*
 imprint.twig
 privacy.twig
@@ -8,3 +9,7 @@ composer.phar
 root/vendor/
 root/phpunit.phar
 root/.phpunit.result.cache
+
+# Local DB dumps dropped into the Docker init dir (may contain data)
+docker/db-init/*.sql
+!docker/db-init/README.md

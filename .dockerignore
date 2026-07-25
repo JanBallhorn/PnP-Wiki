@@ -1,0 +1,5 @@
+.git
+.idea
+root/vendor
+externalImages
+docker/db-init/*.sql
