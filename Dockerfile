@@ -5,10 +5,12 @@ FROM php:8.3-apache
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git unzip \
     && docker-php-ext-install mysqli exif \
-    && a2enmod rewrite \
+    && docker-php-ext-enable opcache \
+    && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/zz-wiki.ini
 
 # Serve the app's web root (root/) and allow its .htaccess rewrites.
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
