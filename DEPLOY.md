@@ -8,33 +8,31 @@ Deploying = pushing to a **bare git repo** on the Hetzner server. A
 `.env`, and `imprint.twig` / `privacy.twig` are **not** in git and are handled
 separately (see the bottom).
 
-## One-time server setup (over SSH)
-
-Replace `<user>`, `<host>`, and the paths with your values.
+## One-time server setup
 
 ```sh
-ssh <user>@<host>
-
-# 1. Bare repo (receives pushes) — anywhere in your home is fine
-git init --bare ~/wiki.git
-
-# 2. Install the deploy hook
-#    (copy deploy/post-receive from the repo, OR paste its contents)
-cp /path/to/checkout/deploy/post-receive ~/wiki.git/hooks/post-receive
-nano ~/wiki.git/hooks/post-receive     # set TARGET=<project dir>, BRANCH=main
-chmod +x ~/wiki.git/hooks/post-receive
+# on the server: create the bare repo (receives pushes)
+ssh verpla@www17.your-server.de -p222 'git init --bare ~/wiki.git'
 ```
 
-`TARGET` is the directory that already contains `root/`, `externalImages/` and
-`.env` on the server (the project root, one level above the web root).
+```sh
+# from your local checkout: copy the deploy hook into the bare repo and make
+# it executable. TARGET is already set to /usr/home/verpla/public_html/wiki.
+scp -P 222 deploy/post-receive verpla@www17.your-server.de:wiki.git/hooks/post-receive
+ssh verpla@www17.your-server.de -p222 'chmod +x ~/wiki.git/hooks/post-receive'
+```
 
-Make sure `composer` and the PHP CLI are on `PATH` for your SSH user; otherwise
-the hook prints a warning and you run `composer install` manually.
+`TARGET` in the hook is the directory that already contains `root/`,
+`externalImages/` and `.env` on the server. Make sure `composer` and the PHP
+CLI are on `PATH` for the SSH user; otherwise the hook warns and you run
+`composer install` in `<TARGET>/root` manually.
 
 ## One-time local setup
 
+The non-standard SSH port (222) requires the `ssh://` remote form:
+
 ```sh
-git remote add deploy <user>@<host>:wiki.git
+git remote add deploy ssh://verpla@www17.your-server.de:222/usr/home/verpla/wiki.git
 ```
 
 ## Deploy

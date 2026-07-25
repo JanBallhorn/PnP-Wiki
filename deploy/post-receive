@@ -14,7 +14,7 @@
 set -e
 
 # --- config -----------------------------------------------------------------
-TARGET="/var/www/wiki"   # dir holding root/, externalImages/, .env
+TARGET="/usr/home/verpla/public_html/wiki"   # dir holding root/, externalImages/, .env
 BRANCH="main"
 # ----------------------------------------------------------------------------
 
