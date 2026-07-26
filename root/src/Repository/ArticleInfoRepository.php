@@ -99,7 +99,11 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             $contents->rewind();
             for($i = 1; $i <= $contents->count(); $i++){
                 $content = $contents->current();
-                $stmt->bind_param("isssi", $id, $content->getTopic(), $content->getContent(), $content->getHeadline(), $content->getSequence());
+                $topic = $content->getTopic();
+                $topicContent = $content->getContent();
+                $headline = $content->getHeadline();
+                $sequence = $content->getSequence();
+                $stmt->bind_param("isssi", $id, $topic, $topicContent, $headline, $sequence);
                 $stmt->execute();
                 $contents->next();
             }
@@ -108,7 +112,9 @@ class ArticleInfoRepository extends Repository implements RepositoryInterface
             $gallery->rewind();
             for($i = 1; $i <= $gallery->count(); $i++){
                 $image = $gallery->current();
-                $stmt->bind_param("issi", $id, $image->getImg(), $image->getFigcaption(), $i);
+                $img = $image->getImg();
+                $figcaption = $image->getFigcaption();
+                $stmt->bind_param("issi", $id, $img, $figcaption, $i);
                 $stmt->execute();
                 $gallery->next();
             }
