@@ -1,4 +1,5 @@
-import {checkFileSize, checkFileType, showMaxLength, getTemplate, searchSelect, linkModal} from "./formCheck.js";
+import {checkFileSize, checkFileType, showMaxLength, getTemplate, searchSelect} from "./formCheck.js";
+import {initLinks, readField, writeField, commitFields} from "./linkField.js";
 
 const images = {};
 $(function () {
@@ -10,6 +11,12 @@ $(function () {
     singleImgUpload();
     galleryImgUpload();
     newSource();
+    initLinks("#editParagraphs");
+    // Safety net: every edit syncs its field on the spot, this catches anything
+    // that changed a caption without an input event firing.
+    $("#editParagraphs").on("submit", function (){
+        commitFields(this);
+    });
     // Re-init TinyMCE when the site's dark/light toggle changes: a skin can't be
     // swapped on a live editor, so tear the editors down (content is synced back
     // to the textareas) and rebuild them with the now-current theme.
@@ -23,8 +30,11 @@ $(function () {
         controlButtons();
         searchSelect();
         changeSourceType();
-        linkModal();
-        $("main form input, main form textarea").each(function (){
+        // the caption fields show their links rendered instead of the raw <a>
+        // markup (see linkField.js) - also catches the ones added via Ajax
+        initLinks("#editParagraphs");
+        // .richSource fields are hidden and count their own characters
+        $("main form input:not(.richSource), main form textarea:not(.richSource)").each(function (){
             let input = $(this);
             showMaxLength(input);
         });
@@ -502,10 +512,10 @@ function controlButtons(){
                 let curImgAlt = elToMove.find("img").attr("alt");
                 prevEl.find("img").attr("alt", curImgAlt);
                 elToMove.find("img").attr("alt", prevImgAlt);
-                let prevElVal = prevEl.find("input[type='text']").val();
-                let curVal = elToMove.find("input[type='text']").val();
-                elToMove.find("input[type='text']").val(prevElVal);
-                prevEl.find("input[type='text']").val(curVal);
+                let prevElVal = readField(prevEl.find("input[type='text']"));
+                let curVal = readField(elToMove.find("input[type='text']"));
+                writeField(elToMove.find("input[type='text']"), prevElVal);
+                writeField(prevEl.find("input[type='text']"), curVal);
             }
         }
         else if(elToMove.hasClass("contentElement")){
@@ -531,14 +541,14 @@ function controlButtons(){
                     if(elToMove.find(".contentImage").length !== 0){
                         let imageData = elToMove.find("img").attr("src");
                         let imageAlt = elToMove.find("img").attr("alt");
-                        let inputVal = elToMove.find("input[type='text']").val();
+                        let inputVal = readField(elToMove.find("input[type='text']"));
                         elToMove.find(".contentImage").remove();
                         getTemplate(prevEl.find(".upload"), 'newImg.twig', [imageData, parNum, curPos - 1, imageAlt, inputVal], true);
                     }
                     if(prevEl.find(".contentImage").length !== 0){
                         let imageData = prevEl.find("img").attr("src");
                         let imageAlt = prevEl.find("img").attr("alt");
-                        let inputVal = prevEl.find("input[type='text']").val();
+                        let inputVal = readField(prevEl.find("input[type='text']"));
                         prevEl.find(".contentImage").remove()
                         getTemplate(elToMove.find(".upload"), 'newImg.twig', [imageData, parNum, curPos, imageAlt, inputVal], true);
                     }
@@ -547,7 +557,7 @@ function controlButtons(){
                     let elToMoveText = elToMove.find("iframe")[0].contentDocument.body.innerHTML;
                     let prevVals = [];
                     prevEl.find("input[type='text']").each(function (){
-                        prevVals.push($(this).val());
+                        prevVals.push(readField($(this)));
                     })
                     let prevHTML = prevEl.html();
                     prevEl.remove();
@@ -559,7 +569,7 @@ function controlButtons(){
                         if(elToMove.find(".contentImage").length !== 0){
                             let imageData = elToMove.find("img").attr("src");
                             let imageAlt = elToMove.find("img").attr("alt");
-                            let inputVal = elToMove.find("input[type='text']").val();
+                            let inputVal = readField(elToMove.find("input[type='text']"));
                             getTemplate(newEl.find(".upload"), 'newImg.twig', [imageData, parNum, curPos - 1, imageAlt, inputVal], true);
                         }
                     }, 200);
@@ -575,7 +585,7 @@ function controlButtons(){
                     let prevElText = prevEl.find("iframe")[0].contentDocument.body.innerHTML;
                     let elToMoveVals = [];
                     elToMove.find("input[type='text']").each(function (){
-                        elToMoveVals.push($(this).val());
+                        elToMoveVals.push(readField($(this)));
                     })
                     let elToMoveHTML = elToMove.html();
                     elToMove.remove();
@@ -587,7 +597,7 @@ function controlButtons(){
                         if(prevEl.find(".contentImage").length !== 0){
                             let imageData = prevEl.find("img").attr("src");
                             let imageAlt = prevEl.find("img").attr("alt");
-                            let inputVal = prevEl.find("input[type='text']").val();
+                            let inputVal = readField(prevEl.find("input[type='text']"));
                             getTemplate(newEl.find(".upload"), 'newImg.twig', [imageData, parNum, curPos, imageAlt, inputVal], true);
                         }
                     }, 200);
@@ -602,12 +612,12 @@ function controlButtons(){
                 else if(elToMove.hasClass("gallery") && prevEl.hasClass("gallery")){
                     let elToMoveVals = [];
                     elToMove.find("input[type='text']").each(function (){
-                        elToMoveVals.push($(this).val());
+                        elToMoveVals.push(readField($(this)));
                     })
                     let elToMoveHTML = elToMove.html();
                     let prevVals = [];
                     prevEl.find("input[type='text']").each(function (){
-                        prevVals.push($(this).val());
+                        prevVals.push(readField($(this)));
                     })
                     let prevHTML = prevEl.html();
                     setTimeout(function (){
@@ -674,10 +684,10 @@ function controlButtons(){
             let curImgAlt = elToMove.find("img").attr("alt");
             nextEl.find("img").attr("alt", curImgAlt);
             elToMove.find("img").attr("alt", nextImgAlt);
-            let nextElVal = nextEl.find("input[type='text']").val();
-            let curVal = elToMove.find("input[type='text']").val();
-            elToMove.find("input[type='text']").val(nextElVal);
-            nextEl.find("input[type='text']").val(curVal);
+            let nextElVal = readField(nextEl.find("input[type='text']"));
+            let curVal = readField(elToMove.find("input[type='text']"));
+            writeField(elToMove.find("input[type='text']"), nextElVal);
+            writeField(nextEl.find("input[type='text']"), curVal);
         }
         else if(elToMove.hasClass("contentElement")){
             if(images["p" + parNum + "c" + curPos] !== "undefined" && images["p" + parNum + "c" + (curPos + 1)] !== "undefined"){
@@ -701,14 +711,14 @@ function controlButtons(){
                 if(elToMove.find(".contentImage").length !== 0){
                     let imageData = elToMove.find("img").attr("src");
                     let imageAlt = elToMove.find("img").attr("alt");
-                    let inputVal = elToMove.find("input[type='text']").val();
+                    let inputVal = readField(elToMove.find("input[type='text']"));
                     elToMove.find(".contentImage").remove();
                     getTemplate(nextEl.find(".upload"), 'newImg.twig', [imageData, parNum, curPos + 1, imageAlt, inputVal], true);
                 }
                 if(nextEl.find(".contentImage").length !== 0){
                     let imageData = nextEl.find("img").attr("src");
                     let imageAlt = nextEl.find("img").attr("alt");
-                    let inputVal = nextEl.find("input[type='text']").val();
+                    let inputVal = readField(nextEl.find("input[type='text']"));
                     nextEl.find(".contentImage").remove()
                     getTemplate(elToMove.find(".upload"), 'newImg.twig', [imageData, parNum, curPos, imageAlt, inputVal], true);
                 }
@@ -717,7 +727,7 @@ function controlButtons(){
                 let elToMoveText = elToMove.find("iframe")[0].contentDocument.body.innerHTML;
                 let nextVals = [];
                 nextEl.find("input[type='text']").each(function (){
-                    nextVals.push($(this).val());
+                    nextVals.push(readField($(this)));
                 })
                 let nextHTML = nextEl.html();
                 nextEl.remove();
@@ -729,7 +739,7 @@ function controlButtons(){
                     if(elToMove.find(".contentImage").length !== 0){
                         let imageData = elToMove.find("img").attr("src");
                         let imageAlt = elToMove.find("img").attr("alt");
-                        let inputVal = elToMove.find("input[type='text']").val();
+                        let inputVal = readField(elToMove.find("input[type='text']"));
                         getTemplate(newEl.find(".upload"), 'newImg.twig', [imageData, parNum, curPos + 1, imageAlt, inputVal], true);
                     }}, 200);
                 setTimeout(function (){
@@ -744,7 +754,7 @@ function controlButtons(){
                 let nextElText = nextEl.find("iframe")[0].contentDocument.body.innerHTML;
                 let elToMoveVals = [];
                 elToMove.find("input[type='text']").each(function (){
-                    elToMoveVals.push($(this).val());
+                    elToMoveVals.push(readField($(this)));
                 })
                 let elToMoveHTML = elToMove.html();
                 elToMove.remove();
@@ -756,7 +766,7 @@ function controlButtons(){
                     if(nextEl.find(".contentImage").length !== 0){
                         let imageData = nextEl.find("img").attr("src");
                         let imageAlt = nextEl.find("img").attr("alt");
-                        let inputVal = nextEl.find("input[type='text']").val();
+                        let inputVal = readField(nextEl.find("input[type='text']"));
                         getTemplate(newEl.find(".upload"), 'newImg.twig', [imageData, parNum, curPos, imageAlt, inputVal], true);
                     }}, 200);
                 setTimeout(function (){
@@ -769,12 +779,12 @@ function controlButtons(){
             else if(elToMove.hasClass("gallery") && nextEl.hasClass("gallery")){
                 let elToMoveVals = [];
                 elToMove.find("input[type='text']").each(function (){
-                    elToMoveVals.push($(this).val());
+                    elToMoveVals.push(readField($(this)));
                 })
                 let elToMoveHTML = elToMove.html();
                 let nextVals = [];
                 nextEl.find("input[type='text']").each(function (){
-                    nextVals.push($(this).val());
+                    nextVals.push(readField($(this)));
                 })
                 let nextHTML = nextEl.html();
                 setTimeout(function (){
@@ -828,7 +838,9 @@ function changeInputNamesAndVals(el, html, vals, parNum, contentPos){
     let i = 0;
     el.find("input[type='file']").attr("name", "p" + parNum + "c" + contentPos + "gallery");
     el.find("input[type='text']").each(function (){
-        $(this).val(vals[i]);
+        // through writeField: the caption keeps its <a> markup in the input but
+        // shows it rendered in a mirror next to it, which has to follow along
+        writeField($(this), vals[i]);
         $(this).attr("name", "p" + parNum + "c" + contentPos + "figcaption[]");
         i++;
     })
@@ -844,14 +856,14 @@ function getParagraphContents(el){
             if($(this).find(".contentImage").length !== 0){
                 result.push($(this).find("img").attr("src"));
                 result.push($(this).find("img").attr("alt"));
-                result.push($(this).find("input[type='text']").val());
+                result.push(readField($(this).find("input[type='text']")));
             }
         }
         else{
             let galleryHTML = $(this).html();
             let inputVals = [];
             $(this).find("input[type='text']").each(function (){
-                inputVals.push($(this).val());
+                inputVals.push(readField($(this)));
             })
             result = ["gallery", galleryHTML, inputVals];
         }

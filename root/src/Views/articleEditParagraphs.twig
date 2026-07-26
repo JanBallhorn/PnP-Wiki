@@ -5,7 +5,7 @@
 {% block head %}
     {{ parent() }}
     <script src="../../assets/js/tinymce/tinymce.min.js" referrerpolicy="origin"></script>
-    <script src="../../assets/js/paragraphsForm.js?v=9" type="module"></script>
+    <script src="../../assets/js/paragraphsForm.js?v=10" type="module"></script>
 {% endblock %}
 
 {% block mainContent %}
@@ -48,7 +48,7 @@
                                                                 <div>
                                                                     <img src="{{ gallery.img }}" alt="Bild{{ gallery.sequence }}" width="100">
                                                                     <label>Bildunterschrift
-                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" value="{{ gallery.figcaption }}" maxlength="500" class="withModal">
+                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" value="{{ addLinkTitles(relativizeInternalLinks(gallery.figcaption)) }}" maxlength="500" class="withModal">
                                                                         <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                                         <span class="maxLength">500</span>
                                                                     </label>
@@ -81,7 +81,7 @@
                                                                 <div>
                                                                     <img src="{{ content.img }}" alt="{{ content.figcaption }}" width="100">
                                                                     <label>Bildunterschrift
-                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" maxlength="500" value="{{ content.figcaption }}" class="withModal">
+                                                                        <input name="p{{ paragraph.sequence }}c{{ content.sequence }}figcaption[]" type="text" maxlength="500" value="{{ addLinkTitles(relativizeInternalLinks(content.figcaption)) }}" class="withModal">
                                                                         <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                                         <span class="maxLength">500</span>
                                                                     </label>

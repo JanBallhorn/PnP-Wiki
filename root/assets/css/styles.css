@@ -522,6 +522,67 @@ form .paragraph + hr{
     padding: 0.25em 2rem 0.25rem 0.5em;
     min-width: 100%;
 }
+/* Mirror of a link-carrying field (linkField.js): looks like the input or
+   textarea it stands in for, but shows real links instead of raw <a> markup.
+   pre-wrap so the stored line breaks show up as line breaks. */
+.richField{
+    background-color: var(--main-bg);
+    border: 1px solid var(--txt);
+    font-size: 1em;
+    padding: 0.25em 2rem 0.25em 0.5em;
+    min-height: 1.8125em;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.richField:focus{
+    outline: none;
+}
+.richField a{
+    cursor: pointer;
+}
+input.richSource, textarea.richSource{
+    display: none;
+}
+span.maxLength.limitHit{
+    color: var(--error);
+}
+/* Article search inside the link modal */
+.linkModal label:has(input[name='articleSearch']){
+    padding-bottom: 0;
+}
+.linkModal label > span.info{
+    position: static;
+    margin-top: 0.25em;
+}
+.linkModal .articleResults{
+    display: flex;
+    flex-flow: column;
+    max-height: 12em;
+    overflow-y: auto;
+    margin-bottom: 0.5em;
+}
+.linkModal .articleResults button{
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid var(--box-bg2);
+    padding: 0.35em 0.5em;
+    text-align: left;
+    font-size: 1em;
+    cursor: pointer;
+}
+.linkModal .articleResults button:hover{
+    background-color: var(--box-bg);
+}
+.linkModal .articleResults button.chosen{
+    background-color: var(--box-bg2);
+}
+.linkModal .articleResults p.noResults{
+    margin: 0.25em 0;
+}
+.linkModal span.error{
+    margin-bottom: 0.5em;
+}
 .rowButtons, .sourceButtons{
     display: flex;
     align-items: center;

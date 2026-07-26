@@ -2,6 +2,11 @@
     <div class="modalContent">
         <button type="button" class="closeModal"><i class="fa-solid fa-xmark"></i></button>
         <h3>Link einfügen</h3>
+        <label>Wiki-Artikel suchen (Name oder Alias)
+            <input name="articleSearch" autocomplete="off">
+            <span class="info">Ab 2 Zeichen wird gesucht. Ein Treffer setzt den Link und zeigt beim Darüberfahren den Ziel-Artikel.</span>
+        </label>
+        <div class="articleResults"></div>
         <label>Link
             <input name="link">
         </label>
@@ -11,8 +16,11 @@
         <label>
             <input type="checkbox" name="target">Soll der Link in einem neuen Fenster geöffnet werden?
         </label>
+        <span class="error noLink hide">Bitte einen Artikel auswählen oder einen Link eintragen.</span>
+        <span class="error tooLong hide">Damit wird das Feld zu lang – kürze den Text oder den angezeigten Linktext.</span>
         <div class="modalButtons">
             <button class="button" type="button" name="save">Speichern</button>
+            <button class="button hide" type="button" name="remove">Link entfernen</button>
             <button class="button" type="button" name="cancel">Abbrechen</button>
         </div>
     </div>

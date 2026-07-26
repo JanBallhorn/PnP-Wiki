@@ -4,7 +4,7 @@
 
 {% block head %}
     {{ parent() }}
-    <script src="../../assets/js/infoForm.js" type="module"></script>
+    <script src="../../assets/js/infoForm.js?v=2" type="module"></script>
     <script src="../../assets/js/deleteAlert.js" type="text/javascript"></script>
 {% endblock %}
 
@@ -41,7 +41,7 @@
                                 <div>
                                     <img src="{{ encodeImg(img.img) }}" alt="Bild{{ img.sequence }}" width="100">
                                     <label>Bildunterschrift
-                                        <input name="pcfigcaption[]" type="text" value="{{ img.figcaption }}" maxlength="500" class="withModal">
+                                        <input name="pcfigcaption[]" type="text" value="{{ addLinkTitles(relativizeInternalLinks(img.figcaption)) }}" maxlength="500" class="withModal">
                                         <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                         <span class="maxLength">500</span>
                                     </label>
@@ -67,12 +67,12 @@
                                         <div class="infoTableRow">
                                             <div>
                                                 <label>
-                                                    <input name="rowTopic{{ i }}[]" class="withModal" maxlength="300" value="{{ infoContent.topic }}">
+                                                    <input name="rowTopic{{ i }}[]" class="withModal" maxlength="300" value="{{ addLinkTitles(relativizeInternalLinks(infoContent.topic)) }}">
                                                     <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                     <span class="maxLength">300</span>
                                                 </label>
                                                 <label>
-                                                    <textarea name="rowInfo{{ i }}[]" class="withModal" maxlength="1000" value="{{ infoContent.content }}" autocomplete="off">{{ infoContent.content }}</textarea>
+                                                    <textarea name="rowInfo{{ i }}[]" class="withModal" maxlength="1000" autocomplete="off">{{ addLinkTitles(relativizeInternalLinks(infoContent.content)) }}</textarea>
                                                     <button type="button" class="openModal" title="Link hinzufügen"><i class="fa-solid fa-link"></i></button>
                                                     <span class="maxLength">1000</span>
                                                 </label>

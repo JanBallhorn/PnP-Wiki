@@ -1,4 +1,5 @@
-import {checkFileSize, checkFileType, showMaxLength, getTemplate, linkModal} from "./formCheck.js";
+import {checkFileSize, checkFileType, showMaxLength, getTemplate} from "./formCheck.js";
+import {initLinks, readField, writeField, commitFields} from "./linkField.js";
 
 const images = [];
 
@@ -7,10 +8,20 @@ $(function (){
     newTable();
     newRow();
     ImgUpload();
+    // Safety net: every edit syncs its field on the spot, this catches anything
+    // that changed the field without an input event firing.
+    $("#editInfo").on("submit", function (){
+        commitFields(this);
+    });
+    // right away, so the fields never show their raw markup
+    initLinks("#editInfo");
     setInterval(function (){
         controlButtons();
-        linkModal();
-        $("main form input, main form textarea").each(function (){
+        // Scoped: the fields of this form show their links rendered instead of
+        // the raw <a> markup (see linkField.js).
+        initLinks("#editInfo");
+        // .richSource fields are hidden and count their own characters
+        $("main form input:not(.richSource), main form textarea:not(.richSource)").each(function (){
             let input = $(this);
             showMaxLength(input);
         });
@@ -90,7 +101,9 @@ function controlButtons(){
         else if(elToDel.hasClass("infoTable")){
             let alert = confirm('Bist du sicher, dass du dieses Element löschen möchtest?\r\nDann klicke auf OK!');
             if(alert){
+                let following = elToDel.nextAll(".infoTable");
                 elToDel.remove();
+                renumberTables(following);
             }
         }
         else if(elToDel.hasClass("contentImage")){
@@ -102,171 +115,117 @@ function controlButtons(){
     mUpEl.on("click", function (){
         let elToMove = $(this).parent().parent();
         if(elToMove.hasClass("infoTable")){
-            let prevEl = elToMove.prev();
-            let curPos = elToMove.prevAll().length + 1;
-            let curTopics = [];
-            let prevTopics = [];
-            let curInfos = [];
-            let prevInfos = [];
-            elToMove.find("input[name='rowTopic" + curPos + "[]']").each(function (){
-                curTopics.push($(this).val());
-            });
-            prevEl.find("input[name='rowTopic" + (curPos - 1) + "[]']").each(function (){
-
-                prevTopics.push($(this).val());
-            });
-            elToMove.find("textarea[name='rowInfo" + curPos + "[]']").each(function (){
-                curInfos.push($(this).text());
-            });
-            prevEl.find("textarea[name='rowInfo" + (curPos - 1) + "[]']").each(function (){
-                prevInfos.push($(this).text());
-            });
-            let curHeadline = elToMove.find("input[name='tableHeadline[]']").val();
-            elToMove.find("input[name='tableHeadline[]']").val(prevEl.find("input[name='tableHeadline[]']").val());
-            prevEl.find("input[name='tableHeadline[]']").val(curHeadline);
-            let curHTML = elToMove.find(".rows").html();
-            elToMove.find(".rows").html(prevEl.find(".rows").html());
-            prevEl.find(".rows").html(curHTML);
-            let i = 0;
-            prevEl.find("input[name='rowTopic" + curPos + "[]']").each(function (){
-                $(this).val(curTopics[i]);
-                $(this).attr("name", "rowTopic" + (curPos - 1) + "[]");
-                i++;
-            });
-            i = 0;
-            elToMove.find("input[name='rowTopic" + (curPos - 1) + "[]']").each(function (){
-                $(this).val(prevTopics[i]);
-                $(this).attr("name", "rowTopic" + curPos + "[]");
-                i++;
-            });
-            i = 0;
-            prevEl.find("textarea[name='rowInfo" + curPos + "[]']").each(function (){
-                $(this).text(curInfos[i]);
-                $(this).attr("name", "rowInfo" + (curPos - 1) + "[]");
-                i++;
-            });
-            i = 0;
-            elToMove.find("textarea[name='rowInfo" + (curPos - 1) + "[]']").each(function (){
-                $(this).text(prevInfos[i]);
-                $(this).attr("name", "rowInfo" + curPos + "[]");
-                i++;
-            });
+            let prevEl = elToMove.prev(".infoTable");
+            if(prevEl.length !== 0){
+                let curPos = elToMove.prevAll().length + 1;
+                swapTables(prevEl, elToMove, curPos - 1, curPos);
+            }
         }
         else if(elToMove.hasClass("contentImage")){
             let curPos = elToMove.prevAll().length;
-            let curImg = images[curPos];
-            let prevImg = images[curPos - 1];
-            images.splice(curPos - 1, 2, curImg, prevImg);
-            let prevEl = elToMove.prev();
-            prevEl.find("img").attr("src", curImg);
-            let prevImgAlt = prevEl.find("img").attr("alt");
-            elToMove.find("img").attr("src", prevImg)
-            let curImgAlt = elToMove.find("img").attr("alt");
-            prevEl.find("img").attr("alt", curImgAlt);
-            elToMove.find("img").attr("alt", prevImgAlt);
-            let prevElVal = prevEl.find("input[type='text']").val();
-            let curVal = elToMove.find("input[type='text']").val();
-            elToMove.find("input[type='text']").val(prevElVal);
-            prevEl.find("input[type='text']").val(curVal);
+            if(curPos !== 0){
+                swapImages(elToMove.prev(), elToMove, curPos - 1, curPos);
+            }
         }
         else if(elToMove.hasClass("infoTableRow")){
-            let tablePos = elToMove.closest(".infoTable").attr("data-position");
-            let prevEl = elToMove.prev();
-            let curTopic = elToMove.find("input[name='rowTopic" + tablePos + "[]']");
-            let curInfo = elToMove.find("textarea[name='rowInfo" + tablePos + "[]']");
-            let prevTopic = prevEl.find("input[name='rowTopic" + tablePos + "[]']");
-            let prevInfo = prevEl.find("textarea[name='rowInfo" + tablePos + "[]']");
-            let curTopicVal = curTopic.val();
-            curTopic.val(prevTopic.val());
-            prevTopic.val(curTopicVal);
-            let curInfoVal = curInfo.text();
-            curInfo.text(prevInfo.text());
-            prevInfo.text(curInfoVal);
+            let prevEl = elToMove.prev(".infoTableRow");
+            if(prevEl.length !== 0){
+                swapFields(prevEl, elToMove);
+            }
         }
     });
     mDownEl.on("click", function (){
         let elToMove = $(this).parent().parent();
         if(elToMove.hasClass("infoTable")){
-            let nextEl = elToMove.next();
-            let curPos = elToMove.prevAll().length + 1;
-            let curTopics = [];
-            let nextTopics = [];
-            let curInfos = [];
-            let nextInfos = [];
-            elToMove.find("input[name='rowTopic" + curPos + "[]']").each(function (){
-                curTopics.push($(this).val());
-            });
-            nextEl.find("input[name='rowTopic" + (curPos + 1) + "[]']").each(function (){
-
-                nextTopics.push($(this).val());
-            });
-            elToMove.find("textarea[name='rowInfo" + curPos + "[]']").each(function (){
-                curInfos.push($(this).text());
-            });
-            nextEl.find("textarea[name='rowInfo" + (curPos + 1) + "[]']").each(function (){
-                nextInfos.push($(this).text());
-            });
-            let curHeadline = elToMove.find("input[name='tableHeadline[]']").val();
-            elToMove.find("input[name='tableHeadline[]']").val(nextEl.find("input[name='tableHeadline[]']").val());
-            nextEl.find("input[name='tableHeadline[]']").val(curHeadline);
-            let curHTML = elToMove.find(".rows").html();
-            elToMove.find(".rows").html(nextEl.find(".rows").html());
-            nextEl.find(".rows").html(curHTML);
-            let i = 0;
-            nextEl.find("input[name='rowTopic" + curPos + "[]']").each(function (){
-                $(this).val(curTopics[i]);
-                $(this).attr("name", "rowTopic" + (curPos + 1) + "[]");
-                i++;
-            });
-            i = 0;
-            elToMove.find("input[name='rowTopic" + (curPos + 1) + "[]']").each(function (){
-                $(this).val(nextTopics[i]);
-                $(this).attr("name", "rowTopic" + curPos + "[]");
-                i++;
-            });
-            i = 0;
-            nextEl.find("input[name='rowInfo" + curPos + "[]']").each(function (){
-                $(this).text(curInfos[i]);
-                $(this).attr("name", "rowInfo" + (curPos + 1) + "[]");
-                i++;
-            });
-            i = 0;
-            elToMove.find("input[name='rowInfo" + (curPos + 1) + "[]']").each(function (){
-                $(this).text(nextInfos[i]);
-                $(this).attr("name", "rowInfo" + curPos + "[]");
-                i++;
-            });
+            let nextEl = elToMove.next(".infoTable");
+            if(nextEl.length !== 0){
+                let curPos = elToMove.prevAll().length + 1;
+                swapTables(elToMove, nextEl, curPos, curPos + 1);
+            }
         }
         else if(elToMove.hasClass("contentImage")){
-            let curPos = elToMove.prevAll().length;
-            let curImg = images[curPos];
-            let nextImg = images[curPos + 1];
-            images.splice(curPos, 2, nextImg, curImg);
-            let nextEl = elToMove.next();
-            nextEl.find("img").attr("src", curImg);
-            let nextImgAlt = nextEl.find("img").attr("alt");
-            elToMove.find("img").attr("src", nextImg)
-            let curImgAlt = elToMove.find("img").attr("alt");
-            nextEl.find("img").attr("alt", curImgAlt);
-            elToMove.find("img").attr("alt", nextImgAlt);
-            let nextElVal = nextEl.find("input[type='text']").val();
-            let curVal = elToMove.find("input[type='text']").val();
-            elToMove.find("input[type='text']").val(nextElVal);
-            nextEl.find("input[type='text']").val(curVal);
+            let nextEl = elToMove.next(".contentImage");
+            if(nextEl.length !== 0){
+                let curPos = elToMove.prevAll().length;
+                swapImages(elToMove, nextEl, curPos, curPos + 1);
+            }
         }
         else if(elToMove.hasClass("infoTableRow")){
-            let tablePos = elToMove.closest(".infoTable").attr("data-position");
-            let nextEl = elToMove.next();
-            let curTopic = elToMove.find("input[name='rowTopic" + tablePos + "[]']");
-            let curInfo = elToMove.find("textarea[name='rowInfo" + tablePos + "[]']");
-            let nextTopic = nextEl.find("input[name='rowTopic" + tablePos + "[]']");
-            let nextInfo = nextEl.find("textarea[name='rowInfo" + tablePos + "[]']");
-            let curTopicVal = curTopic.val();
-            curTopic.val(nextTopic.val());
-            nextTopic.val(curTopicVal);
-            let curInfoVal = curInfo.text();
-            curInfo.text(nextInfo.text());
-            nextInfo.text(curInfoVal);
+            let nextEl = elToMove.next(".infoTableRow");
+            if(nextEl.length !== 0){
+                swapFields(elToMove, nextEl);
+            }
         }
     });
+}
+
+/**
+ * Swaps the contents of two neighbouring table sections. The sections
+ * themselves stay put, so their position - and with it the rowTopicN/rowInfoN
+ * names their rows have to carry - never changes.
+ */
+function swapTables(first, second, firstPos, secondPos){
+    // The rows are moved by copying their markup, and a copy only carries what
+    // is in the DOM - never the live value of a field that was typed into.
+    commitFields(first);
+    commitFields(second);
+    let firstHeadline = first.find("input[name='tableHeadline[]']").val();
+    first.find("input[name='tableHeadline[]']").val(second.find("input[name='tableHeadline[]']").val());
+    second.find("input[name='tableHeadline[]']").val(firstHeadline);
+    let firstRows = first.find(".rows").html();
+    first.find(".rows").html(second.find(".rows").html());
+    second.find(".rows").html(firstRows);
+    renameRowFields(first, firstPos);
+    renameRowFields(second, secondPos);
+}
+
+function swapImages(first, second, firstPos, secondPos){
+    let firstImg = images[firstPos];
+    images[firstPos] = images[secondPos];
+    images[secondPos] = firstImg;
+    let firstSrc = first.find("img").attr("src");
+    let firstAlt = first.find("img").attr("alt");
+    first.find("img").attr("src", second.find("img").attr("src"));
+    first.find("img").attr("alt", second.find("img").attr("alt"));
+    second.find("img").attr("src", firstSrc);
+    second.find("img").attr("alt", firstAlt);
+    swapFields(first, second);
+}
+
+/**
+ * Swaps the link-carrying fields (topic, info, caption) of two elements of the
+ * same kind. Goes through readField/writeField because those fields keep their
+ * value in a hidden input next to a contenteditable mirror - reading .val() or
+ * .text() directly would miss the mirror, and .text() on a textarea never
+ * reflects what was typed into it in the first place.
+ */
+function swapFields(first, second){
+    let firstFields = first.find(".richSource, .withModal");
+    let secondFields = second.find(".richSource, .withModal");
+    firstFields.each(function (index){
+        let counterpart = secondFields.eq(index);
+        if(counterpart.length !== 0){
+            let value = readField($(this));
+            writeField($(this), readField(counterpart));
+            writeField(counterpart, value);
+        }
+    });
+}
+
+/**
+ * saveInfo() pairs the rows with their section by index (rowTopic1 belongs to
+ * the first tableHeadline), so after a section is removed every following
+ * section has to be renumbered - otherwise its rows land on the wrong section.
+ */
+function renumberTables(tables){
+    tables.each(function (){
+        let pos = $(this).prevAll(".infoTable").length + 1;
+        $(this).attr("data-position", pos);
+        renameRowFields($(this), pos);
+    });
+}
+
+function renameRowFields(table, pos){
+    table.find("[name^='rowTopic']").attr("name", "rowTopic" + pos + "[]");
+    table.find("[name^='rowInfo']").attr("name", "rowInfo" + pos + "[]");
 }

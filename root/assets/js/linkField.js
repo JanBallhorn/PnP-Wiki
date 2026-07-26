@@ -36,12 +36,16 @@ let editingLink = null;  // the <a> being edited, if the modal was opened on one
 let chosenTitle = '';    // headline of an article picked from the search
 
 /**
- * Upgrades every .withModal field inside the given scope to a rich field and
- * makes sure the link modal is wired up. Safe to call repeatedly (the forms
- * poll on an interval) and safe for markup that arrives later via Ajax.
+ * Wires up the link modal and upgrades every .withModal field inside the given
+ * scope to a rich field. Called without a scope it only wires up the modal, so
+ * the fields keep the plain behaviour. Safe to call repeatedly (the forms poll
+ * on an interval) and safe for markup that arrives later via Ajax.
  */
 function initLinks(scope){
     bindModal();
+    if(scope === undefined || scope === null){
+        return;
+    }
     $(scope).find(".withModal, .richSource").each(function (){
         let source = $(this);
         if(source.siblings(".richField").length !== 0){
@@ -75,46 +79,41 @@ function readField(source){
 }
 
 /**
- * Writes a value into a field, updating the mirror and the DOM so that
- * markup-copying moves (.html()) carry the value along.
+ * Writes a value into a field, mirror included. Like .val() it writes to every
+ * element it is handed.
  */
 function writeField(source, value){
+    $(source).each(function (){
+        writeSource(this, value);
+        let mirror = $(this).siblings(".richField");
+        if(mirror.length !== 0){
+            mirror.html(value);
+            writeCounter(mirror[0]);
+        }
+    });
+}
+
+/**
+ * Pushes every mirror inside the scope into its hidden field. Only a safety
+ * net - each edit syncs its own field right away.
+ */
+function commitFields(scope){
+    $(scope).find(".richField").each(function (){
+        syncField(this);
+    });
+}
+
+function writeSource(source, value){
     let el = $(source)[0];
     $(source).val(value);
+    // Also into the DOM, not just into the live value: the forms move rows
+    // around by copying their markup, and a copy carries nothing but the DOM.
     if(el.tagName.toLowerCase() === 'textarea'){
         el.textContent = value;
     }
     else{
         el.setAttribute("value", value);
     }
-    let mirror = $(source).siblings(".richField");
-    if(mirror.length !== 0){
-        mirror.html(value);
-        writeCounter(mirror[0]);
-    }
-}
-
-/**
- * Pushes every mirror inside the scope into its hidden field AND into the DOM.
- * Call this before moving elements around by copying their markup: a copy only
- * carries what is in the DOM, never the live value of a field that was typed in.
- */
-function commitFields(scope){
-    $(scope).find(".richField").each(function (){
-        let source = $(this).siblings(".richSource");
-        if(source.length !== 0){
-            let value = serialize(this);
-            let el = source[0];
-            $(source).val(value);
-            if(el.tagName.toLowerCase() === 'textarea'){
-                el.textContent = value;
-            }
-            else{
-                el.setAttribute("value", value);
-            }
-            writeCounter(this);
-        }
-    });
 }
 
 // -------------------------------------------------------------- serialisation
@@ -131,6 +130,11 @@ function serialize(node){
         }
         let tag = child.tagName.toLowerCase();
         if(tag === 'br'){
+            // Browsers park a filler <br> at the end of an editable element -
+            // counting it would save a line break into an otherwise empty field.
+            if(child === node.lastChild && node.classList !== undefined && node.classList.contains("richField")){
+                return;
+            }
             out += "\n";
             return;
         }
@@ -138,8 +142,13 @@ function serialize(node){
         let allowed = keepTags[tag];
         // a <span> without a class carries nothing worth keeping
         if(allowed === undefined || (tag === 'span' && !child.getAttribute("class"))){
-            if(blockTags.includes(tag) && out !== '' && !out.endsWith("\n")){
-                out += "\n";
+            if(blockTags.includes(tag)){
+                if(out !== '' && !out.endsWith("\n")){
+                    out += "\n";
+                }
+                if(inner === "\n"){
+                    inner = ''; // an empty line is a lone filler <br> in a wrapper
+                }
             }
             out += inner;
             return;
@@ -167,26 +176,27 @@ function escapeText(text){
 // ------------------------------------------------------------- editing a field
 
 function syncField(mirror){
+    let value = serialize(mirror);
     let source = $(mirror).siblings(".richSource");
     if(source.length !== 0){
-        source.val(serialize(mirror));
+        writeSource(source, value);
     }
-    writeCounter(mirror);
+    writeCounter(mirror, value);
 }
 
 // The stored columns are varchar(300)/varchar(1000) and the markup counts
 // towards that - a single internal link easily eats 70 characters. maxlength
 // does not apply to a contenteditable, so the limit is enforced here; without
 // it MySQL would silently cut the value off.
-function writeCounter(mirror){
+function writeCounter(mirror, value){
     let counter = $(mirror).siblings("span.maxLength");
-    if(counter.length === 0){
+    let max = Number(mirror.dataset.max || 0);
+    if(counter.length === 0 || max === 0){
         return;
     }
-    let max = Number(mirror.dataset.max || 0);
-    let length = serialize(mirror).length;
+    let length = (value === undefined ? serialize(mirror) : value).length;
     counter.text(length + "/" + max);
-    counter.toggleClass("limitHit", max !== 0 && length >= max);
+    counter.toggleClass("limitHit", length >= max);
 }
 
 function room(mirror){
@@ -277,12 +287,12 @@ function bindFields(){
 // --------------------------------------------------------------------- modal
 
 function bindModal(){
-    if(modalBound){
+    let modal = $(".linkModal");
+    if(modalBound || modal.length === 0){
         return;
     }
     modalBound = true;
     bindFields();
-    let modal = $(".linkModal");
 
     $(document).on("click", ".openModal", function (){
         let mirror = $(this).siblings(".richField");
@@ -374,20 +384,27 @@ function openModal(mirror, link, plain){
     chosenTitle = '';
     let text = '';
     if(mirror !== null){
+        // The caret is lost as soon as the modal's inputs take focus, so
+        // remember where the link has to go.
+        let selection = window.getSelection();
+        if(editingLink === null && selection !== null && selection.rangeCount !== 0
+            && mirror.contains(selection.getRangeAt(0).commonAncestorContainer)){
+            savedRange = selection.getRangeAt(0).cloneRange();
+            text = String(selection);
+            // Caret inside a link: edit that one instead of nesting a second
+            // <a> inside it.
+            let container = savedRange.commonAncestorContainer;
+            let element = container.nodeType === 1 ? container : container.parentNode;
+            let existing = element === null ? null : element.closest("a");
+            if(existing !== null && mirror.contains(existing)){
+                editingLink = existing;
+            }
+        }
         if(editingLink !== null){
+            savedRange = null;
             modal.find("input[name='link']").val(editingLink.getAttribute("href") || '');
             modal.find("input[name='target']").prop("checked", editingLink.getAttribute("target") === '_blank');
             text = editingLink.textContent;
-        }
-        else{
-            // The caret is lost as soon as the modal's inputs take focus, so
-            // remember where the link has to go.
-            let selection = window.getSelection();
-            if(selection !== null && selection.rangeCount !== 0
-                && mirror.contains(selection.getRangeAt(0).commonAncestorContainer)){
-                savedRange = selection.getRangeAt(0).cloneRange();
-                text = String(selection);
-            }
         }
     }
     else{
@@ -420,6 +437,9 @@ function saveModal(){
         closeModal();
         return;
     }
+    // Snapshot first: if the finished link does not fit the column any more the
+    // field is put back exactly as it was instead of being saved over the limit.
+    let snapshot = field.innerHTML;
     let link = editingLink !== null ? editingLink : document.createElement("a");
     link.setAttribute("href", href);
     if(blank){
@@ -433,13 +453,12 @@ function saveModal(){
     if(chosenTitle !== ''){
         link.setAttribute("title", chosenTitle);
     }
+    else if(!/article\?id=\d+/.test(href)){
+        link.removeAttribute("title"); // no longer an article link
+    }
     link.textContent = text;
     if(editingLink === null){
-        // + 2 for the spaces the link is padded with when nothing is selected
-        if(link.outerHTML.length + 2 > room(field)){
-            modal.find(".error.tooLong").removeClass("hide");
-            return;
-        }
+        let collapsed = savedRange === null || savedRange.collapsed;
         if(savedRange !== null){
             let selection = window.getSelection();
             selection.removeAllRanges();
@@ -450,15 +469,21 @@ function saveModal(){
         else{
             field.appendChild(link);
         }
-        // keep the link from gluing itself to the neighbouring word
-        if(link.previousSibling === null || !/[\s(]$/.test(link.previousSibling.textContent || '')){
-            link.parentNode.insertBefore(document.createTextNode(' '), link);
-        }
-        if(link.nextSibling === null || !/^[\s.,;:!?)]/.test(link.nextSibling.textContent || '')){
-            link.parentNode.insertBefore(document.createTextNode(' '), link.nextSibling);
+        // Nothing was selected, so the link lands mid-text - keep it from
+        // gluing itself to the neighbouring word.
+        if(collapsed){
+            if(link.previousSibling === null || !/[\s(]$/.test(link.previousSibling.textContent || '')){
+                link.parentNode.insertBefore(document.createTextNode(' '), link);
+            }
+            if(link.nextSibling === null || !/^[\s.,;:!?)]/.test(link.nextSibling.textContent || '')){
+                link.parentNode.insertBefore(document.createTextNode(' '), link.nextSibling);
+            }
         }
     }
-    else if(serialize(field).length > Number(field.dataset.max || 0) && field.dataset.max){
+    let max = Number(field.dataset.max || 0);
+    if(max !== 0 && serialize(field).length > max){
+        field.innerHTML = snapshot;
+        syncField(field);
         modal.find(".error.tooLong").removeClass("hide");
         return;
     }
