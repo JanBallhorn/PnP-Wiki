@@ -2,46 +2,94 @@
 
 Detailplan für das Roadmap-Feature **Zeitstrahl**. Stand: 2026-07-26, noch kein Code geschrieben.
 
+## Ausgangslage
+
+Das Schema enthält bereits `timelines`, `timeline_events`, `calendars`, `calendar_years`, `calendar_months` und `calendar_days`. **Alle sechs Tabellen sind leer, und kein PHP-Codepfad kennt sie** – es gibt kein Model, kein Repository, keinen Controller. Es ist ein Entwurf, kein halbfertiges Feature: die Struktur ist frei anpassbar, ohne Rücksicht auf Bestandsdaten. Ebenfalls verwaist: `lists`/`list_elements` und `maps`.
+
 ## Entschieden (2026-07-26)
 
-- **Volles Kalendersystem** – eigene Kalender mit selbst definierten Monaten, Wochentagen und Schaltregeln, nicht nur ein festverdrahteter aventurischer Kalender.
-- **Artikel-Bezug optional** – ein Ereignis hat eigene Überschrift und eigenen Text und *kann* zusätzlich auf einen Artikel verweisen.
-- **Zeiträume von Anfang an** – jedes Ereignis kann ein Zeitpunkt oder eine Spanne sein.
+| Frage | Entscheidung |
+|---|---|
+| Kalendertiefe | Volles System: eigene Monate, Wochentage, Ären, Schaltregeln |
+| Schaltjahre | Ja, einfaches Intervall (alle N Jahre X Extratage), keine gregorianischen Ausnahmen |
+| Jahreslänge | Wird aus der Monatsliste **abgeleitet**, nicht eingegeben |
+| Monatsbezug eines Ereignisses | `calendar_months.id`, nicht die Monatsnummer |
+| Jahr 0 | Pro Kalender einstellbar (`has_year_zero`) |
+| Epoche | Neutraler Tages-Offset, in der gespeicherten Tagesnummer enthalten |
+| Ären | Mehrere pro Kalender, je vier Bezeichnungen (vor/nach × Name/Kürzel) |
+| Kalender pro Ereignis | Frei wählbar – Quellen datieren in ihrem eigenen Kalender |
+| Kalender-Verankerung | Über ein Bezugsdatum, nicht über eine rohe Tageszahl |
+| Anzeige fremder Kalender | Original **und** Umrechnung in den Leitkalender |
+| Unscharfe Daten | Nicht umrechnen, stattdessen Bereich als Hinweis |
+| Struktur löschen, die benutzt wird | Sperren mit Hinweis |
+| Verknüpfter Artikel gelöscht | Verknüpfung lösen, Titel in die Ereignisüberschrift retten |
+| Ereignis-Editor | Spiegelfeld aus `linkField.js`, 1000 Zeichen |
+| Uhrzeiten | Nein – später als **zweite** Sortierspalte nachrüstbar |
+| Artikel pro Ereignis | Einer (struktureller Bezug), weitere als Links im Text |
+| Gleichstände | Unscharfe zuerst, dann Anlagereihenfolge |
+| Lange Zeitstrahlen | Alles laden, Jahres-Sprungleiste |
 
 ---
 
-## 1. Bestandsaufnahme
+## 1. Datenmodell
 
-Das Schema enthält bereits `timelines`, `timeline_events`, `calendars`, `calendar_years`, `calendar_months` und `calendar_days`. **Alle sechs Tabellen sind leer, und kein PHP-Codepfad kennt sie** – es gibt kein Model, kein Repository, keinen Controller. Es ist ein Entwurf, kein halbfertiges Feature: wir können die Struktur frei anpassen, ohne Rücksicht auf Bestandsdaten.
+### Kalender
 
-Die Namensgebung ist teils irreführend: **`calendar_years` enthält keine einzelnen Jahre**, sondern die Regeln, wie ein Jahr aufgebaut ist (`days_per_year`, `months_per_year`, `days_per_week`, `hours_per_day`, `gap_years`) plus die Bezeichnung der Ära (`year_definition` mit dem Kommentar *„like Hal"*, `year_definition_abbrevation`). Ich behandle sie im Folgenden als **Jahresdefinition** – eine Zeile pro Kalender.
-
-`calendars.year_0BF` ist ein Epochen-Offset: welches Jahr dieses Kalenders dem Jahr 0 BF entspricht. Damit lassen sich verschiedene Kalender auf eine gemeinsame Achse legen.
-
-## 2. Nötige Schema-Änderungen
-
-Vier Lücken im Entwurf:
-
-1. **`timelines` hat keinen Namen.** Ohne Titel lässt sich ein Zeitstrahl nicht benennen oder in einer Liste anzeigen.
-2. **`timeline_events` hat keine Artikel-Verknüpfung** – genau die Anforderung aus der Roadmap.
-3. **Keine Zeiträume** – nur ein Datum pro Ereignis.
-4. **Keine sortierbare Größe.** Nach `(year, month, day)` zu sortieren funktioniert nur innerhalb eines Kalenders ohne Schaltregeln. Mit Schaltmonaten und über Kalendergrenzen hinweg braucht es eine absolute Tagesnummer (siehe Abschnitt 3).
-
-Dazu kommt: `month` und `day` müssen **nullable** werden, damit ein Ereignis auch nur mit Jahresangabe („1032 BF") oder nur mit Monat („im Praios 1032 BF") erfasst werden kann. Die Genauigkeit ergibt sich dann daraus, welche Felder gesetzt sind – dafür braucht es keine eigene Spalte.
+`calendar_years` wird durch `calendar_eras` **ersetzt**. Die alte Tabelle mischte zwei Ebenen: Ära-Bezeichnungen (pro Ära) und Kalenderstruktur (pro Kalender). Sobald es mehrere Ären pro Kalender gibt, wären die Strukturfelder pro Ära dupliziert und damit per Konstruktion widersprüchlich. `days_per_year`, `months_per_year` und `days_per_month` fallen ganz weg – sie ergeben sich aus der Monatsliste, und mit Schaltjahren kann `days_per_year` gar keinen einzelnen richtigen Wert haben.
 
 ```sql
--- Zeitstrahl benennbar machen und an einen Kalender binden
-ALTER TABLE `timelines`
-    ADD `name`        VARCHAR(300) NOT NULL AFTER `id`,
-    ADD `description` VARCHAR(1000) DEFAULT NULL AFTER `name`,
-    ADD `calendar`    INT(10) NOT NULL AFTER `project`,
-    ADD `last_edit`      TIMESTAMP NOT NULL DEFAULT current_timestamp(),
-    ADD `last_edit_by`   INT(10) NOT NULL;
+ALTER TABLE `calendars`
+    ADD `epoch_offset_days` BIGINT      NOT NULL DEFAULT 0,
+    ADD `has_year_zero`     TINYINT(1)  NOT NULL DEFAULT 1,
+    ADD `days_per_week`     INT(10)     NOT NULL DEFAULT 7,
+    ADD `hours_per_day`     INT(10)     NOT NULL DEFAULT 24,
+    -- Verankerung: dasselbe Datum in zwei Kalendern, daraus wird epoch_offset_days berechnet
+    ADD `anchor_calendar`   INT(10) DEFAULT NULL,
+    ADD `anchor_year`       INT(10) DEFAULT NULL,
+    ADD `anchor_month`      INT(10) DEFAULT NULL,
+    ADD `anchor_day`        INT(10) DEFAULT NULL,
+    ADD `anchor_own_year`   INT(10) DEFAULT NULL,
+    ADD `anchor_own_month`  INT(10) DEFAULT NULL,
+    ADD `anchor_own_day`    INT(10) DEFAULT NULL;
 
--- Ereignisse: Artikel-Bezug, unscharfe Datumsangaben, Zeiträume, Sortierung
+DROP TABLE `calendar_years`;
+CREATE TABLE `calendar_eras` (
+    `id`            INT(10) NOT NULL AUTO_INCREMENT,
+    `published`     TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+    `calendar`      INT(10) NOT NULL,
+    `name_after`    VARCHAR(100) NOT NULL,   -- "nach Bosparans Fall"
+    `abbrev_after`  VARCHAR(50)  NOT NULL,   -- "BF"
+    `name_before`   VARCHAR(100) NOT NULL,   -- "vor Bosparans Fall"
+    `abbrev_before` VARCHAR(50)  NOT NULL,   -- "v. BF"
+    `year_offset`   INT(10) NOT NULL DEFAULT 0,
+    `is_default`    TINYINT(1) NOT NULL DEFAULT 0,
+    `sequence`      INT(10) NOT NULL,
+    PRIMARY KEY (`id`),
+    KEY `calendar` (`calendar`),
+    CONSTRAINT `calendar_eras_ibfk_1` FOREIGN KEY (`calendar`)
+        REFERENCES `calendars` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+`calendar_months` bleibt wie es ist und trägt die Schaltregeln (`gap_year_days`, `gap_year_interval`). **`gap_month_after` bleibt ungenutzt auf NULL**: normale Monate und Zusatzperioden liegen in *einer* Sequenz über `month_number`, `gap_month` markiert nur „zählt nicht als Monat" für die Darstellung. `gap_month_after` wäre eine zweite, konkurrierende Sortierordnung, die man beim Rechnen mit der ersten mischen müsste.
+
+`calendar_days` trägt **Wochentagsnamen** – Praiostag, Rondratag usw. Das ist *nicht* Teil eines Datums: der Wochentag ergibt sich aus der Tagesnummer modulo `days_per_week` und wird nie gespeichert.
+
+### Zeitstrahl und Ereignisse
+
+```sql
+ALTER TABLE `timelines`
+    ADD `name`         VARCHAR(300)  NOT NULL AFTER `id`,
+    ADD `description`  VARCHAR(1000) DEFAULT NULL AFTER `name`,
+    ADD `calendar`     INT(10)   NOT NULL AFTER `project`,   -- Leitkalender
+    ADD `last_edit`    TIMESTAMP NOT NULL DEFAULT current_timestamp(),
+    ADD `last_edit_by` INT(10)   NOT NULL;
+
 ALTER TABLE `timeline_events`
-    MODIFY `month` INT(10) DEFAULT NULL,
-    MODIFY `day`   INT(10) DEFAULT NULL,
+    MODIFY `month`     INT(10) DEFAULT NULL,        -- jetzt calendar_months.id
+    MODIFY `day`       INT(10) DEFAULT NULL,        -- Tag im Monat
+    MODIFY `text`      MEDIUMTEXT DEFAULT NULL,
+    ADD `era`          INT(10) DEFAULT NULL AFTER `calendar`,
     ADD `article`      INT(10) DEFAULT NULL AFTER `timeline`,
     ADD `year_to`      INT(10) DEFAULT NULL AFTER `year`,
     ADD `month_to`     INT(10) DEFAULT NULL AFTER `year_to`,
@@ -49,99 +97,129 @@ ALTER TABLE `timeline_events`
     ADD `sort_key`     BIGINT  NOT NULL DEFAULT 0 AFTER `day_to`,
     ADD `sort_key_end` BIGINT  DEFAULT NULL AFTER `sort_key`,
     ADD KEY `timeline_sort` (`timeline`, `sort_key`),
-    ADD KEY `article` (`article`);
+    ADD KEY `article` (`article`),
+    ADD KEY `event_calendar` (`calendar`);
 ```
 
-`timeline_events.calendar` wird damit redundant, weil der Kalender am Zeitstrahl hängt (ein Zeitstrahl = ein Kalender). Die Spalte bleibt vorerst stehen und wird mit dem Kalender des Zeitstrahls gefüllt – sie kostet nichts und hält die Tür für gemischte Zeitstrahlen offen. Vorteil der Bindung am Zeitstrahl: die Sortierung ist ohne Umrechnung eindeutig, und der Ereignis-Editor kennt die Monatsnamen ohne Rückfrage.
+Drei Felder verdienen eine Begründung:
 
-> **Deployment:** Es gibt keinen Migrationsmechanismus. Diese Statements müssen wie damals `users.test_user` **manuell auf dem Server** eingespielt werden (phpMyAdmin oder MySQL-CLI) – am besten *vor* dem Push, sonst laufen die neuen Seiten in einen SQL-Fehler. Die Statements gehören zusätzlich in `docker/db-init/`, damit eine frische lokale Umgebung sie mitbekommt, und als Checkliste in `DEPLOY.md`.
+- **`calendar` ist nicht redundant.** Der Monat als ID impliziert den Kalender – aber nur bei Datumsangaben *mit* Monat. Bei einem jahresgenauen Ereignis ist diese Spalte die einzige Information darüber, in welchem Kalender das Jahr gilt.
+- **`era` hält die Quellentreue.** Datiert eine Quelle in „n. H." statt „BF", soll das Ereignis so angezeigt werden, wie es datiert wurde. Standard ist die Vorgabe-Ära des Kalenders.
+- **`year` ist der interne Wert**, era-neutral und mit Jahr 0, nicht die eingegebene Zahl. Nur so sortiert es. Die Umrechnung in die Ära passiert bei Eingabe und Anzeige.
 
-## 3. Die Tagesnummer – Kern der ganzen Sache
+Die Genauigkeit eines Datums braucht keine eigene Spalte – sie ergibt sich daraus, welche Felder NULL sind.
 
-Jedes Ereignis speichert eine absolute Tagesnummer (`sort_key`), berechnet beim Speichern. Nur damit sind Sortierung, „was passierte zwischen X und Y" und die Positionierung auf einer gezeichneten Achse möglich.
+### Fremdschlüssel
 
-Grundformel, bezogen auf Jahr 0 des Kalenders:
+Das Schema arbeitet mit echten Constraints (48 vorhanden, 25 davon `CASCADE`), daran halten wir uns:
+
+| Beziehung | Verhalten |
+|---|---|
+| `timeline_events.timeline` | `CASCADE` – Ereignisse gehören ihrem Zeitstrahl |
+| `calendar_eras/_months/_days.calendar` | `CASCADE` |
+| `timeline_events.month` → `calendar_months` | Standard (verweigern) + App-Prüfung mit Hinweis |
+| `timelines.calendar`, `timeline_events.calendar` | Standard (verweigern) |
+| `timeline_events.article` | `SET NULL` – neu im Projekt, aber hier richtig |
+| `timeline_events.era` | `SET NULL` |
+
+Regeln, die nicht der Datenbank überlassen werden können: mindestens eine Ära pro Kalender, kein Löschen der letzten. Und beim Löschen eines Artikels wandert dessen Titel in `timeline_events.headline`, falls die leer ist – **vor** dem `SET NULL`, sonst ist die Information weg.
+
+---
+
+## 2. Die Tagesnummer
+
+Jedes Ereignis speichert eine absolute Tagesnummer, berechnet beim Speichern. Nur damit sind Sortierung, Zeitraum-Abfragen, Kalender-Umrechnung und Achsenpositionen möglich.
 
 ```
-tage(J)         = J * basisTageProJahr + schalttage(J)
-schalttage(J)   = Σ  floor(J / intervall_m) * schalttage_m     über alle Monate m mit Schaltregel
-tagesNummer(J, M, T) = tage(J) + Σ dauer(m) für alle Monate m vor M + (T - 1)
+tage(J)              = J * basisTageProJahr + schalttage(J) + epoch_offset_days
+schalttage(J)        = Σ  floor(J / intervall_m) * extratage_m      über Monate m mit Schaltregel
+tagesNummer(J, M, T) = tage(J) + Σ dauer(m, J) für alle Monate m vor M + (T - 1)
 ```
 
-Drei Fallen, die im Code explizit adressiert werden müssen:
+`dauer(m, J)` ist die Monatslänge **im Jahr J** – inklusive Extratage, wenn m in J ein Schaltmonat ist. Das ist der Teil, den man leicht übersieht: liegt der Schaltmonat im Juni und das Datum im August, muss der Extratag für dieses konkrete Jahr in der Monatssumme stecken, nicht nur in der Jahresgrenze.
 
-- **Negative Jahre.** Ein Datum „vor Bosparans Fall" ist ein negatives Jahr. `intdiv()` in PHP rundet zur Null hin, gebraucht wird echtes Abrunden: `intdiv(-3, 4) === 0`, aber `(int) floor(-3 / 4) === -1`. Für Jahre vor der Epoche muss `(int) floor()` verwendet werden, sonst verschiebt sich die Achse um bis zu ein Schaltintervall.
-- **Unscharfe Daten.** Fehlt der Monat, zählt der Jahresanfang; fehlt der Tag, der Monatsanfang. Damit sortiert „1032 BF" vor „1. Praios 1032 BF" gleichauf – für die Darstellung reicht das, muss aber dokumentiert sein.
-- **Kalenderänderungen invalidieren alle Tagesnummern.** Wer nachträglich einen Monat verlängert oder einschiebt, verschiebt jedes Ereignis dieses Kalenders. `CalendarRepository::save()` muss deshalb `TimelineEventRepository::recalculateSortKeys($calendar)` nachziehen. Ohne das laufen Kalender und Zeitstrahl still auseinander – das ist der wahrscheinlichste Bug in diesem Feature.
+Vier Fallen, die im Code explizit adressiert sein müssen:
 
-Die Berechnung gehört ins `Calendar`-Model (`toDayNumber(?int $y, ?int $m, ?int $d): int`), nicht ins Repository: sie ist reine Rechnerei auf den Kalenderregeln und dadurch ohne Datenbank testbar.
+1. **Negative Jahre.** `intdiv()` rundet in PHP zur Null hin, gebraucht wird echtes Abrunden: `intdiv(-3, 4) === 0`, aber `(int) floor(-3 / 4) === -1`. Ohne `floor()` verschiebt sich die Achse vor der Epoche um bis zu ein Schaltintervall.
+2. **Kein Jahr 0.** Bei `has_year_zero = 0` gibt es kein Jahr 0: intern wird durchgezählt (astronomisch), bei Eingabe und Anzeige umgerechnet. Internes Jahr 0 wird dann als „1 v. BF" angezeigt.
+3. **Unscharfe Daten.** Fehlt der Monat, zählt der Jahresanfang; fehlt der Tag, der Monatsanfang.
+4. **Der Rückweg wird gebraucht.** Für die Umrechnung in andere Kalender, für Achsenbeschriftungen und für den Wochentag braucht es `fromDayNumber()` – die Umkehrung inklusive Schaltlogik. Das ist die Stelle, die Tests braucht; die Hinrichtung allein genügt nicht.
 
-**Aventurien als Referenzdatensatz** (nicht hart verdrahtet, sondern als anlegbarer Kalender): 12 Monate à 30 Tage, plus die 5 namenlosen Tage als 13. Monat mit `gap_month = 1` und `month_duration_in_days = 5`; 7 Wochentage (Praiostag … Rohalstag); Ära-Kürzel „BF"; `year_0BF = 0`.
+Die Rechnerei gehört ins `Calendar`-Model, nicht ins Repository: sie arbeitet nur auf den Kalenderregeln und ist damit ohne Datenbank testbar.
 
-## 4. Zugriffsrechte
+### Neuberechnung
 
-`timelines` hat schon `private`, `editable` und `project` – dasselbe Muster wie Artikel. Damit gilt:
+Wer einen Monat verlängert oder ein Bezugsdatum verschiebt, verschiebt alle Tagesnummern dieses Kalenders. Zwei Dinge sind dabei leicht falsch zu machen:
 
-- **Sichtbarkeit** über das vorhandene `Controller::getNonPrivate()`. Das erwartet auf dem Model `getPrivate()` und `getAuthorized()`. Statt einer neuen Tabelle `timeline_authorized` liefert `Timeline::getAuthorized()` die Autorisierten **des Projekts** – ein Zeitstrahl gehört ohnehin zu einem Projekt, und ein zweiter Rechte-Ort wäre nur eine Quelle für Abweichungen. Eigene Listen pro Zeitstrahl kann man später nachziehen.
-- **Bearbeiten** analog zu `userCanEditArticle()`: eine `userCanEditTimeline()`-Prüfung serverseitig in jeder schreibenden Action, nicht nur im Template.
-- **Kalender** sind projektübergreifend (die Tabelle hat kein `project`, aber `private`/`editable`) – ein Weltkalender ist in mehreren Projekten nutzbar. Sichtbarkeit über dieselben zwei Flags.
+- **Die Neuberechnung läuft über `timeline_events.calendar`, nicht über `timelines.calendar`.** Sonst blieben genau die Ereignisse falsch, die aus fremden Kalendern eingetragen wurden – also die, um deren Bequemlichkeit es bei dieser Entscheidung ging.
+- **Verankerte Kalender hängen mit dran.** Ist Kalender B über ein Bezugsdatum an A verankert und A ändert seine Struktur, ändert sich Bs Offset. Die Neuberechnung muss der Ankerkette folgen. Zirkuläre Anker (A→B→A) werden beim Speichern abgelehnt.
 
-Ereignisse erben alles vom Zeitstrahl, brauchen also keine eigenen Flags. **Aber:** ein Ereignis kann auf einen *privaten* Artikel verweisen. Beim Rendern muss der Artikel-Link deshalb durch dieselbe Prüfung laufen wie in den Übersichten, sonst leakt ein öffentlicher Zeitstrahl die Titel privater Artikel.
+---
 
-## 5. Klassen und Dateien
+## 3. Zugriffsrechte
 
-Nach den Konventionen im Projekt (Model + Collection mit `CollectionTrait` + Repository mit `extends Repository implements RepositoryInterface`):
+`timelines` hat `private`, `editable` und `project` – dasselbe Muster wie Artikel.
+
+- **Sichtbarkeit** über das vorhandene `Controller::getNonPrivate()`. Das erwartet `getPrivate()` und `getAuthorized()` am Model. `Timeline::getAuthorized()` liefert die Autorisierten **des Projekts**, statt eine zweite Rechte-Tabelle einzuführen – ein zweiter Rechte-Ort wäre nur eine Quelle für Abweichungen.
+- **Bearbeiten** über eine `userCanEditTimeline()`-Prüfung serverseitig in jeder schreibenden Action, nicht nur im Template.
+- **Kalender** sind projektübergreifend (die Tabelle hat kein `project`) – ein Weltkalender ist in mehreren Projekten nutzbar. Sichtbarkeit über `private`/`editable`.
+- **Ereignisse** erben alles vom Zeitstrahl.
+
+Ein Fallstrick: ein Ereignis kann auf einen **privaten** Artikel verweisen. Der Artikel-Link muss deshalb durch dieselbe Prüfung wie in den Übersichten, sonst verrät ein öffentlicher Zeitstrahl die Titel privater Artikel.
+
+---
+
+## 4. Klassen und Dateien
 
 | Schicht | Neu |
 |---|---|
-| Models | `Calendar`, `CalendarYear`, `CalendarMonth`, `CalendarDay`, `Timeline`, `TimelineEvent` |
-| Collections | `CalendarCollection`, `CalendarMonthCollection`, `CalendarDayCollection`, `TimelineCollection`, `TimelineEventCollection` |
-| Repositories | `CalendarRepository`, `CalendarMonthRepository`, `CalendarDayRepository`, `TimelineRepository`, `TimelineEventRepository` |
+| Models | `Calendar`, `CalendarEra`, `CalendarMonth`, `CalendarDay`, `Timeline`, `TimelineEvent` |
+| Collections | `CalendarCollection`, `CalendarEraCollection`, `CalendarMonthCollection`, `CalendarDayCollection`, `TimelineCollection`, `TimelineEventCollection` |
+| Repositories | `CalendarRepository`, `CalendarEraRepository`, `CalendarMonthRepository`, `CalendarDayRepository`, `TimelineRepository`, `TimelineEventRepository` |
 | Controllers | `CalendarController`, `TimelineController` |
-| Views | `calendarList.twig`, `editCalendar.twig`, `timelineList.twig`, `timeline.twig`, `editTimeline.twig` + Fragmente `newMonthRow.twig`, `newWeekdayRow.twig`, `newEvent.twig` |
+| Views | `calendarList.twig`, `editCalendar.twig`, `timelineList.twig`, `timeline.twig`, `editTimeline.twig` + Fragmente `newMonthRow.twig`, `newWeekdayRow.twig`, `newEraRow.twig`, `newEvent.twig` |
 | JS | `calendarForm.js`, `timelineForm.js` |
 
-Beim Schreiben der Repositories zwei Dinge beachten, die im Bestand schon Fehler verursacht haben:
+Zwei Dinge, die im Bestand schon Fehler verursacht haben und hier vermeidbar sind:
 
 - **`bind_param` bindet per Referenz.** Ergebnisse von Methodenaufrufen sind dort nicht zulässig – erst in Variablen legen, dann binden (siehe `226d81c`).
-- **Reihen-Namen dürfen nicht positionsabhängig sein.** Beim Steckbrief hängen `rowTopicN`/`rowInfoN` an der Abschnittsposition, was beim Löschen eine Umnummerierung erzwingt (siehe `4683530`). Für die Ereignis-Zeilen deshalb `name="event[]"`-Arrays mit einem `sequence`-Feld verwenden statt Namen mit Index im Namen.
+- **Keine positionsabhängigen Feldnamen.** Beim Steckbrief hängen `rowTopicN`/`rowInfoN` an der Abschnittsposition, was beim Löschen eine Umnummerierung erzwingt und ohne die stillschweigend falsche Daten speichert (siehe `4683530`). Hier stattdessen `name="event[]"`-Arrays mit einem `sequence`-Feld.
 
-## 6. Routen
+### Routen
 
-Der Router bildet `/x/y` auf `XController::y()` ab, ohne Konfiguration – es reicht, die Controller anzulegen.
+Der Router bildet `/x/y` auf `XController::y()` ab, ohne Konfiguration.
 
 ```
-/calendar                 Liste der Kalender
-/calendar/create          Formular
-/calendar/save            POST
-/calendar/edit?id=…       Formular
-/calendar/delete?id=…
-/timeline                 Liste der Zeitstrahlen
-/timeline?id=…            Ansicht eines Zeitstrahls
-/timeline/edit?id=…       Editor (Kopfdaten + Ereignisse)
-/timeline/save            POST
-/timeline/delete?id=…
+/calendar · /calendar/create · /calendar/save · /calendar/edit?id= · /calendar/delete?id=
+/timeline · /timeline?id= · /timeline/edit?id= · /timeline/save · /timeline/delete?id=
 ```
 
-## 7. Oberfläche
+---
 
-**Kalender-Editor** – Kopfdaten (Name, Ära-Bezeichnung + Kürzel, Epochen-Offset, Wochentage pro Woche, Stunden pro Tag), darunter zwei verschiebbare Listen nach dem Muster der Steckbrief-Zeilen (`controlButtons.twig`, `getTemplate()`): Monate (Name, Dauer, Schaltmonat ja/nein, Schalt-Intervall, Schalttage) und Wochentagsnamen. Live-Anzeige „ergibt N Tage pro Jahr" als Kontrolle.
+## 5. Oberfläche
 
-**Zeitstrahl-Editor** – Kopfdaten (Name, Beschreibung, Projekt, Kalender, privat/editierbar), darunter die Ereignisliste. Pro Ereignis: Überschrift, Text, Datum (Jahr + Monat-Auswahl + Tag, alles außer Jahr optional), optional Bis-Datum, optional ein Artikel. **Für die Artikelauswahl ist die Arbeit schon getan:** `linkField.js` bringt die Artikel-Suche über `type=suggest` mit, dieselbe, die im Link-Modal steckt. Der Ereignistext läuft über TinyMCE wie die Absätze – und damit serverseitig zwingend durch `sanitizeHtml()`, weil er mit `|raw` ausgegeben wird.
+**Kalender-Editor** – Kopfdaten (Name, Jahr 0 ja/nein, Wochentage pro Woche, Stunden pro Tag), darunter drei verschiebbare Listen nach dem Muster der Steckbrief-Zeilen (`controlButtons.twig` + `getTemplate()`): Monate (Name, Dauer, Zusatzperiode, Schaltintervall, Extratage), Wochentagsnamen und Ären (vier Bezeichnungen, Jahres-Offset, Vorgabe). Dazu eine abgeleitete Anzeige „ergibt 365 Tage, in Schaltjahren 366" als Kontrolle und das Verankerungs-Formular („dieses Datum entspricht jenem Datum in Kalender X").
 
-**Darstellung** – zuerst eine vertikale, nach Jahr gruppierte Liste: robust, mobil brauchbar, ohne neue Technik. Zeiträume erhalten eine Klammer über die betroffenen Jahre. Später optional eine horizontale Achse als Inline-SVG – die Technik dafür steht schon in `statistics.twig`/`statisticsDonut.twig`.
+**Zeitstrahl-Editor** – Kopfdaten (Name, Beschreibung, Projekt, Leitkalender, privat/editierbar), darunter die Ereignisliste. Pro Ereignis: Überschrift, Text, Kalender, Datum und optionales Bis-Datum, optional ein Artikel.
 
-## 8. Phasen
+Das Datum wird **vorzeichenfrei** eingegeben: Zahlenfeld plus Auswahlliste mit den Richtungen aller Ären („1032 · BF ▾"). Niemand tippt „−512", sondern „512 v. BF". Die Monatsliste hängt am gewählten Kalender – alle Monate aller Kalender werden einmal vorgeladen und clientseitig gefiltert, statt pro Zeile nachzuladen.
 
-1. **Kalender** – Schema-Änderungen, Models/Collections/Repositories, Editor, Liste, Aventurien-Kalender als erster Datensatz. Für Nutzer noch unsichtbar, aber die Tagesnummer-Logik ist testbar.
-2. **Zeitstrahl** – Zeitstrahl anlegen/bearbeiten, Ereignisse mit Datum, Zeitraum und optionalem Artikel, vertikale Darstellung, Rechteprüfung.
-3. **Verzahnung** – Box „Auf der Zeitachse" auf der Artikelseite (`timeline_events.article = ?`), horizontale Achse, Filter nach Zeitraum.
+Für die Artikelauswahl ist die Arbeit schon getan: `linkField.js` bringt die Artikel-Suche über `type=suggest` mit, dieselbe, die im Link-Modal steckt. Dasselbe Spiegelfeld trägt den Ereignistext – gerenderte Links, keine Formatierung, 1000 Zeichen. Der Text geht mit `|raw` raus und muss deshalb serverseitig durch `sanitizeHtml()`.
 
-Nach Phase 1 und 2 ist das Feature jeweils benutzbar abgeschlossen; Phase 3 ist Ausbau.
+**Darstellung** – vertikale, nach Jahr gruppierte Liste mit Jahres-Sprungleiste. Zeiträume bekommen eine Klammer über die betroffenen Jahre. Ereignisse aus fremden Kalendern zeigen Original und Umrechnung („12. Eismond 4711 Zwergenkalender ≡ 3. Rondra 1032 BF"); bei unscharfen Angaben statt einer Umrechnung ein Bereich als Hinweis, weil ein jahresgenaues Datum in einem Kalender mit anderem Jahresanfang keinen einzelnen Jahreswert hat. Sortierung: `sort_key`, dann unscharfe zuerst (`month IS NULL DESC`, `day IS NULL DESC`), dann `id`.
 
-## 9. Offene Fragen
+**Laden** – Ereignisse in einem Rutsch, Artikeltitel gebündelt in einer Abfrage (`ArticleRepository::headlinesByIds()` kann das fast, es fehlt die Sichtbarkeitsprüfung), Kalender mit Monaten und Ären einmal pro Kalender. Sonst ist das ein N+1 in der Größenordnung, die im Projekt schon mal aufgeräumt wurde.
 
-- **Jahresnamen:** `calendar_years.year_definition` („like Hal") – ist damit der Name der Ära gemeint oder benannte *einzelne* Jahre (in Aventurien haben Jahre Namen)? Bei letzterem braucht es eine weitere Tabelle.
-- **Uhrzeit:** `hours_per_day` steht im Schema. Sollen Ereignisse eine Uhrzeit haben können? Vorschlag: nicht in v1.
-- **Ein Kalender pro Zeitstrahl** – oder soll ein Zeitstrahl Ereignisse aus mehreren Kalendern mischen können (dann Umrechnung über `year_0BF` beim Sortieren)?
-- **Mehrere Artikel pro Ereignis** war bewusst zurückgestellt. Falls das später kommt, ist eine Zwischentabelle `timeline_event_articles` der Weg – `timeline_events.article` bleibt dann als „Hauptartikel" bestehen.
+---
+
+## 6. Phasen
+
+1. **Kalender** – Schema, Models/Collections/Repositories, Tagesnummer plus Umkehrung mit Tests, Editor, Liste, Aventurien als erster Datensatz. Für Nutzer noch unsichtbar.
+2. **Zeitstrahl** – anlegen und bearbeiten, Ereignisse mit Datum, Zeitraum, Fremdkalender und optionalem Artikel, vertikale Darstellung, Rechteprüfung.
+3. **Verzahnung** – Box „Auf der Zeitachse" auf der Artikelseite (`timeline_events.article = ?`), horizontale Achse als Inline-SVG (Technik steht in `statistics.twig`), Zeitraum-Filter.
+
+Nach Phase 1 und 2 ist das Feature jeweils benutzbar abgeschlossen, Phase 3 ist Ausbau.
+
+## 7. Deployment
+
+Es gibt keinen Migrationsmechanismus. Die Statements aus Abschnitt 1 müssen wie damals `users.test_user` **manuell auf dem Server** eingespielt werden – und zwar *vor* dem Push, sonst laufen die neuen Seiten in einen SQL-Fehler. Sie gehören zusätzlich nach `docker/db-init/`, damit eine frische lokale Umgebung sie mitbekommt, und als Checkliste nach `DEPLOY.md`.
